@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meridian — Clinical-Grade Mental Health</title>
+  <meta name="description"
+    content="Meridian combines domain-specific screening with evidence-based therapy techniques. Deterministic safety layers, guaranteed privacy, and quantified clinical output." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+
+  <style>
+    /* ── Reset & Variables ──────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #F5F2EE;
+      --fg: #1A1714;
+      --muted: #A09080;
+      --dim: #6A605A;
+      --accent: #7A6A58;
+      --rule: #DDD8D0;
+      --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.05);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      line-height: 1.7;
+    }
+
+    /* Tactile Noise Texture */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    .serif {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+    }
+
+    .sans-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      font-weight: 600;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    section {
+      padding: 10rem 5%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* ── Navigation ─────────────────────────────────────── */
+    .nav-container {
+      position: fixed;
+      top: 1.5rem;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+      padding: 0 5%;
+      pointer-events: none;
+    }
+
+    .nav {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 1200px;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      background: rgba(250, 248, 246, 0.6);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 100px;
+      box-shadow: 0 12px 40px -12px rgba(26, 23, 20, 0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+    }
+
+    .nav-logo {
+      font-size: 1.5rem;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 3rem;
+      align-items: center;
+    }
+
+    .nav-links a.link {
+      color: var(--dim);
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a.link:hover {
+      color: var(--fg);
+    }
+
+    .btn-solid {
+      background: var(--fg);
+      color: var(--bg);
+      padding: 0.9rem 2.2rem;
+      border-radius: 100px;
+      transition: all 0.4s var(--ease-spring);
+      box-shadow: 0 8px 20px rgba(26, 23, 20, 0.15);
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-solid:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 14px 30px -8px rgba(26, 23, 20, 0.3);
+    }
+
+    /* ── Hero Section ───────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 8rem;
+      position: relative;
+    }
+
+    .hero-bg-blur {
+      position: absolute;
+      top: -10%;
+      right: 0;
+      width: 60vw;
+      height: 60vw;
+      background: radial-gradient(circle, rgba(122, 106, 88, 0.08) 0%, rgba(245, 242, 238, 0) 60%);
+      border-radius: 50%;
+      z-index: -1;
+      filter: blur(100px);
+    }
+
+    .hero-eyebrow {
+      color: var(--accent);
+      margin-bottom: 2.5rem;
+      display: block;
+      animation: fadeUp 1s var(--ease-out) forwards;
+      opacity: 0;
+    }
+
+    .hero h1 {
+      font-size: clamp(4rem, 10vw, 8.5rem);
+      line-height: 0.85;
+      letter-spacing: -0.04em;
+      max-width: 1200px;
+      margin-bottom: 3rem;
+      color: var(--fg);
+      animation: fadeUp 1.2s var(--ease-out) 0.1s forwards;
+      opacity: 0;
+    }
+
+    .hero h1 i {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 1.5vw, 1.1rem);
+      color: var(--dim);
+      max-width: 600px;
+      margin-bottom: 4rem;
+      line-height: 1.8;
+      animation: fadeUp 1.2s var(--ease-out) 0.2s forwards;
+      opacity: 0;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      animation: fadeUp 1.2s var(--ease-out) 0.3s forwards;
+      opacity: 0;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ── Trust Row ──────────────────────────────────────── */
+    .trust-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 3rem;
+      padding: 4rem 5%;
+      max-width: 1400px;
+      margin: 0 auto;
+      border-top: 1px solid rgba(26, 23, 20, 0.06);
+      border-bottom: 1px solid rgba(26, 23, 20, 0.06);
+    }
+
+    .trust-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .trust-item span {
+      font-size: 0.9rem;
+      color: var(--dim);
+    }
+
+    /* ── Sections Shared ────────────────────────────────── */
+    .section-header {
+      margin-bottom: 6rem;
+      max-width: 800px;
+    }
+
+    .section-title {
+      font-size: clamp(3rem, 6vw, 5rem);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      margin-bottom: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .section-desc {
+      font-size: 1rem;
+      color: var(--dim);
+      max-width: 550px;
+      line-height: 1.8;
+    }
+
+    /* ── Cards ──────────────────────────────────────────── */
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .card {
+      padding: 3.5rem 3rem;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.3));
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 32px;
+      transition: all 0.5s var(--ease-out);
+      box-shadow: 0 10px 40px -20px rgba(26, 23, 20, 0.05), inset 0 1px 1px rgba(255, 255, 255, 1);
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 30px 60px -20px rgba(26, 23, 20, 0.1), inset 0 1px 1px rgba(255, 255, 255, 1);
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .card-sym {
+      font-size: 3rem;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 2.5rem;
+      line-height: 1;
+    }
+
+    .card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.01em;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: var(--dim);
+      line-height: 1.7;
+    }
+
+    /* ── Protocols ──────────────────────────────────────── */
+    .protocol-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: start;
+    }
+
+    .protocol-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4rem;
+    }
+
+    .protocol-item {
+      position: relative;
+      padding-left: 4rem;
+    }
+
+    .protocol-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1px;
+      height: 100%;
+      background: rgba(26, 23, 20, 0.1);
+    }
+
+    .protocol-num {
+      position: absolute;
+      left: -0.8rem;
+      top: -0.2rem;
+      background: var(--bg);
+      padding: 0.4rem 0;
+      color: var(--accent);
+    }
+
+    .protocol-text h3 {
+      font-size: 2.2rem;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .protocol-text p {
+      font-size: 0.95rem;
+      color: var(--dim);
+    }
+
+    /* ── Modes Cards ────────────────────────────────────── */
+    .mode-card h3 {
+      font-size: 2.8rem;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 2.5rem;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      color: var(--fg);
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(26, 23, 20, 0.08);
+      padding: 0.5rem 1.2rem;
+      border-radius: 100px;
+      transition: background 0.3s ease;
+    }
+
+    .card:hover .tag {
+      background: transparent;
+    }
+
+    /* ── CTA & Footer ───────────────────────────────────── */
+    .cta {
+      margin: 8rem 5% 6rem;
+      padding: 10rem 3rem;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 40px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 30px 80px -30px rgba(26, 23, 20, 0.1), inset 0 1px 1px rgba(255, 255, 255, 1);
+    }
+
+    .cta h2 {
+      font-size: clamp(3.5rem, 8vw, 6.5rem);
+      margin-bottom: 2rem;
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+    }
+
+    .cta p {
+      color: var(--dim);
+      margin-bottom: 4rem;
+      font-size: 1.05rem;
+      max-width: 500px;
+      line-height: 1.8;
+    }
+
+    footer {
+      padding: 4rem 5%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(26, 23, 20, 0.06);
+    }
+
+    .foot-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: right;
+      max-width: 450px;
+      line-height: 1.6;
+    }
+
+    /* ── Responsive ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .protocol-container {
+        grid-template-columns: 1fr;
+        gap: 5rem;
+      }
+
+      .nav-links a.link {
+        display: none;
+      }
+
+      .nav {
+        padding: 0.8rem 1rem 0.8rem 2rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      section {
+        padding: 6rem 5%;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        width: 100%;
+        align-items: flex-start;
+      }
+
+      .btn-solid {
+        width: 100%;
+      }
+
+      .trust-row {
+        flex-direction: column;
+        gap: 2.5rem;
+        padding: 4rem 5%;
+      }
+
+      footer {
+        flex-direction: column;
+        gap: 2.5rem;
+        text-align: center;
+      }
+
+      .foot-note {
+        text-align: center;
+      }
+
+      .cta {
+        padding: 6rem 2rem;
+        border-radius: 32px;
+        margin: 4rem 5%;
+      }
+
+      .card {
+        padding: 3rem 2rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="nav-container">
+    <nav class="nav">
+      <a href="index.html" class="nav-logo serif">Meridian</a>
+      <div class="nav-links">
+        <a href="#why" class="link sans-label">The Gap</a>
+        <a href="#clinical" class="link sans-label">Protocol</a>
+        <a href="#modes" class="link sans-label">Interventions</a>
+        <a href="index.html" class="btn-solid sans-label">Enter Portal</a>
+      </div>
+    </nav>
+  </div>
+
+  <main>
+    <section class="hero">
+      <div class="hero-bg-blur"></div>
+      <span class="hero-eyebrow sans-label">Clinical-Grade Assessment & Support</span>
+      <h1>Support that is <i>always there.</i><br />Screening that is <i>honest.</i></h1>
+      <p class="hero-sub">
+        Bridging the gap in mental health care by bringing structured, evidence-based interventions and diagnostic-grade
+        screening into a single, private space. No waitlists. No barriers.
+      </p>
+      <div class="hero-actions">
+        <a href="index.html" class="btn-solid sans-label">Begin Session</a>
+      </div>
+    </section>
+
+    <div class="trust-row">
+      <div class="trust-item">
+        <strong class="sans-label">Immediate Access</strong>
+        <span>Zero appointment scheduling required.</span>
+      </div>
+      <div class="trust-item">
+        <strong class="sans-label">Continuous Availability</strong>
+        <span>Monitored and operational 24/7/365.</span>
+      </div>
+      <div class="trust-item">
+        <strong class="sans-label">Clinical Integrity</strong>
+        <span>5 established evidence-based modalities.</span>
+      </div>
+    </div>
+
+    <section id="why">
+      <div class="section-header">
+        <span class="sans-label" style="color: var(--accent);">Systemic Limitations</span>
+        <h2 class="section-title">Traditional frameworks leave millions unserved.</h2>
+        <p class="section-desc">
+          Demand for psychological support far exceeds clinical capacity. Meridian operates in the critical space
+          between visits, providing immediate, structured stabilization.
+        </p>
+      </div>
+
+      <div class="grid-cards">
+        <article class="card">
+          <span class="card-sym serif">§</span>
+          <h3>Rationed Access</h3>
+          <p>Standard intake wait times range from weeks to months. In moments of acute distress, latency is
+            detrimental. Meridian engages immediately, upon request.</p>
+        </article>
+        <article class="card">
+          <span class="card-sym serif">◊</span>
+          <h3>Prohibitive Costs</h3>
+          <p>Sustained therapeutic care carries cumulative financial burdens that exclude the majority. Meridian
+            completely removes the economic barrier to entry.</p>
+        </article>
+        <article class="card">
+          <span class="card-sym serif">&mdash;</span>
+          <h3>Reporting Bias</h3>
+          <p>Clinical intake relies heavily on subjective self-reporting. We utilize natural language analysis to
+            generate objective, calibrated probability scores.</p>
+        </article>
+        <article class="card">
+          <span class="card-sym serif">&times;</span>
+          <h3>Data Permanence</h3>
+          <p>Traditional disclosures become permanent records. Meridian is intentionally ephemeral. Sessions exist only
+            locally and are erased upon closure.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="clinical">
+      <div class="protocol-container">
+        <div class="section-header" style="margin-bottom: 0;">
+          <span class="sans-label" style="color: var(--accent);">Architectural Guarantees</span>
+          <h2 class="section-title">Safety and privacy built at the protocol level.</h2>
+          <p class="section-desc">
+            Meridian operates on four structural axioms. Each layer functions independently to ensure user safety cannot
+            be compromised by system degradation.
+          </p>
+        </div>
+
+        <div class="protocol-list">
+          <div class="protocol-item">
+            <span class="protocol-num sans-label">01</span>
+            <div class="protocol-text">
+              <h3 class="serif">Absolute Anonymity</h3>
+              <p>Localized algorithms strip inputs of identifying markers before processing. The diagnostic engine
+                interacts exclusively with linguistic structure, never your identity.</p>
+            </div>
+          </div>
+          <div class="protocol-item">
+            <span class="protocol-num sans-label">02</span>
+            <div class="protocol-text">
+              <h3 class="serif">Deterministic Escalation</h3>
+              <p>Crisis detection is hardcoded. If linguistic patterns indicate acute risk, the system unconditionally
+                halts analysis and routes you to verified emergency networks.</p>
+            </div>
+          </div>
+          <div class="protocol-item">
+            <span class="protocol-num sans-label">03</span>
+            <div class="protocol-text">
+              <h3 class="serif">Evidence-Based Routing</h3>
+              <p>Interventions follow strict clinical parameters. Context is maintained securely across the active
+                session without external database retention.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="modes">
+      <div class="section-header">
+        <span class="sans-label" style="color: var(--accent);">Dual Pathways</span>
+        <h2 class="section-title">Intervention and diagnostics, unified.</h2>
+      </div>
+
+      <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));">
+        <article class="card mode-card">
+          <span class="card-sym serif">&#8767;</span>
+          <h3 class="serif">Therapeutic Intervention</h3>
+          <p>Engage in a structured dialogue grounded in verified psychological frameworks. The system adapts to your
+            chosen modality, providing continuous support throughout your session.</p>
+          <div class="tags">
+            <span class="tag sans-label">CBT</span>
+            <span class="tag sans-label">DBT</span>
+            <span class="tag sans-label">Mindfulness</span>
+            <span class="tag sans-label">ACT</span>
+          </div>
+        </article>
+
+        <article class="card mode-card">
+          <span class="card-sym serif">&#9670;</span>
+          <h3 class="serif">Diagnostic Screening</h3>
+          <p>Articulate your current state natively. Meridian monitors linguistic markers longitudinally to construct a
+            comprehensive report, outputting a quantifiable baseline.</p>
+          <div class="tags">
+            <span class="tag sans-label">Longitudinal</span>
+            <span class="tag sans-label">Calibrated Score</span>
+            <span class="tag sans-label">Exportable</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <div class="cta">
+      <h2 class="serif">Initiate a session<br />when you are ready.</h2>
+      <p>Zero account creation. Zero data retention. Immediate engagement inside a secure browser environment.</p>
+      <a href="index.html" class="btn-solid sans-label">Open Secure Portal</a>
+    </div>
+  </main>
+
+  <footer>
+    <span class="nav-logo serif">Meridian</span>
+    <p class="foot-note">
+      Meridian is a supplementary support system and does not constitute a formal clinical diagnosis. In the event of an
+      emergency, please contact your local emergency services or a licensed psychiatrist.
+    </p>
+  </footer>
+
+</body>
+
+</html>
