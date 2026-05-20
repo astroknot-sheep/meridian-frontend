@@ -194,33 +194,10 @@
             <a href="index.html" class="serif">Meridian<span class="logo-dot"></span></a>
         </div>
         <div class="check-icon serif">✓</div>
-        <h2 class="serif">You’re registered.</h2>
-        <p>Your email has been verified and your account is ready.<br>Continue to set up your profile.</p>
-        <a href="onboarding.html" class="btn-primary sans-label">Proceed to onboarding</a>
+        <h2 class="serif">Email verified</h2>
+        <p>Your account is active.<br>Sign in to start using Meridian.</p>
+        <a href="auth.html" class="btn-primary sans-label">Sign in to Meridian</a>
     </div>
-
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-        // These will be replaced by Vercel build script
-        const SUPABASE_URL = '__SUPABASE_URL__';
-        const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Guard: must be logged in (session should exist from email link)
-        async function protect() {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (!session) {
-                // Not logged in – go to auth page
-                window.location.href = 'auth.html';
-                return;
-            }
-            // If already onboarded (maybe), go straight to chat? We'll keep it simple.
-            localStorage.setItem('sb_token', session.access_token);
-        }
-
-        window.addEventListener('DOMContentLoaded', protect);
-    </script>
 </body>
 
 </html>
