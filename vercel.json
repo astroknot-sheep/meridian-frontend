@@ -1,8 +1,10 @@
 {
-  "version": 2,
-  "routes": [
-    { "src": "/", "dest": "/landing.html" },
-    { "src": "/index.html", "dest": "/index.html" },
-    { "handle": "filesystem" }
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/landing.html"
+    }
   ]
 }
