@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meridian</title>
+  <title>Meridian — Secure Session Portal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
@@ -116,6 +116,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      text-decoration: none;
     }
 
     .logo-dot {
@@ -209,8 +210,6 @@
       display: none;
     }
 
-    /* Clean, hidden scrollbar */
-
     .msg-wrap {
       display: flex;
       flex-direction: column;
@@ -232,7 +231,8 @@
       }
     }
 
-    .msg-meta {
+    .msg-meta,
+    .typing-meta {
       font-family: 'Syne', sans-serif;
       font-size: 0.55rem;
       text-transform: uppercase;
@@ -285,7 +285,6 @@
     }
 
     .typing-meta {
-      @extend .msg-meta;
       color: var(--muted);
       margin-bottom: 0.6rem;
     }
@@ -518,6 +517,49 @@
       margin-top: 1rem;
     }
 
+    .screen-summary {
+      font-size: 0.95rem;
+      color: var(--fg);
+      margin-bottom: 0.75rem;
+    }
+
+    .screen-disclaimer {
+      font-size: 0.75rem;
+      color: var(--dim);
+      font-style: italic;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--rule);
+    }
+
+    /* ── Risk Badge Metrics Styling ──────────────────────── */
+    .risk-line {
+      margin-top: 1rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .risk-low {
+      background: rgba(112, 176, 120, 0.1);
+      color: #4A7A52;
+    }
+
+    .risk-moderate {
+      background: rgba(176, 150, 112, 0.1);
+      color: #8A7048;
+    }
+
+    .risk-elevated {
+      background: rgba(176, 112, 112, 0.1);
+      color: var(--crisis);
+    }
+
     /* ── Responsive ─────────────────────────────────────── */
     @media (max-width: 900px) {
       header {
@@ -567,7 +609,7 @@
   <div class="app-bg-blur"></div>
 
   <header>
-    <div class="logo serif">Meridian<span class="logo-dot" aria-hidden="true"></span></div>
+    <a href="landing.html" class="logo serif">Meridian<span class="logo-dot" aria-hidden="true"></span></a>
     <nav>
       <div class="ctrl-group">
         <span class="ctrl-label sans-label">Mode</span>
@@ -621,7 +663,7 @@
     const SESSION_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
     const history = [];
     let totalCharsSubmitted = 0;
-    const ACCUM_TARGET = 1000;
+    const ACCUM_TARGET = 800;
 
     function autoResize(el) { el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 150) + "px"; }
     document.getElementById("inp").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMsg(); } });

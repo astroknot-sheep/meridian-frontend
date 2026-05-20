@@ -459,12 +459,12 @@
 
   <header class="nav-container">
     <nav class="nav" aria-label="Main Navigation">
-      <a href="#" class="nav-logo serif">Meridian</a>
+      <a href="index.html" class="nav-logo serif">Meridian</a>
       <div class="nav-links">
         <a href="#why" class="link sans-label">The Gap</a>
         <a href="#clinical" class="link sans-label">Protocol</a>
         <a href="#modes" class="link sans-label">Interventions</a>
-        <a href="chat.html" class="btn-solid sans-label">Enter Portal</a>
+        <a href="index.html" class="btn-solid sans-label">Enter Portal</a>
       </div>
     </nav>
   </header>
@@ -478,7 +478,7 @@
         Continuous calibration, absolute data erasure.
       </p>
       <div class="hero-actions">
-        <a href="chat.html" class="btn-solid sans-label">Begin Session</a>
+        <a href="index.html" class="btn-solid sans-label">Begin Session</a>
       </div>
     </section>
 
@@ -612,7 +612,7 @@
     <section class="cta" aria-labelledby="cta-heading">
       <h2 id="cta-heading" class="serif">Initiate a session<br />when you are ready.</h2>
       <p>No user account creation required. Zero telemetry logs. Entirely executed inside your browser window.</p>
-      <a href="chat.html" class="btn-solid sans-label">Open Secure Portal</a>
+      <a href="index.html" class="btn-solid sans-label">Open Secure Portal</a>
     </section>
   </main>
 
@@ -683,9 +683,9 @@
 
       void main() {
         vec2 uv = vUv;
-        
+         
         float t = uTime * 0.1404;
-        
+         
         vec2 q = vec2(fbm(uv * 2.65 + vec2(t * 0.18, t * -0.1)), fbm(uv * 2.65 + vec2(t * 0.22, t * 0.13)));
         vec2 r = vec2(fbm(uv * 3.1 + q + vec2(t * 0.45, t * 0.18)), fbm(uv * 3.1 + q - vec2(t * 0.25, t * 0.35)));
         float flow = fbm(uv * 1.95 + r);
@@ -701,7 +701,7 @@
 
         float grad = uv.y * 0.65 + flow * 0.35;
         vec3 base = mix(bgColor, midColor, grad);
-        
+         
         float mixIntensity = 0.24;
         base = mix(base, accentColor, flow * mixIntensity + 0.04);
         base += grid * accentColor * 0.4;
