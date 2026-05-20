@@ -614,7 +614,10 @@
 
   <script>
     // Auto-detect: use relative path when deployed, localhost for dev
-    const API_BASE = window.location.hostname === "localhost" ? "http://localhost:8000" : "";
+    const API_BASE = window.location.hostname === "localhost"
+      ? "http://localhost:8000"
+      : "https://astroknotsheep-meridian-api.hf.space";
+
     const SESSION_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
     const history = [];
     let totalCharsSubmitted = 0;
