@@ -376,9 +376,8 @@
             // (Supabase puts access_token/refresh_token in the fragment after email redirect)
             const { data: { session }, error } = await supabase.auth.getSession();
             if (session) {
-                // User is now signed in – store token & go to onboarding
                 localStorage.setItem('sb_token', session.access_token);
-                window.location.href = 'onboarding.html';
+                window.location.href = 'verified.html';   // ← change this line
                 return true;
             }
             // If no session yet, show a subtle message (shouldn't happen normally)
