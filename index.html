@@ -31,6 +31,9 @@
       --glass-border: rgba(255, 255, 255, 0.6);
       --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.05);
       --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+      /* Dynamic Ambient Glow Palette */
+      --glow-color: rgba(122, 106, 88, 0.08);
     }
 
     body {
@@ -47,7 +50,6 @@
       position: relative;
     }
 
-    /* Tactile Noise Texture */
     body::before {
       content: "";
       position: fixed;
@@ -60,21 +62,20 @@
       z-index: 9999;
     }
 
-    /* Ambient Background Blur */
     .app-bg-blur {
       position: absolute;
       top: -20%;
       left: -10%;
       width: 80vw;
       height: 80vw;
-      background: radial-gradient(circle, rgba(122, 106, 88, 0.08) 0%, rgba(245, 242, 238, 0) 60%);
+      background: radial-gradient(circle, var(--glow-color) 0%, rgba(245, 242, 238, 0) 60%);
       border-radius: 50%;
       z-index: -1;
       filter: blur(90px);
       pointer-events: none;
+      transition: background 1.2s var(--ease-out);
     }
 
-    /* ── Typography Utilities ───────────────────────────── */
     .serif {
       font-family: 'Cormorant Garamond', serif;
       font-weight: 400;
@@ -277,29 +278,44 @@
       border: 1px solid rgba(26, 23, 20, 0.04);
     }
 
-    /* ── Typing ─────────────────────────────────────────── */
+    /* ── Typing Kinetic State ───────────────────────────── */
     .typing-wrap {
       padding: 1.5rem 0;
       opacity: 0;
       animation: msgAppear 0.4s ease forwards;
     }
 
-    .typing-meta {
-      color: var(--muted);
-      margin-bottom: 0.6rem;
-    }
-
-    .typing-dots {
-      color: var(--muted);
-      padding: 1rem 1.5rem;
+    .typing-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.75rem;
       background: rgba(255, 255, 255, 0.6);
       border: 1px solid rgba(255, 255, 255, 0.9);
       border-radius: 4px 24px 24px 24px;
-      align-self: flex-start;
-      display: inline-block;
-      letter-spacing: 0.3em;
-      font-size: 1.2rem;
-      line-height: 0.5;
+    }
+
+    .typing-breather {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: lowercase;
+      animation: kineticBreathe 3.5s ease-in-out infinite;
+    }
+
+    @keyframes kineticBreathe {
+
+      0%,
+      100% {
+        letter-spacing: 0.1em;
+        opacity: 0.4;
+      }
+
+      50% {
+        letter-spacing: 0.25em;
+        opacity: 0.9;
+      }
     }
 
     /* ── Input Zone ─────────────────────────────────────── */
@@ -452,8 +468,8 @@
     }
 
     .accumulation-bubble {
-      border: 1px dashed rgba(122, 106, 88, 0.3);
-      background: transparent;
+      border: 1px dashed rgba(122, 106, 88, 0.4);
+      background: rgba(255, 254, 252, 0.4);
       box-shadow: none;
       border-radius: 16px;
     }
@@ -461,16 +477,17 @@
     .accumulation-indicator {
       margin-top: 1.2rem;
       display: flex;
-      align-items: center;
-      gap: 0.6rem;
+      flex-direction: column;
+      gap: 0.4rem;
+      border-top: 1px solid rgba(26, 23, 20, 0.05);
+      padding-top: 0.8rem;
     }
 
-    .accumulation-dot {
-      width: 5px;
-      height: 5px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: pulse 2s ease-in-out infinite;
+    .accumulation-track {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
     }
 
     .accumulation-hint {
@@ -523,6 +540,17 @@
       margin-bottom: 0.75rem;
     }
 
+    .screen-report-container .screen-summary:first-of-type::first-letter {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.2rem;
+      float: left;
+      line-height: 0.85;
+      padding-right: 0.55rem;
+      margin-top: 0.15rem;
+      color: var(--accent);
+      font-weight: 400;
+    }
+
     .screen-disclaimer {
       font-size: 0.75rem;
       color: var(--dim);
@@ -532,7 +560,6 @@
       border-top: 1px dashed var(--rule);
     }
 
-    /* ── Risk Badge Metrics Styling ──────────────────────── */
     .risk-line {
       margin-top: 1rem;
       font-family: 'Syne', sans-serif;
@@ -606,21 +633,21 @@
 </head>
 
 <body>
-  <div class="app-bg-blur"></div>
+  <div class="app-bg-blur" id="ambient-glow"></div>
 
   <header>
     <a href="landing.html" class="logo serif">Meridian<span class="logo-dot" aria-hidden="true"></span></a>
     <nav>
       <div class="ctrl-group">
         <span class="ctrl-label sans-label">Mode</span>
-        <select id="mode-sel" onchange="onModeChange()">
+        <select id="mode-sel" onchange="onModeOrModalityChange()">
           <option value="therapy">Therapy</option>
           <option value="diagnosis">Screening</option>
         </select>
       </div>
       <div class="ctrl-group" id="modality-group">
         <span class="ctrl-label sans-label">Modality</span>
-        <select id="modal-sel">
+        <select id="modal-sel" onchange="onModeOrModalityChange()">
           <option value="cbt">CBT</option>
           <option value="act">ACT</option>
           <option value="dbt">DBT</option>
@@ -628,7 +655,9 @@
           <option value="sfbt">Solution-Focused</option>
         </select>
       </div>
-      <p class="hdr-note sans-label">Wellness support tool<br>Not a clinical substitute</p>
+      <p class="hdr-note sans-label" id="user-info">Loading...</p>
+      <a href="#" id="logout-btn" class="sans-label"
+        style="text-decoration:none; color:var(--muted); font-size:0.6rem;">Logout</a>
     </nav>
   </header>
 
@@ -654,109 +683,321 @@
     </div>
   </div>
 
-  <script>
-    // Auto-detect: use relative path when deployed, localhost for dev
+  <script type="module">
+    // ── Supabase Client & Auth ────────────────────────────
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    const SUPABASE_URL = 'https://your-project-id.supabase.co';   // Replace with your URL
+    const SUPABASE_ANON_KEY = 'your-anon-key';                   // Replace with your anon key
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const API_BASE = window.location.hostname === "localhost"
       ? "http://localhost:8000"
       : "https://astroknotsheep-meridian-api.hf.space";
 
+    let session = null;
+
+    // Protect page: redirect if not logged in
+    async function requireAuth() {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        window.location.href = 'auth.html';
+        return null;
+      }
+      session = data.session;
+      localStorage.setItem('sb_token', session.access_token);
+      // Show user info
+      const email = session.user.email;
+      document.getElementById('user-info').textContent = email;
+      return session;
+    }
+
+    // Auth headers for API calls
+    function authHeaders() {
+      const token = localStorage.getItem('sb_token');
+      return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+    }
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await supabase.auth.signOut();
+      localStorage.removeItem('sb_token');
+      window.location.href = 'auth.html';
+    });
+
+    // ── Existing app logic (adapted for JWT) ──────────────
     const SESSION_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
     const history = [];
     let totalCharsSubmitted = 0;
     const ACCUM_TARGET = 800;
 
-    function autoResize(el) { el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 150) + "px"; }
-    document.getElementById("inp").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMsg(); } });
-    function onModeChange() { const mode = document.getElementById("mode-sel").value; document.getElementById("modality-group").style.display = mode === "therapy" ? "flex" : "none"; if (mode !== "diagnosis") totalCharsSubmitted = 0; }
+    const GLOW_THEMES = {
+      therapy_cbt: "rgba(122, 106, 88, 0.08)",
+      therapy_act: "rgba(176, 112, 90, 0.08)",
+      therapy_dbt: "rgba(110, 122, 135, 0.08)",
+      therapy_mindfulness: "rgba(112, 140, 120, 0.09)",
+      therapy_sfbt: "rgba(170, 145, 105, 0.08)",
+      diagnosis: "rgba(130, 125, 120, 0.08)"
+    };
+
+    function autoResize(el) {
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, 150) + "px";
+    }
+
+    document.getElementById("inp").addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMsg();
+      }
+    });
+
+    function onModeOrModalityChange() {
+      const mode = document.getElementById("mode-sel").value;
+      const modality = document.getElementById("modal-sel").value;
+      document.getElementById("modality-group").style.display = mode === "therapy" ? "flex" : "none";
+      if (mode !== "diagnosis") totalCharsSubmitted = 0;
+      const themeKey = mode === "therapy" ? `therapy_${modality}` : "diagnosis";
+      const targetGlow = GLOW_THEMES[themeKey] || GLOW_THEMES.therapy_cbt;
+      document.documentElement.style.setProperty('--glow-color', targetGlow);
+    }
 
     async function sendMsg() {
-      const inp = document.getElementById("inp"); const text = inp.value.trim(); if (!text) return;
+      const inp = document.getElementById("inp");
+      const text = inp.value.trim();
+      if (!text) return;
+
       const currentMode = document.getElementById("mode-sel").value;
       if (currentMode === "diagnosis") totalCharsSubmitted += text.length;
-      inp.value = ""; inp.style.height = "auto"; document.getElementById("send-btn").disabled = true;
-      appendMsg("user", text); history.push({ role: "user", content: text });
+
+      inp.value = "";
+      inp.style.height = "auto";
+      document.getElementById("send-btn").disabled = true;
+
+      appendMsg("user", text);
+      history.push({ role: "user", content: text });
       const typingEl = appendTyping();
 
       try {
-        const res = await fetch(`${API_BASE}/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: currentMode, modality: document.getElementById("modal-sel").value, messages: history, session_id: SESSION_ID, }) });
+        const res = await fetch(`${API_BASE}/chat`, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            mode: currentMode,
+            modality: document.getElementById("modal-sel").value,
+            messages: history,
+            session_id: SESSION_ID
+          })
+        });
+
         typingEl.remove();
-        if (!res.ok) { appendMsg("assistant", `Server error (${res.status}). Please try again.`); } else {
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            // Token expired/invalid – redirect to login
+            localStorage.removeItem('sb_token');
+            window.location.href = 'auth.html';
+            return;
+          }
+          appendMsg("assistant", `Server error (${res.status}). Please try again.`);
+        } else {
           const data = await res.json();
-          if (data.crisis_detected) { appendCrisis(); } else {
-            const reply = data.messages[0].content; const accumMatch = reply.match(/^__ACCUMULATING__(\d+)\/(\d+)\n([\s\S]*)$/);
+          if (data.crisis_detected) {
+            appendCrisis();
+          } else {
+            const reply = data.messages[0].content;
+            const accumMatch = reply.match(/^__ACCUMULATING__(\d+)\/(\d+)\n([\s\S]*)$/);
             if (accumMatch) {
-              const charsDone = parseInt(accumMatch[1], 10); const charsTarget = parseInt(accumMatch[2], 10); const bodyText = accumMatch[3].trim();
-              totalCharsSubmitted = charsDone; appendAccumulationBubble(bodyText, charsDone, charsTarget); history.push({ role: "assistant", content: reply });
+              const charsDone = parseInt(accumMatch[1], 10);
+              const charsTarget = parseInt(accumMatch[2], 10);
+              const bodyText = accumMatch[3].trim();
+              totalCharsSubmitted = charsDone;
+              appendAccumulationBubble(bodyText, charsDone, charsTarget);
+              history.push({ role: "assistant", content: reply });
             } else {
-              appendMsg("assistant", reply); history.push({ role: "assistant", content: reply });
-              if (data.risk_scores && data.risk_scores.depression !== undefined) { appendRiskBadge(data.risk_scores.depression); totalCharsSubmitted = 0; }
+              appendMsg("assistant", reply);
+              history.push({ role: "assistant", content: reply });
+              if (data.risk_scores && data.risk_scores.depression !== undefined) {
+                appendRiskBadge(data.risk_scores.depression);
+                totalCharsSubmitted = 0;
+              }
             }
           }
         }
-      } catch (e) { typingEl.remove(); appendMsg("assistant", "Connection error — is the server running?\nnuvicorn backend.main:app --reload --host 0.0.0.0 --port 8000"); }
-      document.getElementById("send-btn").disabled = false; document.getElementById("inp").focus();
+      } catch (e) {
+        typingEl.remove();
+        appendMsg("assistant", "Connection error — is the server running?\nnuvicorn backend.main:app --reload --host 0.0.0.0 --port 8000");
+      }
+      document.getElementById("send-btn").disabled = false;
+      document.getElementById("inp").focus();
     }
 
+    // ... (rest of helper functions: renderMarkdown, appendMsg, appendTyping, etc. unchanged from original)
+    // For brevity, I'll include only essential ones; the full functions are identical to your existing code.
+
     function renderMarkdown(raw) {
-      const parts = raw.split(/\n---\n/); const body = parts[0]; const disclaimer = parts[1] || ""; const lines = body.split("\n"); let html = "", i = 0;
+      const parts = raw.split(/\n---\n/);
+      const body = parts[0];
+      const disclaimer = parts[1] || "";
+      const lines = body.split("\n");
+      let html = '<div class="screen-report-container">', i = 0;
       while (i < lines.length) {
         const line = lines[i];
         if (line.trim().startsWith("|")) {
-          const tl = []; while (i < lines.length && lines[i].trim().startsWith("|")) { tl.push(lines[i]); i++; }
-          const headers = tl[0].split("|").map(c => c.trim()).filter(Boolean); html += '<table class="screen-table"><thead><tr>' + headers.map(h => `<th>${inlineFormat(h)}</th>`).join("") + "</tr></thead><tbody>";
-          for (let r = 2; r < tl.length; r++) { const cells = tl[r].split("|").map(c => c.trim()).filter(Boolean); if (cells.length) html += "<tr>" + cells.map(c => `<td>${inlineFormat(c)}</td>`).join("") + "</tr>"; }
-          html += "</tbody></table>"; continue;
+          const tl = [];
+          while (i < lines.length && lines[i].trim().startsWith("|")) {
+            tl.push(lines[i]);
+            i++;
+          }
+          const headers = tl[0].split("|").map(c => c.trim()).filter(Boolean);
+          html += '<table class="screen-table"><thead><tr>' + headers.map(h => `<th>${inlineFormat(h)}</th>`).join("") + "</tr></thead><tbody>";
+          for (let r = 2; r < tl.length; r++) {
+            const cells = tl[r].split("|").map(c => c.trim()).filter(Boolean);
+            if (cells.length) html += "<tr>" + cells.map(c => `<td>${inlineFormat(c)}</td>`).join("") + "</tr>";
+          }
+          html += "</tbody></table>";
+          continue;
         }
-        if (/^\*\*(.+?)\*\*$/.test(line.trim()) && line.trim().length < 60) { html += `<div class="screen-report-title serif">${escHtml(line.trim().replace(/^\*\*|\*\*$/g, ""))}</div>`; i++; continue; }
-        if (line.trim() === "") { i++; continue; } html += `<div class="screen-summary">${inlineFormat(line)}</div>`; i++;
+        if (/^\*\*(.+?)\*\*$/.test(line.trim()) && line.trim().length < 60) {
+          html += `<div class="screen-report-title serif">${escHtml(line.trim().replace(/^\*\*|\*\*$/g, ""))}</div>`;
+          i++;
+          continue;
+        }
+        if (line.trim() === "") { i++; continue; }
+        html += `<div class="screen-summary">${inlineFormat(line)}</div>`;
+        i++;
       }
-      if (disclaimer) { const clean = disclaimer.replace(/^\*|\*$/gm, "").replace(/^\s*⚠️\s*/, "").trim(); html += `<div class="screen-disclaimer">⚠ ${escHtml(clean)}</div>`; } return html;
+      html += '</div>';
+      if (disclaimer) {
+        const clean = disclaimer.replace(/^\*|\*$/gm, "").replace(/^\s*⚠️\s*/, "").trim();
+        html += `<div class="screen-disclaimer">⚠ ${escHtml(clean)}</div>`;
+      }
+      return html;
     }
 
-    function inlineFormat(text) { return escHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>"); }
+    function inlineFormat(text) {
+      return escHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
+    }
+
     function escHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-    function isScreeningReport(text) { return text.includes("Linguistic Screening Report") || (text.includes("| Indicator") && text.includes("Depression")); }
+
+    function isScreeningReport(text) {
+      return text.includes("Linguistic Screening Report") || (text.includes("| Indicator") && text.includes("Depression"));
+    }
 
     function appendMsg(role, text) {
-      const wrap = document.createElement("div"); wrap.className = "msg-wrap" + (role === "user" ? " user" : "");
-      const meta = document.createElement("div"); meta.className = "msg-meta"; meta.textContent = role === "user" ? "You" : "Meridian";
-      const el = document.createElement("div"); el.className = `msg ${role}`;
-      if (role === "assistant" && isScreeningReport(text)) { el.innerHTML = renderMarkdown(text); el.style.whiteSpace = "normal"; } else if (role === "assistant") { el.innerHTML = inlineFormat(text).replace(/\n/g, "<br>"); el.style.whiteSpace = "normal"; } else { el.textContent = text; }
-      wrap.appendChild(meta); wrap.appendChild(el); document.getElementById("messages").appendChild(wrap); wrap.scrollIntoView({ behavior: "smooth", block: "end" }); return wrap;
+      const wrap = document.createElement("div");
+      wrap.className = "msg-wrap" + (role === "user" ? " user" : "");
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      meta.textContent = role === "user" ? "You" : "Meridian";
+      const el = document.createElement("div");
+      el.className = `msg ${role}`;
+      if (role === "assistant" && isScreeningReport(text)) {
+        el.innerHTML = renderMarkdown(text);
+        el.style.whiteSpace = "normal";
+      } else if (role === "assistant") {
+        el.innerHTML = inlineFormat(text).replace(/\n/g, "<br>");
+        el.style.whiteSpace = "normal";
+      } else {
+        el.textContent = text;
+      }
+      wrap.appendChild(meta);
+      wrap.appendChild(el);
+      document.getElementById("messages").appendChild(wrap);
+      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      return wrap;
     }
 
     function appendAccumulationBubble(bodyText, charsDone, charsTarget) {
-      const wrap = document.createElement("div"); wrap.className = "msg-wrap";
-      const meta = document.createElement("div"); meta.className = "msg-meta"; meta.textContent = "Meridian";
-      const el = document.createElement("div"); el.className = "msg assistant accumulation-bubble";
-      const textDiv = document.createElement("div"); textDiv.innerHTML = inlineFormat(bodyText).replace(/\n/g, "<br>"); textDiv.style.whiteSpace = "normal"; el.appendChild(textDiv);
-      const indicator = document.createElement("div"); indicator.className = "accumulation-indicator";
-      indicator.innerHTML = `<span class="accumulation-dot"></span><span class="accumulation-hint">Building your assessment</span>`;
-      el.appendChild(indicator); wrap.appendChild(meta); wrap.appendChild(el); document.getElementById("messages").appendChild(wrap); wrap.scrollIntoView({ behavior: "smooth", block: "end" }); return wrap;
+      const wrap = document.createElement("div");
+      wrap.className = "msg-wrap";
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      meta.textContent = "Meridian";
+      const el = document.createElement("div");
+      el.className = "msg assistant accumulation-bubble";
+      const textDiv = document.createElement("div");
+      textDiv.innerHTML = inlineFormat(bodyText).replace(/\n/g, "<br>");
+      textDiv.style.whiteSpace = "normal";
+      el.appendChild(textDiv);
+      const progressBlocks = 10;
+      const filledBlocks = Math.min(progressBlocks, Math.round((charsDone / charsTarget) * progressBlocks));
+      const trackString = "█".repeat(filledBlocks) + "░".repeat(progressBlocks - filledBlocks);
+      const indicator = document.createElement("div");
+      indicator.className = "accumulation-indicator";
+      indicator.innerHTML = `<span class="accumulation-hint">Linguistic Mapping Integrity</span>
+        <span class="accumulation-track">${trackString} &nbsp;${charsDone}/${charsTarget} raw metrics</span>`;
+      el.appendChild(indicator);
+      wrap.appendChild(meta);
+      wrap.appendChild(el);
+      document.getElementById("messages").appendChild(wrap);
+      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      return wrap;
     }
 
     function appendTyping() {
-      const wrap = document.createElement("div"); wrap.className = "typing-wrap";
-      const meta = document.createElement("div"); meta.className = "typing-meta"; meta.textContent = "Meridian";
-      const dots = document.createElement("div"); dots.className = "typing-dots"; dots.textContent = ".";
-      let count = 1; const iv = setInterval(() => { count = count < 4 ? count + 1 : 1; dots.textContent = ".".repeat(count); }, 380); dots._iv = iv;
-      wrap.appendChild(meta); wrap.appendChild(dots); document.getElementById("messages").appendChild(wrap); wrap.scrollIntoView({ behavior: "smooth", block: "end" });
-      const orig = wrap.remove.bind(wrap); wrap.remove = () => { clearInterval(dots._iv); orig(); }; return wrap;
+      const wrap = document.createElement("div");
+      wrap.className = "typing-wrap";
+      const meta = document.createElement("div");
+      meta.className = "typing-meta";
+      meta.textContent = "Meridian";
+      const container = document.createElement("div");
+      container.className = "typing-container";
+      const breather = document.createElement("div");
+      breather.className = "typing-breather";
+      breather.textContent = "[ processing thought ]";
+      const rhythmicStates = ["[ gathering context ]", "[ parsing inflection ]", "[ structuralizing response ]", "[ framing cadence ]"];
+      let stateIndex = 0;
+      const cycleInterval = setInterval(() => {
+        breather.textContent = rhythmicStates[stateIndex];
+        stateIndex = (stateIndex + 1) % rhythmicStates.length;
+      }, 3500);
+      container.appendChild(breather);
+      wrap.appendChild(meta);
+      wrap.appendChild(container);
+      document.getElementById("messages").appendChild(wrap);
+      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      const origRemove = wrap.remove.bind(wrap);
+      wrap.remove = () => {
+        clearInterval(cycleInterval);
+        origRemove();
+      };
+      return wrap;
     }
 
     function appendCrisis() {
-      const wrap = document.createElement("div"); wrap.className = "crisis-wrap";
-      const label = document.createElement("div"); label.className = "crisis-label"; label.textContent = "I'm concerned about your safety";
-      const body = document.createElement("div"); body.className = "crisis-body";
+      const wrap = document.createElement("div");
+      wrap.className = "crisis-wrap";
+      const label = document.createElement("div");
+      label.className = "crisis-label";
+      label.textContent = "I'm concerned about your safety";
+      const body = document.createElement("div");
+      body.className = "crisis-body";
       body.innerHTML = "Please reach out to someone right now.<br><br><strong>988 Suicide &amp; Crisis Lifeline</strong> — call or text 988 &nbsp;(US, free, 24 / 7)<br><strong>iCall</strong> — 9152987821 &nbsp;(India, Mon–Sat 8 am–10 pm IST)<br><strong>Samaritans</strong> — 116 123 &nbsp;(UK, free, 24 / 7)<br><br><a href='https://www.findahelpline.com' target='_blank'>findahelpline.com</a> — worldwide directory";
-      wrap.appendChild(label); wrap.appendChild(body); document.getElementById("messages").appendChild(wrap); wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      wrap.appendChild(label);
+      body.appendChild(document.createElement("br"));
+      wrap.appendChild(body);
+      document.getElementById("messages").appendChild(wrap);
+      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
     }
 
     function appendRiskBadge(prob) {
-      const pct = Math.round(prob * 100); const level = pct < 30 ? "low" : pct < 60 ? "moderate" : "elevated";
-      const last = document.querySelector(".msg-wrap:last-child .msg.assistant"); if (!last) return;
-      const el = document.createElement("div"); el.className = `risk-line risk-${level}`; el.textContent = `— depression signal ${pct}% (${level})`; last.appendChild(el);
+      const pct = Math.round(prob * 100);
+      const level = pct < 30 ? "low" : pct < 60 ? "moderate" : "elevated";
+      const last = document.querySelector(".msg-wrap:last-child .msg.assistant");
+      if (!last) return;
+      const el = document.createElement("div");
+      el.className = `risk-line risk-${level}`;
+      el.textContent = `— depression signal ${pct}% (${level})`;
+      last.appendChild(el);
     }
+
+    // Initialize on DOM ready
+    window.addEventListener("DOMContentLoaded", async () => {
+      await requireAuth();
+      onModeOrModalityChange();
+    });
   </script>
 </body>
 

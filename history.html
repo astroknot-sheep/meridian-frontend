@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meridian · Session History</title>
+    <meta name="description" content="Review your previous Meridian conversations." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #F5F2EE;
+            --fg: #1A1714;
+            --muted: #A09080;
+            --dim: #6A605A;
+            --accent: #7A6A58;
+            --rule: rgba(26, 23, 20, 0.08);
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--fg);
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 300;
+            min-height: 100vh;
+            padding: 1.5rem;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 80vw;
+            height: 80vw;
+            background: radial-gradient(circle, rgba(122, 106, 88, 0.06) 0%, rgba(245, 242, 238, 0) 60%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(90px);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .serif {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 400;
+        }
+
+        .sans-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: 600;
+        }
+
+        /* ── Navigation Bar ──────────────────────────────── */
+        .nav-bar {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            margin-bottom: 3rem;
+            background: rgba(245, 242, 238, 0.6);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            box-shadow: 0 12px 32px -12px rgba(26, 23, 20, 0.05);
+        }
+
+        .nav-logo {
+            font-size: 1.6rem;
+            color: var(--fg);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--dim);
+            text-decoration: none;
+            font-size: 0.75rem;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--fg);
+        }
+
+        .btn-logout {
+            background: transparent;
+            border: 1px solid rgba(26, 23, 20, 0.1);
+            padding: 0.5rem 1.2rem;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: var(--fg);
+            color: var(--bg);
+            border-color: var(--fg);
+        }
+
+        /* ── History Card ────────────────────────────────── */
+        .history-card {
+            width: 100%;
+            max-width: 800px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.4rem;
+            margin-bottom: 2.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .session-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .session-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.2rem 0;
+            border-bottom: 1px solid var(--rule);
+            font-size: 0.9rem;
+        }
+
+        .session-row:last-child {
+            border-bottom: none;
+        }
+
+        .session-date {
+            font-weight: 400;
+        }
+
+        .session-mode {
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+        }
+
+        .session-modality {
+            color: var(--accent);
+            font-size: 0.75rem;
+            text-transform: capitalize;
+        }
+
+        .session-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.8rem;
+            border-bottom: 1px solid transparent;
+            transition: border 0.3s;
+            white-space: nowrap;
+        }
+
+        .session-link:hover {
+            border-bottom-color: var(--accent);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+            padding: 3rem 0;
+            font-size: 0.95rem;
+        }
+
+        .loading-state {
+            text-align: center;
+            color: var(--muted);
+            padding: 3rem 0;
+            animation: pulse 1.6s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .error-state {
+            text-align: center;
+            color: #B07070;
+            padding: 3rem 0;
+        }
+
+        @media (max-width: 600px) {
+            .nav-bar {
+                flex-wrap: wrap;
+                gap: 1rem;
+                border-radius: 24px;
+                padding: 1rem;
+            }
+
+            .nav-links {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .history-card {
+                padding: 2rem 1.5rem;
+            }
+
+            .session-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .session-link {
+                grid-column: span 2;
+                justify-self: end;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-logo serif">Meridian</a>
+        <div class="nav-links">
+            <a href="index.html" class="sans-label">Chat</a>
+            <a href="profile.html" class="sans-label">Profile</a>
+            <a href="history.html" class="sans-label" style="color:var(--fg); font-weight:600;">History</a>
+            <button id="logout-btn" class="btn-logout sans-label">Logout</button>
+        </div>
+    </nav>
+
+    <div class="history-card">
+        <h2 class="section-title serif">Your Sessions</h2>
+        <div id="history-container" class="session-list">
+            <div class="loading-state">Loading your sessions…</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        const SUPABASE_URL = 'https://your-project-id.supabase.co';   // Replace with your URL
+        const SUPABASE_ANON_KEY = 'your-anon-key';                   // Replace with your anon key
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const API_BASE = window.location.hostname === 'localhost'
+            ? 'http://localhost:8000'
+            : 'https://astroknotsheep-meridian-api.hf.space'; // adjust to your actual API
+
+        function authHeaders() {
+            const token = localStorage.getItem('sb_token');
+            return token
+                ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+                : { 'Content-Type': 'application/json' };
+        }
+
+        async function requireAuth() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'auth.html';
+                return null;
+            }
+            return session;
+        }
+
+        async function loadSessions() {
+            const container = document.getElementById('history-container');
+            try {
+                const res = await fetch(`${API_BASE}/profile/history`, { headers: authHeaders() });
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        // Token expired – redirect to login
+                        localStorage.removeItem('sb_token');
+                        window.location.href = 'auth.html';
+                        return;
+                    }
+                    throw new Error('Failed to fetch history');
+                }
+
+                const sessions = await res.json();
+                if (!sessions || sessions.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No sessions recorded yet.<br>Start a conversation in the Chat tab.</div>';
+                    return;
+                }
+
+                container.innerHTML = sessions.map(session => {
+                    const date = new Date(session.created_at);
+                    const formattedDate = date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    const mode = session.mode || 'therapy';
+                    const modality = session.modality || '—';
+                    const sessionId = session.id;
+                    return `
+                        <div class="session-row">
+                            <div class="session-date">${formattedDate}</div>
+                            <div class="session-mode">${mode}</div>
+                            <div class="session-modality">${modality}</div>
+                            <a href="index.html?session=${sessionId}" class="session-link sans-label">Resume</a>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="error-state">Unable to load sessions.<br>Please try again later.</div>';
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            localStorage.removeItem('sb_token');
+            window.location.href = 'auth.html';
+        });
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const session = await requireAuth();
+            if (session) {
+                loadSessions();
+            }
+        });
+    </script>
+</body>
+
+</html>

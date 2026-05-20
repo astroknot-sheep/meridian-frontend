@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meridian · Onboarding</title>
+    <meta name="description" content="Complete your Meridian profile and consent to begin." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        :root {
+            --bg: #F5F2EE;
+            --fg: #1A1714;
+            --muted: #A09080;
+            --dim: #6A605A;
+            --accent: #7A6A58;
+            --rule: rgba(26, 23, 20, 0.08);
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--fg);
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: -20%;
+            left: -10%;
+            width: 80vw;
+            height: 80vw;
+            background: radial-gradient(circle, rgba(122, 106, 88, 0.06) 0%, rgba(245, 242, 238, 0) 60%);
+            border-radius: 50%;
+            z-index: -1;
+            filter: blur(90px);
+            pointer-events: none;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .serif {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 400;
+        }
+
+        .sans-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: 600;
+        }
+
+        .onboarding-card {
+            width: 100%;
+            max-width: 560px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo a {
+            text-decoration: none;
+            color: var(--fg);
+            font-size: 1.8rem;
+            letter-spacing: -0.02em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .logo-dot {
+            width: 5px;
+            height: 5px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+        }
+
+        h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(26, 23, 20, 0.08);
+            border-radius: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--fg);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 12px rgba(26, 23, 20, 0.04);
+        }
+
+        .consent-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            margin: 2rem 0;
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(26, 23, 20, 0.06);
+            border-radius: 16px;
+        }
+
+        .consent-box input[type="checkbox"] {
+            width: 1.1rem;
+            height: 1.1rem;
+            margin-top: 0.15rem;
+            accent-color: var(--accent);
+        }
+
+        .consent-text {
+            font-size: 0.8rem;
+            color: var(--dim);
+            line-height: 1.6;
+        }
+
+        .consent-text a {
+            color: var(--accent);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(122, 106, 88, 0.3);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: var(--fg);
+            color: var(--bg);
+            border: none;
+            border-radius: 100px;
+            padding: 1rem 1.5rem;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s var(--ease-spring);
+            box-shadow: 0 8px 24px rgba(26, 23, 20, 0.12);
+            margin-top: 0.5rem;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 32px -6px rgba(26, 23, 20, 0.25);
+            background: #000;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .error-msg {
+            color: #B07070;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 1rem;
+            min-height: 1.2em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="onboarding-card">
+        <div class="logo">
+            <a href="landing.html" class="serif">
+                Meridian<span class="logo-dot" aria-hidden="true"></span>
+            </a>
+        </div>
+        <h2 class="serif">Complete Your Profile</h2>
+
+        <form id="onboarding-form">
+            <div class="form-group">
+                <label class="sans-label" for="display-name">Display Name</label>
+                <input type="text" id="display-name" placeholder="How should we call you?" required
+                    autocomplete="name" />
+            </div>
+
+            <div class="form-group">
+                <label class="sans-label" for="preferred-modality">Preferred Therapy Modality</label>
+                <select id="preferred-modality">
+                    <option value="cbt">CBT</option>
+                    <option value="act">ACT</option>
+                    <option value="dbt">DBT</option>
+                    <option value="mindfulness">Mindfulness</option>
+                    <option value="sfbt">Solution-Focused</option>
+                </select>
+            </div>
+
+            <div class="consent-box">
+                <input type="checkbox" id="consent-check" required />
+                <div class="consent-text">
+                    I understand that Meridian provides automated support, not clinical therapy.
+                    I consent to anonymous, session‑only data processing.
+                    <a href="#" target="_blank">Read more</a>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="submit-btn">Enter Meridian</button>
+            <div class="error-msg" id="error-msg" aria-live="polite"></div>
+        </form>
+    </div>
+
+    <script type="module">
+        // ── Supabase client (same credentials as auth.html) ──
+        const SUPABASE_URL = 'https://your-project-id.supabase.co';   // Replace with your URL
+        const SUPABASE_ANON_KEY = 'your-anon-key';                   // Replace with your anon key
+
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ── Helper: get auth headers ──────────────────────
+        function authHeaders() {
+            const token = localStorage.getItem('sb_token');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        // ── Protect page: redirect if no session ──────────
+        (async function guard() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'auth.html';
+                return;
+            }
+            // Optionally pre‑fill name from user metadata (if available)
+            const name = session.user.user_metadata?.full_name || '';
+            document.getElementById('display-name').value = name;
+        })();
+
+        // ── Form submission ────────────────────────────────
+        document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-btn');
+            const errorEl = document.getElementById('error-msg');
+            errorEl.textContent = '';
+            btn.disabled = true;
+            btn.textContent = 'Saving…';
+
+            const displayName = document.getElementById('display-name').value.trim();
+            const modality = document.getElementById('preferred-modality').value;
+            const consent = document.getElementById('consent-check').checked;
+
+            if (!consent) {
+                errorEl.textContent = 'Please agree to the consent to continue.';
+                btn.disabled = false;
+                btn.textContent = 'Enter Meridian';
+                return;
+            }
+
+            try {
+                // Call backend to store consent + profile
+                const apiBase = window.location.hostname === 'localhost'
+                    ? 'http://localhost:8000'
+                    : 'https://astroknotsheep-meridian-api.hf.space'; // or your actual API base
+
+                const res = await fetch(`${apiBase}/profile/consent`, {
+                    method: 'POST',
+                    headers: authHeaders(),
+                    body: JSON.stringify({
+                        display_name: displayName,
+                        preferred_modality: modality,
+                        consent_given: true
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    throw new Error(errData.detail || 'Failed to save profile.');
+                }
+
+                // Optionally update Supabase user metadata (client‑side)
+                await supabase.auth.updateUser({
+                    data: { display_name: displayName, preferred_modality: modality }
+                });
+
+                // Redirect to main chat
+                window.location.href = 'index.html';
+            } catch (err) {
+                errorEl.textContent = err.message || 'Something went wrong. Please try again.';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Enter Meridian';
+            }
+        });
+    </script>
+</body>
+
+</html>
