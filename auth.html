@@ -268,7 +268,7 @@
 <body>
     <div class="auth-card" id="auth-card">
         <div class="auth-logo">
-            <a href="landing.html" class="serif">Meridian<span class="logo-dot"></span></a>
+            <a href="index.html" class="serif">Meridian<span class="logo-dot"></span></a>
         </div>
 
         <!-- Toggle tabs (hidden when email sent) -->
@@ -316,7 +316,7 @@
         </div>
 
         <div class="auth-error" id="auth-error" aria-live="polite"></div>
-        <a href="landing.html" class="back-link">← Back to Meridian</a>
+        <a href="index.html" class="back-link">← Back to Meridian</a>
     </div>
 
     <script type="module">
@@ -402,7 +402,7 @@
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
                 localStorage.setItem('sb_token', data.session.access_token);
-                window.location.href = 'index.html';
+                window.location.href = 'chat.html';
             } catch (err) {
                 errorEl.textContent = err.message || 'Login failed. Check your credentials.';
             } finally {
@@ -465,7 +465,7 @@
             // If already logged in, go straight to chat
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                window.location.href = 'index.html';
+                window.location.href = 'chat.html';
                 return;
             }
 

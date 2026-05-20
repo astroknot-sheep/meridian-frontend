@@ -4,13 +4,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meridian — Secure Session Portal</title>
+  <title>Meridian — Clinical-Grade Mental Health Support</title>
+  <meta name="description"
+    content="Meridian combines domain-specific screening with evidence-based therapy techniques. Deterministic safety layers, guaranteed privacy, and quantified clinical output." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
-    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
+
   <style>
-    /* ── Reset & Variables ──────────────────────────────── */
+    /* ── Reset & Variable Architecture ─────────────────── */
     *,
     *::before,
     *::after {
@@ -25,15 +28,13 @@
       --muted: #A09080;
       --dim: #6A605A;
       --accent: #7A6A58;
-      --rule: #DDD8D0;
-      --crisis: #B07070;
-      --card-bg: rgba(255, 255, 255, 0.4);
-      --glass-border: rgba(255, 255, 255, 0.6);
-      --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.05);
+      --rule: rgba(26, 23, 20, 0.08);
       --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+    }
 
-      /* Dynamic Ambient Glow Palette */
-      --glow-color: rgba(122, 106, 88, 0.08);
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -41,963 +42,701 @@
       color: var(--fg);
       font-family: 'IBM Plex Mono', monospace;
       font-weight: 300;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      position: relative;
+      overflow-x: hidden;
+      line-height: 1.7;
     }
 
-    body::before {
+    /* Fixed full screen background canvas shader */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Organic film grain texture overlay */
+    body::after {
       content: "";
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 9999;
     }
 
-    .app-bg-blur {
-      position: absolute;
-      top: -20%;
-      left: -10%;
-      width: 80vw;
-      height: 80vw;
-      background: radial-gradient(circle, var(--glow-color) 0%, rgba(245, 242, 238, 0) 60%);
-      border-radius: 50%;
-      z-index: -1;
-      filter: blur(90px);
-      pointer-events: none;
-      transition: background 1.2s var(--ease-out);
-    }
-
+    /* Typographic Rules */
+    h1,
+    h2,
+    h3,
+    h4,
     .serif {
       font-family: 'Cormorant Garamond', serif;
-      font-weight: 400;
+      font-weight: 300;
     }
 
     .sans-label {
       font-family: 'Syne', sans-serif;
-      font-size: 0.6rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.25em;
       font-weight: 600;
     }
 
-    /* ── Header ─────────────────────────────────────────── */
-    header {
+    /* ── Navigation Workspace ───────────────────────────── */
+    .nav-container {
       position: fixed;
       top: 1.5rem;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+      padding: 0 2rem;
+      pointer-events: none;
+    }
+
+    .nav {
+      pointer-events: auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      width: calc(100% - 3rem);
-      max-width: 1200px;
-      padding: 0.8rem 2rem;
-      background: rgba(245, 242, 238, 0.6);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      width: 100%;
+      max-width: 1300px;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      background: rgba(245, 242, 238, 0.4);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
       border-radius: 100px;
-      box-shadow: 0 12px 32px -12px rgba(26, 23, 20, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-      z-index: 100;
+      box-shadow: 0 12px 40px -12px rgba(26, 23, 20, 0.05);
     }
 
-    .logo {
-      font-size: 1.4rem;
-      color: var(--fg);
-      letter-spacing: 0.02em;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .nav-logo {
+      font-size: 1.6rem;
+      letter-spacing: -0.01em;
       text-decoration: none;
+      color: var(--fg);
     }
 
-    .logo-dot {
-      width: 5px;
-      height: 5px;
-      background: var(--accent);
-      border-radius: 50%;
-      animation: pulse 4s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
-
-      50% {
-        opacity: 0.3;
-        transform: scale(0.8);
-      }
-    }
-
-    nav {
+    .nav-links {
       display: flex;
+      gap: 3.5rem;
       align-items: center;
+    }
+
+    .nav-links a.link {
+      color: var(--dim);
+      text-decoration: none;
+      transition: color 0.3s var(--ease-out);
+    }
+
+    .nav-links a.link:hover {
+      color: var(--fg);
+    }
+
+    .btn-solid {
+      background: var(--fg);
+      color: var(--bg);
+      padding: 0.9rem 2.2rem;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: all 0.4s var(--ease-spring);
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 8px 24px rgba(26, 23, 20, 0.12);
+    }
+
+    .btn-solid:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 32px -6px rgba(26, 23, 20, 0.25);
+      background: #000;
+    }
+
+    /* ── Hero Section ───────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 12rem 2rem 6rem;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .hero-eyebrow {
+      color: var(--accent);
+      margin-bottom: 2rem;
+      display: block;
+    }
+
+    .hero h1 {
+      font-size: clamp(3.5rem, 8vw, 7.5rem);
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+      max-width: 1100px;
+      margin-bottom: 3rem;
+      color: var(--fg);
+    }
+
+    .hero h1 i {
+      font-style: italic;
+      font-weight: 400;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: clamp(1.1rem, 1.8vw, 1.3rem);
+      color: var(--dim);
+      max-width: 700px;
+      margin-bottom: 4rem;
+      line-height: 1.8;
+    }
+
+    /* ── Trust Grid Row ─────────────────────────────────── */
+    .trust-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 4rem;
+      padding: 5rem 2rem;
+      max-width: 1300px;
+      margin: 0 auto;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .trust-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .trust-item strong {
+      font-size: 0.75rem;
+    }
+
+    .trust-item span {
+      font-size: 0.95rem;
+      color: var(--dim);
+    }
+
+    /* ── Layout & Card Enhancements ──────────────────────── */
+    section {
+      padding: 12rem 2rem;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      margin-bottom: 6rem;
+      max-width: 850px;
+    }
+
+    .section-title {
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      margin: 1.5rem 0 2rem;
+    }
+
+    .section-desc {
+      font-size: 1.1rem;
+      color: var(--dim);
+      max-width: 600px;
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
       gap: 2.5rem;
     }
 
-    .ctrl-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
+    .card {
+      padding: 4rem 3.5rem;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 24px;
+      transition: all 0.6s var(--ease-out);
+      box-shadow: 0 8px 32px -16px rgba(26, 23, 20, 0.03);
     }
 
-    .ctrl-label {
+    .card:hover {
+      background: rgba(255, 255, 255, 0.85);
+      transform: translateY(-6px);
+      border-color: rgba(255, 255, 255, 1);
+      box-shadow: 0 40px 80px -24px rgba(26, 23, 20, 0.12);
+    }
+
+    .card-sym {
+      font-size: 3rem;
       color: var(--accent);
-      font-size: 0.5rem;
-      letter-spacing: 0.15em;
+      display: block;
+      margin-bottom: 2rem;
     }
 
-    select {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.8rem;
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid rgba(106, 96, 90, 0.15);
-      color: var(--fg);
-      padding: 0.2rem 1.4rem 0.2rem 0;
-      outline: none;
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%236A605A' opacity='0.7'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right center;
-      transition: all 0.2s ease;
-    }
-
-    select:focus,
-    select:hover {
-      border-bottom-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .hdr-note {
-      font-size: 0.6rem;
-      color: var(--muted);
-      text-align: right;
-      line-height: 1.5;
-      text-transform: none;
-      letter-spacing: 0.02em;
-      font-weight: 500;
-    }
-
-    /* ── Messages ───────────────────────────────────────── */
-    #messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8rem 5% 4rem;
-      display: flex;
-      flex-direction: column;
-      max-width: 840px;
-      width: 100%;
-      margin: 0 auto;
-      scroll-behavior: smooth;
-    }
-
-    #messages::-webkit-scrollbar {
-      width: 0;
-      display: none;
-    }
-
-    .msg-wrap {
-      display: flex;
-      flex-direction: column;
-      padding: 1.25rem 0;
-      opacity: 0;
-      animation: msgAppear 0.6s var(--ease-out) forwards;
-      transform-origin: bottom center;
-    }
-
-    @keyframes msgAppear {
-      from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.98);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .msg-meta,
-    .typing-meta {
+    .card h3 {
       font-family: 'Syne', sans-serif;
-      font-size: 0.55rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--muted);
-      font-weight: 600;
-      margin-bottom: 0.6rem;
-    }
-
-    .msg-wrap.user .msg-meta {
-      text-align: right;
-    }
-
-    .msg {
-      font-size: 0.95rem;
-      line-height: 1.75;
-      font-weight: 300;
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
       letter-spacing: -0.01em;
     }
 
-    .msg.assistant {
-      color: var(--fg);
-      padding: 1.5rem 2rem;
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      border-radius: 4px 24px 24px 24px;
-      box-shadow: 0 4px 24px -8px rgba(26, 23, 20, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1);
-      max-width: 85%;
-      align-self: flex-start;
-      white-space: pre-wrap;
-    }
-
-    .msg.user {
+    .card p {
+      font-size: 1rem;
       color: var(--dim);
-      align-self: flex-end;
-      max-width: 70%;
-      padding: 1rem 1.5rem;
-      background: rgba(26, 23, 20, 0.02);
-      border-radius: 24px 4px 24px 24px;
-      border: 1px solid rgba(26, 23, 20, 0.04);
+      line-height: 1.75;
     }
 
-    /* ── Typing Kinetic State ───────────────────────────── */
-    .typing-wrap {
-      padding: 1.5rem 0;
-      opacity: 0;
-      animation: msgAppear 0.4s ease forwards;
+    /* ── Split Protocol Section ─────────────────────────── */
+    .protocol-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8rem;
+      align-items: start;
     }
 
-    .typing-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 1.75rem;
-      background: rgba(255, 255, 255, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      border-radius: 4px 24px 24px 24px;
-    }
-
-    .typing-breather {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.75rem;
-      letter-spacing: 0.15em;
-      color: var(--muted);
-      text-transform: lowercase;
-      animation: kineticBreathe 3.5s ease-in-out infinite;
-    }
-
-    @keyframes kineticBreathe {
-
-      0%,
-      100% {
-        letter-spacing: 0.1em;
-        opacity: 0.4;
-      }
-
-      50% {
-        letter-spacing: 0.25em;
-        opacity: 0.9;
-      }
-    }
-
-    /* ── Input Zone ─────────────────────────────────────── */
-    .input-zone {
-      flex-shrink: 0;
-      padding: 0 5% 2rem;
-      max-width: 900px;
-      width: 100%;
-      margin: 0 auto;
-      background: linear-gradient(to top, var(--bg) 70%, transparent);
-      z-index: 50;
-    }
-
-    .input-bar-glass {
-      display: flex;
-      align-items: flex-end;
-      gap: 1rem;
-      background: rgba(255, 255, 255, 0.5);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      border-radius: 32px;
-      padding: 1rem 1.5rem;
-      box-shadow: 0 16px 40px -12px rgba(26, 23, 20, 0.06), inset 0 1px 1px rgba(255, 255, 255, 1);
-      transition: all 0.4s var(--ease-out);
-    }
-
-    .input-bar-glass:focus-within {
-      background: rgba(255, 255, 255, 0.8);
-      border-color: #FFF;
-      box-shadow: 0 20px 50px -10px rgba(26, 23, 20, 0.1), inset 0 1px 1px rgba(255, 255, 255, 1);
-      transform: translateY(-2px);
-    }
-
-    .input-who {
-      color: var(--accent);
-      padding-bottom: 0.5rem;
-      flex-shrink: 0;
-    }
-
-    #inp {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--fg);
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.95rem;
-      outline: none;
-      resize: none;
-      max-height: 150px;
-      line-height: 1.6;
-      padding: 0.4rem 0;
-    }
-
-    #inp::placeholder {
-      color: var(--muted);
-      opacity: 0.6;
-    }
-
-    #send-btn {
-      background: var(--fg);
-      color: var(--bg);
-      border: none;
-      border-radius: 100px;
-      cursor: pointer;
-      padding: 0.75rem 1.5rem;
-      transition: all 0.3s var(--ease-spring);
-      margin-bottom: 0.1rem;
-      box-shadow: 0 4px 14px rgba(26, 23, 20, 0.15);
-    }
-
-    #send-btn:hover:not(:disabled) {
-      transform: translateY(-2px) scale(1.03);
-      box-shadow: 0 8px 20px rgba(26, 23, 20, 0.2);
-    }
-
-    #send-btn:disabled {
-      background: rgba(26, 23, 20, 0.08);
-      color: transparent;
-      box-shadow: none;
-      cursor: default;
-    }
-
-    .input-footer {
-      margin-top: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1.5rem;
-    }
-
-    .input-hint {
-      font-size: 0.65rem;
-      color: var(--muted);
-    }
-
-    .foot-disclaimer {
-      color: var(--muted);
-      letter-spacing: 0.05em;
-      text-transform: none;
-      font-size: 0.65rem;
-    }
-
-    .foot-disclaimer a {
-      text-decoration: none;
-      border-bottom: 1px solid rgba(160, 144, 128, 0.4);
-      color: inherit;
-      transition: border 0.3s;
-    }
-
-    .foot-disclaimer a:hover {
-      border-color: var(--fg);
-      color: var(--fg);
-    }
-
-    /* ── Special Components (Tables, Crisis, Accumulator) ── */
-    .crisis-wrap {
-      margin: 2rem 0;
-      padding: 2.5rem;
-      background: rgba(176, 112, 112, 0.05);
-      border: 1px solid rgba(176, 112, 112, 0.15);
-      border-radius: 24px;
-      animation: msgAppear 0.5s var(--ease-out) forwards;
-    }
-
-    .crisis-label {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.6rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--crisis);
-      margin-bottom: 1rem;
-      font-weight: 700;
-    }
-
-    .crisis-body {
-      font-size: 0.9rem;
-      line-height: 1.8;
-      color: var(--fg);
-    }
-
-    .crisis-body strong {
-      font-weight: 500;
-    }
-
-    .crisis-body a {
-      color: var(--crisis);
-      text-decoration: none;
-      border-bottom: 1px solid rgba(176, 112, 112, 0.3);
-    }
-
-    .accumulation-bubble {
-      border: 1px dashed rgba(122, 106, 88, 0.4);
-      background: rgba(255, 254, 252, 0.4);
-      box-shadow: none;
-      border-radius: 16px;
-    }
-
-    .accumulation-indicator {
-      margin-top: 1.2rem;
+    .protocol-list {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
-      border-top: 1px solid rgba(26, 23, 20, 0.05);
-      padding-top: 0.8rem;
+      gap: 5rem;
     }
 
-    .accumulation-track {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
+    .protocol-item {
+      position: relative;
+      padding-left: 4.5rem;
+    }
+
+    .protocol-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1px;
+      height: 100%;
+      background: rgba(26, 23, 20, 0.12);
+    }
+
+    .protocol-num {
+      position: absolute;
+      left: -0.5rem;
+      top: -0.2rem;
+      background: transparent;
       color: var(--accent);
-      letter-spacing: 0.05em;
-    }
-
-    .accumulation-hint {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.55rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      color: var(--muted);
       font-weight: 600;
     }
 
-    .screen-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: 0.85rem;
-      margin: 2rem 0;
-      border: 1px solid rgba(26, 23, 20, 0.06);
-      border-radius: 12px;
+    .protocol-text h3 {
+      font-size: 2.4rem;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.02em;
     }
 
-    .screen-table th {
-      font-family: 'Syne', sans-serif;
-      font-size: 0.55rem;
-      text-transform: uppercase;
-      letter-spacing: 0.2em;
-      color: var(--muted);
-      padding: 1rem;
-      text-align: left;
-      background: rgba(26, 23, 20, 0.02);
-      border-bottom: 1px solid rgba(26, 23, 20, 0.06);
-    }
-
-    .screen-table td {
-      padding: 1rem;
-      border-bottom: 1px solid rgba(26, 23, 20, 0.04);
-    }
-
-    .screen-report-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.6rem;
-      color: var(--accent);
-      margin-bottom: 1rem;
-      margin-top: 1rem;
-    }
-
-    .screen-summary {
-      font-size: 0.95rem;
-      color: var(--fg);
-      margin-bottom: 0.75rem;
-    }
-
-    .screen-report-container .screen-summary:first-of-type::first-letter {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 3.2rem;
-      float: left;
-      line-height: 0.85;
-      padding-right: 0.55rem;
-      margin-top: 0.15rem;
-      color: var(--accent);
-      font-weight: 400;
-    }
-
-    .screen-disclaimer {
-      font-size: 0.75rem;
+    .protocol-text p {
+      font-size: 1rem;
       color: var(--dim);
-      font-style: italic;
-      margin-top: 1.5rem;
-      padding-top: 1rem;
-      border-top: 1px dashed var(--rule);
     }
 
-    .risk-line {
-      margin-top: 1rem;
-      font-family: 'Syne', sans-serif;
-      font-size: 0.6rem;
-      text-transform: uppercase;
-      letter-spacing: 0.15em;
-      font-weight: 700;
-      padding: 0.35rem 0.75rem;
-      border-radius: 4px;
-      display: inline-block;
+    /* ── Dual Pathways ──────────────────────────────────── */
+    .mode-card h3 {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
     }
 
-    .risk-low {
-      background: rgba(112, 176, 120, 0.1);
-      color: #4A7A52;
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 3rem;
     }
 
-    .risk-moderate {
-      background: rgba(176, 150, 112, 0.1);
-      color: #8A7048;
+    .tag {
+      font-size: 0.75rem;
+      color: var(--fg);
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(26, 23, 20, 0.08);
+      padding: 0.6rem 1.4rem;
+      border-radius: 100px;
     }
 
-    .risk-elevated {
-      background: rgba(176, 112, 112, 0.1);
-      color: var(--crisis);
+    /* ── Interactive Call To Action ─────────────────────── */
+    .cta {
+      margin: 6rem auto 10rem;
+      padding: 10rem 4rem;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 40px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    /* ── Responsive ─────────────────────────────────────── */
-    @media (max-width: 900px) {
-      header {
-        flex-wrap: wrap;
-        width: calc(100% - 2rem);
-        padding: 1rem 1.5rem;
-        border-radius: 24px;
-        gap: 1rem;
+    .cta h2 {
+      font-size: clamp(3rem, 7vw, 6rem);
+      margin-bottom: 2rem;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+
+    .cta p {
+      color: var(--dim);
+      margin-bottom: 4rem;
+      font-size: 1.15rem;
+      max-width: 550px;
+    }
+
+    footer {
+      padding: 5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-top: 1px solid var(--rule);
+      max-width: 1300px;
+      margin: 0 auto;
+      gap: 4rem;
+    }
+
+    .foot-note {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: right;
+      max-width: 500px;
+    }
+
+    /* ── Responsive Refinements ─────────────────────────── */
+    @media (max-width: 1024px) {
+      .protocol-container {
+        grid-template-columns: 1fr;
+        gap: 6rem;
       }
 
-      nav {
-        width: 100%;
-        justify-content: space-between;
-        gap: 1rem;
-      }
-
-      .hdr-note {
+      .nav-links a.link {
         display: none;
-      }
-
-      #messages {
-        padding-top: 10rem;
       }
     }
 
     @media (max-width: 600px) {
-      .input-footer {
+      section {
+        padding: 6rem 1rem;
+      }
+
+      .card {
+        padding: 3rem 2rem;
+      }
+
+      footer {
         flex-direction: column;
-        gap: 0.8rem;
+        align-items: center;
         text-align: center;
       }
 
-      .input-bar-glass {
-        padding: 0.8rem 1rem;
-        border-radius: 24px;
+      .foot-note {
+        text-align: center;
       }
 
-      .msg.assistant,
-      .msg.user {
-        max-width: 95%;
+      .cta {
+        padding: 6rem 1.5rem;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="app-bg-blur" id="ambient-glow"></div>
 
-  <header>
-    <a href="landing.html" class="logo serif">Meridian<span class="logo-dot" aria-hidden="true"></span></a>
-    <nav>
-      <div class="ctrl-group">
-        <span class="ctrl-label sans-label">Mode</span>
-        <select id="mode-sel" onchange="onModeOrModalityChange()">
-          <option value="therapy">Therapy</option>
-          <option value="diagnosis">Screening</option>
-        </select>
+  <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+  <header class="nav-container">
+    <nav class="nav" aria-label="Main Navigation">
+      <a href="chat.html" class="nav-logo serif">Meridian</a>
+      <div class="nav-links">
+        <a href="#why" class="link sans-label">The Gap</a>
+        <a href="#clinical" class="link sans-label">Protocol</a>
+        <a href="#modes" class="link sans-label">Interventions</a>
+        <a href="chat.html" class="btn-solid sans-label">Enter Portal</a>
       </div>
-      <div class="ctrl-group" id="modality-group">
-        <span class="ctrl-label sans-label">Modality</span>
-        <select id="modal-sel" onchange="onModeOrModalityChange()">
-          <option value="cbt">CBT</option>
-          <option value="act">ACT</option>
-          <option value="dbt">DBT</option>
-          <option value="mindfulness">Mindfulness</option>
-          <option value="sfbt">Solution-Focused</option>
-        </select>
-      </div>
-      <p class="hdr-note sans-label" id="user-info">Loading...</p>
-      <a href="#" id="logout-btn" class="sans-label"
-        style="text-decoration:none; color:var(--muted); font-size:0.6rem;">Logout</a>
     </nav>
   </header>
 
-  <div id="messages">
-    <div class="msg-wrap">
-      <div class="msg-meta">Meridian</div>
-      <div class="msg assistant">Hello. I'm here to support you. How are you feeling today?</div>
-    </div>
-  </div>
+  <main id="main-content">
+    <section class="hero" aria-labelledby="hero-title">
+      <span class="hero-eyebrow sans-label">Clinical-Grade Assessment Framework</span>
+      <h1 id="hero-title">Support that is <i>always there.</i><br />Screening that is <i>honest.</i></h1>
+      <p class="hero-sub">
+        Bridging structural gaps in critical psychological support via private, verified digital delivery pipelines.
+        Continuous calibration, absolute data erasure.
+      </p>
+      <div class="hero-actions">
+        <a href="chat.html" class="btn-solid sans-label">Begin Session</a>
+      </div>
+    </section>
 
-  <div class="input-zone">
-    <div class="input-bar-glass">
-      <span class="input-who sans-label">You</span>
-      <textarea id="inp" rows="1" placeholder="Type your thoughts here..." oninput="autoResize(this)"></textarea>
-      <button id="send-btn" class="sans-label" onclick="sendMsg()">Send</button>
-    </div>
-    <div class="input-footer">
-      <span class="input-hint">↵ to send &nbsp;·&nbsp; ⇧↵ for newline</span>
-      <span class="foot-disclaimer sans-label">
-        Crisis (US) 988 &nbsp;·&nbsp; iCall (IN) 9152987821 &nbsp;·&nbsp;
-        <a href="https://www.findahelpline.com" target="_blank">findahelpline.com</a>
-      </span>
-    </div>
-  </div>
+    <section class="trust-row" aria-label="Key Commitments" role="list">
+      <div class="trust-item" role="listitem">
+        <strong class="sans-label">Immediate Entry</strong>
+        <span>Zero latency. Bypassing waitlists instantly.</span>
+      </div>
+      <div class="trust-item" role="listitem">
+        <strong class="sans-label">High-Performance Stability</strong>
+        <span>Operational and decoupled 24/7/365.</span>
+      </div>
+      <div class="trust-item" role="listitem">
+        <strong class="sans-label">Validated Architecture</strong>
+        <span>5 distinct therapeutic frameworks standard.</span>
+      </div>
+    </section>
 
+    <section id="why" aria-labelledby="why-title">
+      <header class="section-header">
+        <span class="sans-label" style="color: var(--accent);">Systemic Bottlenecks</span>
+        <h2 id="why-title" class="section-title">Traditional models scale linearly. Crisis scales exponentially.</h2>
+        <p class="section-desc">
+          When operational load breaks clinical systems, patients face high-friction wait intervals. Meridian addresses
+          the gap inside localized micro-sessions.
+        </p>
+      </header>
+
+      <div class="grid-cards">
+        <article class="card">
+          <span class="card-sym serif" aria-hidden="true">§</span>
+          <h3>Rationed Care Networks</h3>
+          <p>Traditional intakes carry prolonged latency profiles harmful to acute containment. Meridian offers
+            real-time conversational orientation on demand.</p>
+        </article>
+        <article class="card">
+          <span class="card-sym serif" aria-hidden="true">◊</span>
+          <h3>Prohibitive Capital</h3>
+          <p>Sustained care is an economic luxury. Meridian lowers baseline distribution friction to zero, normalizing
+            immediate access for underrepresented groups.</p>
+        </article>
+        <article class="card">
+          <span class="card-sym serif" aria-hidden="true">&mdash;</span>
+          <h3>Subjective Distortion</h3>
+          <p>Intake documentation struggles with self-reporting bias. Our real-time linguistics engine generates
+            neutral, stable behavioral markers clean of narrative distortion.</p>
+        </article>
+        <article class="card">
+          <span class="card-sym serif" aria-hidden="true">&times;</span>
+          <h3>Ephemeral Contexts</h3>
+          <p>Digital medical footprints are traceably permanent. Meridian protects data sovereignty by restricting
+            structural variables purely to localized session memory layers.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="clinical" aria-labelledby="clinical-title">
+      <div class="protocol-container">
+        <header class="section-header" style="margin-bottom: 0;">
+          <span class="sans-label" style="color: var(--accent);">Architectural Invariants</span>
+          <h2 id="clinical-title" class="section-title">Safety bounds enforced strictly via software state logic.</h2>
+          <p class="section-desc">
+            Operating rules are deterministic. The core runtime forces isolation across processing pathways, making
+            leakage or manipulation impossible.
+          </p>
+        </header>
+
+        <div class="protocol-list" role="list">
+          <article class="protocol-item" role="listitem">
+            <span class="protocol-num sans-label" aria-hidden="true">01</span>
+            <div class="protocol-text">
+              <h3 class="serif">Isolated Lexical Stream</h3>
+              <p>Localized parsing strips identifying structures from user queries before downstream analysis. The
+                engine reads structure, not identity.</p>
+            </div>
+          </article>
+          <article class="protocol-item" role="listitem">
+            <span class="protocol-num sans-label" aria-hidden="true">02</span>
+            <div class="protocol-text">
+              <h3 class="serif">Deterministic Escalation</h3>
+              <p>Crisis detection routines are hardcoded into the pipeline. Flagged syntax forces an immediate layout
+                break, outputting high-priority rescue routing vectors.</p>
+            </div>
+          </article>
+          <article class="protocol-item" role="listitem">
+            <span class="protocol-num sans-label" aria-hidden="true">03</span>
+            <div class="protocol-text">
+              <h3 class="serif">No Persisted Logs</h3>
+              <p>Session vectors run directly in memory. Explicit app instances strip, discard, and drop keys
+                automatically when a tab unloads or sessions timeout.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="modes" aria-labelledby="modes-title">
+      <header class="section-header">
+        <span class="sans-label" style="color: var(--accent);">Operational Profiles</span>
+        <h2 id="modes-title" class="section-title">Therapeutics and diagnostics, decoupled.</h2>
+      </header>
+
+      <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));">
+        <article class="card mode-card">
+          <span class="card-sym serif" aria-hidden="true">&#8767;</span>
+          <h3 class="serif">Therapeutic Routing</h3>
+          <p>Run dynamic conversations targeted around validated paradigms. The system structures interaction patterns
+            smoothly across chosen clinical configurations.</p>
+          <div class="tags" role="list" aria-label="Therapeutic Frameworks">
+            <span class="tag sans-label" role="listitem">CBT Engine</span>
+            <span class="tag sans-label" role="listitem">DBT Skills</span>
+            <span class="tag sans-label" role="listitem">Mindfulness</span>
+            <span class="tag sans-label" role="listitem">ACT Layer</span>
+          </div>
+        </article>
+
+        <article class="card mode-card">
+          <span class="card-sym serif" aria-hidden="true">&#9670;</span>
+          <h3 class="serif">Diagnostic Screening</h3>
+          <p>Communicate unconstrained. The model monitors patterns sequentially to draw an exportable linguistic
+            profile with calibrated probability indicators.</p>
+          <div class="tags" role="list" aria-label="Diagnostic Tools">
+            <span class="tag sans-label" role="listitem">Sequential Matrix</span>
+            <span class="tag sans-label" role="listitem">Calibrated Indicators</span>
+            <span class="tag sans-label" role="listitem">JSON Export</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta" aria-labelledby="cta-heading">
+      <h2 id="cta-heading" class="serif">Initiate a session<br />when you are ready.</h2>
+      <p>No user account creation required. Zero telemetry logs. Entirely executed inside your browser window.</p>
+      <a href="chat.html" class="btn-solid sans-label">Open Secure Portal</a>
+    </section>
+  </main>
+
+  <footer>
+    <span class="nav-logo serif">Meridian</span>
+    <p class="foot-note">
+      Meridian provides automated informational support frameworks and does not issue psychiatric diagnoses. For
+      emergencies, instantly query standard medical response systems or access localized crisis hotlines.
+    </p>
+  </footer>
+
+  <script type="importmap">
+    { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
+  </script>
   <script type="module">
-    // ── Supabase Client & Auth ────────────────────────────
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-    const SUPABASE_URL = '__SUPABASE_URL__';
-    const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    import * as THREE from 'three';
 
-    const API_BASE = window.location.hostname === "localhost"
-      ? "http://localhost:8000"
-      : "https://astroknotsheep-meridian-api.hf.space";
+    const canvas = document.getElementById('bg-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
-    let session = null;
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const geometry = new THREE.PlaneGeometry(2, 2);
 
-    // Protect page: redirect if not logged in
-    async function requireAuth() {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        window.location.href = 'auth.html';
-        return null;
+    const vertexShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
       }
-      session = data.session;
-      localStorage.setItem('sb_token', session.access_token);
-      // Show user info
-      const email = session.user.email;
-      document.getElementById('user-info').textContent = email;
-      return session;
-    }
+    `;
 
-    // Auth headers for API calls
-    function authHeaders() {
-      const token = localStorage.getItem('sb_token');
-      return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-    }
+    const fragmentShader = `
+      precision highp float;
+      varying vec2 vUv;
+      uniform float uTime;
+      uniform vec2 uResolution;
 
-    // Logout
-    document.getElementById('logout-btn').addEventListener('click', async (e) => {
-      e.preventDefault();
-      await supabase.auth.signOut();
-      localStorage.removeItem('sb_token');
-      window.location.href = 'auth.html';
-    });
+      vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+      vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+      vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
 
-    // ── Existing app logic (adapted for JWT) ──────────────
-    const SESSION_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
-    const history = [];
-    let totalCharsSubmitted = 0;
-    const ACCUM_TARGET = 800;
+      float snoise(vec2 v) {
+        const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+        vec2 i  = floor(v + dot(v, C.yy) );
+        vec2 x0 = v -   i + dot(i, C.xx);
+        vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+        vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
+        i = mod289(i);
+        vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+        m = m*m; m = m*m;
+        vec3 x = 2.0 * fract(p * C.www) - 1.0; vec3 h = abs(x) - 0.5; vec3 ox = floor(x + 0.5); vec3 a0 = x - ox;
+        m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+        vec3 g; g.x  = a0.x  * x0.x  + h.x  * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
+      }
 
-    const GLOW_THEMES = {
-      therapy_cbt: "rgba(122, 106, 88, 0.08)",
-      therapy_act: "rgba(176, 112, 90, 0.08)",
-      therapy_dbt: "rgba(110, 122, 135, 0.08)",
-      therapy_mindfulness: "rgba(112, 140, 120, 0.09)",
-      therapy_sfbt: "rgba(170, 145, 105, 0.08)",
-      diagnosis: "rgba(130, 125, 120, 0.08)"
+      float fbm(vec2 p) {
+        float f = 0.0; float amp = 0.5; float freq = 1.0;
+        for(int i = 0; i < 4; i++) {
+          f += amp * snoise(p * freq); freq *= 2.0; amp *= 0.5;
+        }
+        return f;
+      }
+
+      void main() {
+        vec2 uv = vUv;
+         
+        float t = uTime * 0.1404;
+         
+        vec2 q = vec2(fbm(uv * 2.65 + vec2(t * 0.18, t * -0.1)), fbm(uv * 2.65 + vec2(t * 0.22, t * 0.13)));
+        vec2 r = vec2(fbm(uv * 3.1 + q + vec2(t * 0.45, t * 0.18)), fbm(uv * 3.1 + q - vec2(t * 0.25, t * 0.35)));
+        float flow = fbm(uv * 1.95 + r);
+
+        float gridX = abs(sin((uv.x + q.x * 0.28) * 16.0));
+        float gridY = abs(sin((uv.y + q.y * 0.28) * 16.0));
+        float grid = smoothstep(0.88, 1.0, gridX) + smoothstep(0.88, 1.0, gridY);
+        grid = grid * 0.12 * (1.0 - abs(flow) * 0.6);
+
+        vec3 bgColor = vec3(0.961, 0.949, 0.933);
+        vec3 accentColor = vec3(0.478, 0.416, 0.345);
+        vec3 midColor = vec3(0.88, 0.86, 0.83);
+
+        float grad = uv.y * 0.65 + flow * 0.35;
+        vec3 base = mix(bgColor, midColor, grad);
+         
+        float mixIntensity = 0.24;
+        base = mix(base, accentColor, flow * mixIntensity + 0.04);
+        base += grid * accentColor * 0.4;
+
+        float vignette = 1.0 - length(vUv - 0.5) * 1.1;
+        vignette = smoothstep(0.0, 1.0, vignette);
+        base = mix(bgColor, base, vignette);
+
+        gl_FragColor = vec4(base, 1.0);
+      }
+    `;
+
+    const uniforms = {
+      uTime: { value: 0 },
+      uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
     };
 
-    function autoResize(el) {
-      el.style.height = "auto";
-      el.style.height = Math.min(el.scrollHeight, 150) + "px";
-    }
-
-    document.getElementById("inp").addEventListener("keydown", e => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMsg();
-      }
+    const material = new THREE.ShaderMaterial({
+      vertexShader, fragmentShader, uniforms, transparent: false, depthWrite: false
     });
 
-    function onModeOrModalityChange() {
-      const mode = document.getElementById("mode-sel").value;
-      const modality = document.getElementById("modal-sel").value;
-      document.getElementById("modality-group").style.display = mode === "therapy" ? "flex" : "none";
-      if (mode !== "diagnosis") totalCharsSubmitted = 0;
-      const themeKey = mode === "therapy" ? `therapy_${modality}` : "diagnosis";
-      const targetGlow = GLOW_THEMES[themeKey] || GLOW_THEMES.therapy_cbt;
-      document.documentElement.style.setProperty('--glow-color', targetGlow);
-    }
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
 
-    async function sendMsg() {
-      const inp = document.getElementById("inp");
-      const text = inp.value.trim();
-      if (!text) return;
-
-      const currentMode = document.getElementById("mode-sel").value;
-      if (currentMode === "diagnosis") totalCharsSubmitted += text.length;
-
-      inp.value = "";
-      inp.style.height = "auto";
-      document.getElementById("send-btn").disabled = true;
-
-      appendMsg("user", text);
-      history.push({ role: "user", content: text });
-      const typingEl = appendTyping();
-
-      try {
-        const res = await fetch(`${API_BASE}/chat`, {
-          method: "POST",
-          headers: authHeaders(),
-          body: JSON.stringify({
-            mode: currentMode,
-            modality: document.getElementById("modal-sel").value,
-            messages: history,
-            session_id: SESSION_ID
-          })
-        });
-
-        typingEl.remove();
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            // Token expired/invalid – redirect to login
-            localStorage.removeItem('sb_token');
-            window.location.href = 'auth.html';
-            return;
-          }
-          appendMsg("assistant", `Server error (${res.status}). Please try again.`);
-        } else {
-          const data = await res.json();
-          if (data.crisis_detected) {
-            appendCrisis();
-          } else {
-            const reply = data.messages[0].content;
-            const accumMatch = reply.match(/^__ACCUMULATING__(\d+)\/(\d+)\n([\s\S]*)$/);
-            if (accumMatch) {
-              const charsDone = parseInt(accumMatch[1], 10);
-              const charsTarget = parseInt(accumMatch[2], 10);
-              const bodyText = accumMatch[3].trim();
-              totalCharsSubmitted = charsDone;
-              appendAccumulationBubble(bodyText, charsDone, charsTarget);
-              history.push({ role: "assistant", content: reply });
-            } else {
-              appendMsg("assistant", reply);
-              history.push({ role: "assistant", content: reply });
-              if (data.risk_scores && data.risk_scores.depression !== undefined) {
-                appendRiskBadge(data.risk_scores.depression);
-                totalCharsSubmitted = 0;
-              }
-            }
-          }
-        }
-      } catch (e) {
-        typingEl.remove();
-        appendMsg("assistant", "Connection error — is the server running?\nnuvicorn backend.main:app --reload --host 0.0.0.0 --port 8000");
-      }
-      document.getElementById("send-btn").disabled = false;
-      document.getElementById("inp").focus();
-    }
-
-    // ... (rest of helper functions: renderMarkdown, appendMsg, appendTyping, etc. unchanged from original)
-    // For brevity, I'll include only essential ones; the full functions are identical to your existing code.
-
-    function renderMarkdown(raw) {
-      const parts = raw.split(/\n---\n/);
-      const body = parts[0];
-      const disclaimer = parts[1] || "";
-      const lines = body.split("\n");
-      let html = '<div class="screen-report-container">', i = 0;
-      while (i < lines.length) {
-        const line = lines[i];
-        if (line.trim().startsWith("|")) {
-          const tl = [];
-          while (i < lines.length && lines[i].trim().startsWith("|")) {
-            tl.push(lines[i]);
-            i++;
-          }
-          const headers = tl[0].split("|").map(c => c.trim()).filter(Boolean);
-          html += '<table class="screen-table"><thead><tr>' + headers.map(h => `<th>${inlineFormat(h)}</th>`).join("") + "</tr></thead><tbody>";
-          for (let r = 2; r < tl.length; r++) {
-            const cells = tl[r].split("|").map(c => c.trim()).filter(Boolean);
-            if (cells.length) html += "<tr>" + cells.map(c => `<td>${inlineFormat(c)}</td>`).join("") + "</tr>";
-          }
-          html += "</tbody></table>";
-          continue;
-        }
-        if (/^\*\*(.+?)\*\*$/.test(line.trim()) && line.trim().length < 60) {
-          html += `<div class="screen-report-title serif">${escHtml(line.trim().replace(/^\*\*|\*\*$/g, ""))}</div>`;
-          i++;
-          continue;
-        }
-        if (line.trim() === "") { i++; continue; }
-        html += `<div class="screen-summary">${inlineFormat(line)}</div>`;
-        i++;
-      }
-      html += '</div>';
-      if (disclaimer) {
-        const clean = disclaimer.replace(/^\*|\*$/gm, "").replace(/^\s*⚠️\s*/, "").trim();
-        html += `<div class="screen-disclaimer">⚠ ${escHtml(clean)}</div>`;
-      }
-      return html;
-    }
-
-    function inlineFormat(text) {
-      return escHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
-    }
-
-    function escHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-
-    function isScreeningReport(text) {
-      return text.includes("Linguistic Screening Report") || (text.includes("| Indicator") && text.includes("Depression"));
-    }
-
-    function appendMsg(role, text) {
-      const wrap = document.createElement("div");
-      wrap.className = "msg-wrap" + (role === "user" ? " user" : "");
-      const meta = document.createElement("div");
-      meta.className = "msg-meta";
-      meta.textContent = role === "user" ? "You" : "Meridian";
-      const el = document.createElement("div");
-      el.className = `msg ${role}`;
-      if (role === "assistant" && isScreeningReport(text)) {
-        el.innerHTML = renderMarkdown(text);
-        el.style.whiteSpace = "normal";
-      } else if (role === "assistant") {
-        el.innerHTML = inlineFormat(text).replace(/\n/g, "<br>");
-        el.style.whiteSpace = "normal";
-      } else {
-        el.textContent = text;
-      }
-      wrap.appendChild(meta);
-      wrap.appendChild(el);
-      document.getElementById("messages").appendChild(wrap);
-      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
-      return wrap;
-    }
-
-    function appendAccumulationBubble(bodyText, charsDone, charsTarget) {
-      const wrap = document.createElement("div");
-      wrap.className = "msg-wrap";
-      const meta = document.createElement("div");
-      meta.className = "msg-meta";
-      meta.textContent = "Meridian";
-      const el = document.createElement("div");
-      el.className = "msg assistant accumulation-bubble";
-      const textDiv = document.createElement("div");
-      textDiv.innerHTML = inlineFormat(bodyText).replace(/\n/g, "<br>");
-      textDiv.style.whiteSpace = "normal";
-      el.appendChild(textDiv);
-      const progressBlocks = 10;
-      const filledBlocks = Math.min(progressBlocks, Math.round((charsDone / charsTarget) * progressBlocks));
-      const trackString = "█".repeat(filledBlocks) + "░".repeat(progressBlocks - filledBlocks);
-      const indicator = document.createElement("div");
-      indicator.className = "accumulation-indicator";
-      indicator.innerHTML = `<span class="accumulation-hint">Linguistic Mapping Integrity</span>
-        <span class="accumulation-track">${trackString} &nbsp;${charsDone}/${charsTarget} raw metrics</span>`;
-      el.appendChild(indicator);
-      wrap.appendChild(meta);
-      wrap.appendChild(el);
-      document.getElementById("messages").appendChild(wrap);
-      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
-      return wrap;
-    }
-
-    function appendTyping() {
-      const wrap = document.createElement("div");
-      wrap.className = "typing-wrap";
-      const meta = document.createElement("div");
-      meta.className = "typing-meta";
-      meta.textContent = "Meridian";
-      const container = document.createElement("div");
-      container.className = "typing-container";
-      const breather = document.createElement("div");
-      breather.className = "typing-breather";
-      breather.textContent = "[ processing thought ]";
-      const rhythmicStates = ["[ gathering context ]", "[ parsing inflection ]", "[ structuralizing response ]", "[ framing cadence ]"];
-      let stateIndex = 0;
-      const cycleInterval = setInterval(() => {
-        breather.textContent = rhythmicStates[stateIndex];
-        stateIndex = (stateIndex + 1) % rhythmicStates.length;
-      }, 3500);
-      container.appendChild(breather);
-      wrap.appendChild(meta);
-      wrap.appendChild(container);
-      document.getElementById("messages").appendChild(wrap);
-      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
-      const origRemove = wrap.remove.bind(wrap);
-      wrap.remove = () => {
-        clearInterval(cycleInterval);
-        origRemove();
-      };
-      return wrap;
-    }
-
-    function appendCrisis() {
-      const wrap = document.createElement("div");
-      wrap.className = "crisis-wrap";
-      const label = document.createElement("div");
-      label.className = "crisis-label";
-      label.textContent = "I'm concerned about your safety";
-      const body = document.createElement("div");
-      body.className = "crisis-body";
-      body.innerHTML = "Please reach out to someone right now.<br><br><strong>988 Suicide &amp; Crisis Lifeline</strong> — call or text 988 &nbsp;(US, free, 24 / 7)<br><strong>iCall</strong> — 9152987821 &nbsp;(India, Mon–Sat 8 am–10 pm IST)<br><strong>Samaritans</strong> — 116 123 &nbsp;(UK, free, 24 / 7)<br><br><a href='https://www.findahelpline.com' target='_blank'>findahelpline.com</a> — worldwide directory";
-      wrap.appendChild(label);
-      body.appendChild(document.createElement("br"));
-      wrap.appendChild(body);
-      document.getElementById("messages").appendChild(wrap);
-      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
-    }
-
-    function appendRiskBadge(prob) {
-      const pct = Math.round(prob * 100);
-      const level = pct < 30 ? "low" : pct < 60 ? "moderate" : "elevated";
-      const last = document.querySelector(".msg-wrap:last-child .msg.assistant");
-      if (!last) return;
-      const el = document.createElement("div");
-      el.className = `risk-line risk-${level}`;
-      el.textContent = `— depression signal ${pct}% (${level})`;
-      last.appendChild(el);
-    }
-
-    // Initialize on DOM ready
-    window.addEventListener("DOMContentLoaded", async () => {
-      await requireAuth();
-      onModeOrModalityChange();
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
     });
+
+    function animate(timestamp) {
+      uniforms.uTime.value = timestamp * 0.001;
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
   </script>
 </body>
 

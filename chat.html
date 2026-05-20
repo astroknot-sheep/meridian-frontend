@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meridian — Secure Session Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <style>
+    /* ── Reset & Variables ──────────────────────────────── */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #F5F2EE;
+      --fg: #1A1714;
+      --muted: #A09080;
+      --dim: #6A605A;
+      --accent: #7A6A58;
+      --rule: #DDD8D0;
+      --crisis: #B07070;
+      --card-bg: rgba(255, 255, 255, 0.4);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.05);
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+      /* Dynamic Ambient Glow Palette */
+      --glow-color: rgba(122, 106, 88, 0.08);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 300;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .app-bg-blur {
+      position: absolute;
+      top: -20%;
+      left: -10%;
+      width: 80vw;
+      height: 80vw;
+      background: radial-gradient(circle, var(--glow-color) 0%, rgba(245, 242, 238, 0) 60%);
+      border-radius: 50%;
+      z-index: -1;
+      filter: blur(90px);
+      pointer-events: none;
+      transition: background 1.2s var(--ease-out);
+    }
+
+    .serif {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 400;
+    }
+
+    .sans-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      font-weight: 600;
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    header {
+      position: fixed;
+      top: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: calc(100% - 3rem);
+      max-width: 1200px;
+      padding: 0.8rem 2rem;
+      background: rgba(245, 242, 238, 0.6);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 100px;
+      box-shadow: 0 12px 32px -12px rgba(26, 23, 20, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.4rem;
+      color: var(--fg);
+      letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-decoration: none;
+    }
+
+    .logo-dot {
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+    }
+
+    .ctrl-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .ctrl-label {
+      color: var(--accent);
+      font-size: 0.5rem;
+      letter-spacing: 0.15em;
+    }
+
+    select {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid rgba(106, 96, 90, 0.15);
+      color: var(--fg);
+      padding: 0.2rem 1.4rem 0.2rem 0;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%236A605A' opacity='0.7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right center;
+      transition: all 0.2s ease;
+    }
+
+    select:focus,
+    select:hover {
+      border-bottom-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .hdr-note {
+      font-size: 0.6rem;
+      color: var(--muted);
+      text-align: right;
+      line-height: 1.5;
+      text-transform: none;
+      letter-spacing: 0.02em;
+      font-weight: 500;
+    }
+
+    /* ── Messages ───────────────────────────────────────── */
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8rem 5% 4rem;
+      display: flex;
+      flex-direction: column;
+      max-width: 840px;
+      width: 100%;
+      margin: 0 auto;
+      scroll-behavior: smooth;
+    }
+
+    #messages::-webkit-scrollbar {
+      width: 0;
+      display: none;
+    }
+
+    .msg-wrap {
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem 0;
+      opacity: 0;
+      animation: msgAppear 0.6s var(--ease-out) forwards;
+      transform-origin: bottom center;
+    }
+
+    @keyframes msgAppear {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .msg-meta,
+    .typing-meta {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+
+    .msg-wrap.user .msg-meta {
+      text-align: right;
+    }
+
+    .msg {
+      font-size: 0.95rem;
+      line-height: 1.75;
+      font-weight: 300;
+      letter-spacing: -0.01em;
+    }
+
+    .msg.assistant {
+      color: var(--fg);
+      padding: 1.5rem 2rem;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 4px 24px 24px 24px;
+      box-shadow: 0 4px 24px -8px rgba(26, 23, 20, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1);
+      max-width: 85%;
+      align-self: flex-start;
+      white-space: pre-wrap;
+    }
+
+    .msg.user {
+      color: var(--dim);
+      align-self: flex-end;
+      max-width: 70%;
+      padding: 1rem 1.5rem;
+      background: rgba(26, 23, 20, 0.02);
+      border-radius: 24px 4px 24px 24px;
+      border: 1px solid rgba(26, 23, 20, 0.04);
+    }
+
+    /* ── Typing Kinetic State ───────────────────────────── */
+    .typing-wrap {
+      padding: 1.5rem 0;
+      opacity: 0;
+      animation: msgAppear 0.4s ease forwards;
+    }
+
+    .typing-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.75rem;
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      border-radius: 4px 24px 24px 24px;
+    }
+
+    .typing-breather {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: lowercase;
+      animation: kineticBreathe 3.5s ease-in-out infinite;
+    }
+
+    @keyframes kineticBreathe {
+
+      0%,
+      100% {
+        letter-spacing: 0.1em;
+        opacity: 0.4;
+      }
+
+      50% {
+        letter-spacing: 0.25em;
+        opacity: 0.9;
+      }
+    }
+
+    /* ── Input Zone ─────────────────────────────────────── */
+    .input-zone {
+      flex-shrink: 0;
+      padding: 0 5% 2rem;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      background: linear-gradient(to top, var(--bg) 70%, transparent);
+      z-index: 50;
+    }
+
+    .input-bar-glass {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(32px);
+      -webkit-backdrop-filter: blur(32px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 32px;
+      padding: 1rem 1.5rem;
+      box-shadow: 0 16px 40px -12px rgba(26, 23, 20, 0.06), inset 0 1px 1px rgba(255, 255, 255, 1);
+      transition: all 0.4s var(--ease-out);
+    }
+
+    .input-bar-glass:focus-within {
+      background: rgba(255, 255, 255, 0.8);
+      border-color: #FFF;
+      box-shadow: 0 20px 50px -10px rgba(26, 23, 20, 0.1), inset 0 1px 1px rgba(255, 255, 255, 1);
+      transform: translateY(-2px);
+    }
+
+    .input-who {
+      color: var(--accent);
+      padding-bottom: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    #inp {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--fg);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.95rem;
+      outline: none;
+      resize: none;
+      max-height: 150px;
+      line-height: 1.6;
+      padding: 0.4rem 0;
+    }
+
+    #inp::placeholder {
+      color: var(--muted);
+      opacity: 0.6;
+    }
+
+    #send-btn {
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      border-radius: 100px;
+      cursor: pointer;
+      padding: 0.75rem 1.5rem;
+      transition: all 0.3s var(--ease-spring);
+      margin-bottom: 0.1rem;
+      box-shadow: 0 4px 14px rgba(26, 23, 20, 0.15);
+    }
+
+    #send-btn:hover:not(:disabled) {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 8px 20px rgba(26, 23, 20, 0.2);
+    }
+
+    #send-btn:disabled {
+      background: rgba(26, 23, 20, 0.08);
+      color: transparent;
+      box-shadow: none;
+      cursor: default;
+    }
+
+    .input-footer {
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+    }
+
+    .input-hint {
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .foot-disclaimer {
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: none;
+      font-size: 0.65rem;
+    }
+
+    .foot-disclaimer a {
+      text-decoration: none;
+      border-bottom: 1px solid rgba(160, 144, 128, 0.4);
+      color: inherit;
+      transition: border 0.3s;
+    }
+
+    .foot-disclaimer a:hover {
+      border-color: var(--fg);
+      color: var(--fg);
+    }
+
+    /* ── Special Components (Tables, Crisis, Accumulator) ── */
+    .crisis-wrap {
+      margin: 2rem 0;
+      padding: 2.5rem;
+      background: rgba(176, 112, 112, 0.05);
+      border: 1px solid rgba(176, 112, 112, 0.15);
+      border-radius: 24px;
+      animation: msgAppear 0.5s var(--ease-out) forwards;
+    }
+
+    .crisis-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--crisis);
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .crisis-body {
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: var(--fg);
+    }
+
+    .crisis-body strong {
+      font-weight: 500;
+    }
+
+    .crisis-body a {
+      color: var(--crisis);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(176, 112, 112, 0.3);
+    }
+
+    .accumulation-bubble {
+      border: 1px dashed rgba(122, 106, 88, 0.4);
+      background: rgba(255, 254, 252, 0.4);
+      box-shadow: none;
+      border-radius: 16px;
+    }
+
+    .accumulation-indicator {
+      margin-top: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      border-top: 1px solid rgba(26, 23, 20, 0.05);
+      padding-top: 0.8rem;
+    }
+
+    .accumulation-track {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+    }
+
+    .accumulation-hint {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .screen-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.85rem;
+      margin: 2rem 0;
+      border: 1px solid rgba(26, 23, 20, 0.06);
+      border-radius: 12px;
+    }
+
+    .screen-table th {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--muted);
+      padding: 1rem;
+      text-align: left;
+      background: rgba(26, 23, 20, 0.02);
+      border-bottom: 1px solid rgba(26, 23, 20, 0.06);
+    }
+
+    .screen-table td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(26, 23, 20, 0.04);
+    }
+
+    .screen-report-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      margin-top: 1rem;
+    }
+
+    .screen-summary {
+      font-size: 0.95rem;
+      color: var(--fg);
+      margin-bottom: 0.75rem;
+    }
+
+    .screen-report-container .screen-summary:first-of-type::first-letter {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 3.2rem;
+      float: left;
+      line-height: 0.85;
+      padding-right: 0.55rem;
+      margin-top: 0.15rem;
+      color: var(--accent);
+      font-weight: 400;
+    }
+
+    .screen-disclaimer {
+      font-size: 0.75rem;
+      color: var(--dim);
+      font-style: italic;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--rule);
+    }
+
+    .risk-line {
+      margin-top: 1rem;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .risk-low {
+      background: rgba(112, 176, 120, 0.1);
+      color: #4A7A52;
+    }
+
+    .risk-moderate {
+      background: rgba(176, 150, 112, 0.1);
+      color: #8A7048;
+    }
+
+    .risk-elevated {
+      background: rgba(176, 112, 112, 0.1);
+      color: var(--crisis);
+    }
+
+    /* ── Responsive ─────────────────────────────────────── */
+    @media (max-width: 900px) {
+      header {
+        flex-wrap: wrap;
+        width: calc(100% - 2rem);
+        padding: 1rem 1.5rem;
+        border-radius: 24px;
+        gap: 1rem;
+      }
+
+      nav {
+        width: 100%;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .hdr-note {
+        display: none;
+      }
+
+      #messages {
+        padding-top: 10rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .input-footer {
+        flex-direction: column;
+        gap: 0.8rem;
+        text-align: center;
+      }
+
+      .input-bar-glass {
+        padding: 0.8rem 1rem;
+        border-radius: 24px;
+      }
+
+      .msg.assistant,
+      .msg.user {
+        max-width: 95%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-bg-blur" id="ambient-glow"></div>
+
+  <header>
+    <a href="index.html" class="logo serif">Meridian<span class="logo-dot" aria-hidden="true"></span></a>
+    <nav>
+      <div class="ctrl-group">
+        <span class="ctrl-label sans-label">Mode</span>
+        <select id="mode-sel" onchange="onModeOrModalityChange()">
+          <option value="therapy">Therapy</option>
+          <option value="diagnosis">Screening</option>
+        </select>
+      </div>
+      <div class="ctrl-group" id="modality-group">
+        <span class="ctrl-label sans-label">Modality</span>
+        <select id="modal-sel" onchange="onModeOrModalityChange()">
+          <option value="cbt">CBT</option>
+          <option value="act">ACT</option>
+          <option value="dbt">DBT</option>
+          <option value="mindfulness">Mindfulness</option>
+          <option value="sfbt">Solution-Focused</option>
+        </select>
+      </div>
+      <p class="hdr-note sans-label" id="user-info">Loading...</p>
+      <a href="#" id="logout-btn" class="sans-label"
+        style="text-decoration:none; color:var(--muted); font-size:0.6rem;">Logout</a>
+    </nav>
+  </header>
+
+  <div id="messages">
+    <div class="msg-wrap">
+      <div class="msg-meta">Meridian</div>
+      <div class="msg assistant">Hello. I'm here to support you. How are you feeling today?</div>
+    </div>
+  </div>
+
+  <div class="input-zone">
+    <div class="input-bar-glass">
+      <span class="input-who sans-label">You</span>
+      <textarea id="inp" rows="1" placeholder="Type your thoughts here..." oninput="autoResize(this)"></textarea>
+      <button id="send-btn" class="sans-label" onclick="sendMsg()">Send</button>
+    </div>
+    <div class="input-footer">
+      <span class="input-hint">↵ to send &nbsp;·&nbsp; ⇧↵ for newline</span>
+      <span class="foot-disclaimer sans-label">
+        Crisis (US) 988 &nbsp;·&nbsp; iCall (IN) 9152987821 &nbsp;·&nbsp;
+        <a href="https://www.findahelpline.com" target="_blank">findahelpline.com</a>
+      </span>
+    </div>
+  </div>
+
+  <script type="module">
+    // ── Supabase Client & Auth ────────────────────────────
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    const SUPABASE_URL = '__SUPABASE_URL__';
+    const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const API_BASE = window.location.hostname === "localhost"
+      ? "http://localhost:8000"
+      : "https://astroknotsheep-meridian-api.hf.space";
+
+    let session = null;
+
+    // Protect page: redirect if not logged in
+    async function requireAuth() {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        window.location.href = 'auth.html';
+        return null;
+      }
+      session = data.session;
+      localStorage.setItem('sb_token', session.access_token);
+      // Show user info
+      const email = session.user.email;
+      document.getElementById('user-info').textContent = email;
+      return session;
+    }
+
+    // Auth headers for API calls
+    function authHeaders() {
+      const token = localStorage.getItem('sb_token');
+      return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+    }
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await supabase.auth.signOut();
+      localStorage.removeItem('sb_token');
+      window.location.href = 'auth.html';
+    });
+
+    // ── Existing app logic (adapted for JWT) ──────────────
+    const SESSION_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const history = [];
+    let totalCharsSubmitted = 0;
+    const ACCUM_TARGET = 800;
+
+    const GLOW_THEMES = {
+      therapy_cbt: "rgba(122, 106, 88, 0.08)",
+      therapy_act: "rgba(176, 112, 90, 0.08)",
+      therapy_dbt: "rgba(110, 122, 135, 0.08)",
+      therapy_mindfulness: "rgba(112, 140, 120, 0.09)",
+      therapy_sfbt: "rgba(170, 145, 105, 0.08)",
+      diagnosis: "rgba(130, 125, 120, 0.08)"
+    };
+
+    function autoResize(el) {
+      el.style.height = "auto";
+      el.style.height = Math.min(el.scrollHeight, 150) + "px";
+    }
+
+    document.getElementById("inp").addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMsg();
+      }
+    });
+
+    function onModeOrModalityChange() {
+      const mode = document.getElementById("mode-sel").value;
+      const modality = document.getElementById("modal-sel").value;
+      document.getElementById("modality-group").style.display = mode === "therapy" ? "flex" : "none";
+      if (mode !== "diagnosis") totalCharsSubmitted = 0;
+      const themeKey = mode === "therapy" ? `therapy_${modality}` : "diagnosis";
+      const targetGlow = GLOW_THEMES[themeKey] || GLOW_THEMES.therapy_cbt;
+      document.documentElement.style.setProperty('--glow-color', targetGlow);
+    }
+
+    async function sendMsg() {
+      const inp = document.getElementById("inp");
+      const text = inp.value.trim();
+      if (!text) return;
+
+      const currentMode = document.getElementById("mode-sel").value;
+      if (currentMode === "diagnosis") totalCharsSubmitted += text.length;
+
+      inp.value = "";
+      inp.style.height = "auto";
+      document.getElementById("send-btn").disabled = true;
+
+      appendMsg("user", text);
+      history.push({ role: "user", content: text });
+      const typingEl = appendTyping();
+
+      try {
+        const res = await fetch(`${API_BASE}/chat`, {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            mode: currentMode,
+            modality: document.getElementById("modal-sel").value,
+            messages: history,
+            session_id: SESSION_ID
+          })
+        });
+
+        typingEl.remove();
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            // Token expired/invalid – redirect to login
+            localStorage.removeItem('sb_token');
+            window.location.href = 'auth.html';
+            return;
+          }
+          appendMsg("assistant", `Server error (${res.status}). Please try again.`);
+        } else {
+          const data = await res.json();
+          if (data.crisis_detected) {
+            appendCrisis();
+          } else {
+            const reply = data.messages[0].content;
+            const accumMatch = reply.match(/^__ACCUMULATING__(\d+)\/(\d+)\n([\s\S]*)$/);
+            if (accumMatch) {
+              const charsDone = parseInt(accumMatch[1], 10);
+              const charsTarget = parseInt(accumMatch[2], 10);
+              const bodyText = accumMatch[3].trim();
+              totalCharsSubmitted = charsDone;
+              appendAccumulationBubble(bodyText, charsDone, charsTarget);
+              history.push({ role: "assistant", content: reply });
+            } else {
+              appendMsg("assistant", reply);
+              history.push({ role: "assistant", content: reply });
+              if (data.risk_scores && data.risk_scores.depression !== undefined) {
+                appendRiskBadge(data.risk_scores.depression);
+                totalCharsSubmitted = 0;
+              }
+            }
+          }
+        }
+      } catch (e) {
+        typingEl.remove();
+        appendMsg("assistant", "Connection error — is the server running?\nnuvicorn backend.main:app --reload --host 0.0.0.0 --port 8000");
+      }
+      document.getElementById("send-btn").disabled = false;
+      document.getElementById("inp").focus();
+    }
+
+    // ... (rest of helper functions: renderMarkdown, appendMsg, appendTyping, etc. unchanged from original)
+    // For brevity, I'll include only essential ones; the full functions are identical to your existing code.
+
+    function renderMarkdown(raw) {
+      const parts = raw.split(/\n---\n/);
+      const body = parts[0];
+      const disclaimer = parts[1] || "";
+      const lines = body.split("\n");
+      let html = '<div class="screen-report-container">', i = 0;
+      while (i < lines.length) {
+        const line = lines[i];
+        if (line.trim().startsWith("|")) {
+          const tl = [];
+          while (i < lines.length && lines[i].trim().startsWith("|")) {
+            tl.push(lines[i]);
+            i++;
+          }
+          const headers = tl[0].split("|").map(c => c.trim()).filter(Boolean);
+          html += '<table class="screen-table"><thead><tr>' + headers.map(h => `<th>${inlineFormat(h)}</th>`).join("") + "</tr></thead><tbody>";
+          for (let r = 2; r < tl.length; r++) {
+            const cells = tl[r].split("|").map(c => c.trim()).filter(Boolean);
+            if (cells.length) html += "<tr>" + cells.map(c => `<td>${inlineFormat(c)}</td>`).join("") + "</tr>";
+          }
+          html += "</tbody></table>";
+          continue;
+        }
+        if (/^\*\*(.+?)\*\*$/.test(line.trim()) && line.trim().length < 60) {
+          html += `<div class="screen-report-title serif">${escHtml(line.trim().replace(/^\*\*|\*\*$/g, ""))}</div>`;
+          i++;
+          continue;
+        }
+        if (line.trim() === "") { i++; continue; }
+        html += `<div class="screen-summary">${inlineFormat(line)}</div>`;
+        i++;
+      }
+      html += '</div>';
+      if (disclaimer) {
+        const clean = disclaimer.replace(/^\*|\*$/gm, "").replace(/^\s*⚠️\s*/, "").trim();
+        html += `<div class="screen-disclaimer">⚠ ${escHtml(clean)}</div>`;
+      }
+      return html;
+    }
+
+    function inlineFormat(text) {
+      return escHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
+    }
+
+    function escHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+    function isScreeningReport(text) {
+      return text.includes("Linguistic Screening Report") || (text.includes("| Indicator") && text.includes("Depression"));
+    }
+
+    function appendMsg(role, text) {
+      const wrap = document.createElement("div");
+      wrap.className = "msg-wrap" + (role === "user" ? " user" : "");
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      meta.textContent = role === "user" ? "You" : "Meridian";
+      const el = document.createElement("div");
+      el.className = `msg ${role}`;
+      if (role === "assistant" && isScreeningReport(text)) {
+        el.innerHTML = renderMarkdown(text);
+        el.style.whiteSpace = "normal";
+      } else if (role === "assistant") {
+        el.innerHTML = inlineFormat(text).replace(/\n/g, "<br>");
+        el.style.whiteSpace = "normal";
+      } else {
+        el.textContent = text;
+      }
+      wrap.appendChild(meta);
+      wrap.appendChild(el);
+      document.getElementById("messages").appendChild(wrap);
+      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      return wrap;
+    }
+
+    function appendAccumulationBubble(bodyText, charsDone, charsTarget) {
+      const wrap = document.createElement("div");
+      wrap.className = "msg-wrap";
+      const meta = document.createElement("div");
+      meta.className = "msg-meta";
+      meta.textContent = "Meridian";
+      const el = document.createElement("div");
+      el.className = "msg assistant accumulation-bubble";
+      const textDiv = document.createElement("div");
+      textDiv.innerHTML = inlineFormat(bodyText).replace(/\n/g, "<br>");
+      textDiv.style.whiteSpace = "normal";
+      el.appendChild(textDiv);
+      const progressBlocks = 10;
+      const filledBlocks = Math.min(progressBlocks, Math.round((charsDone / charsTarget) * progressBlocks));
+      const trackString = "█".repeat(filledBlocks) + "░".repeat(progressBlocks - filledBlocks);
+      const indicator = document.createElement("div");
+      indicator.className = "accumulation-indicator";
+      indicator.innerHTML = `<span class="accumulation-hint">Linguistic Mapping Integrity</span>
+        <span class="accumulation-track">${trackString} &nbsp;${charsDone}/${charsTarget} raw metrics</span>`;
+      el.appendChild(indicator);
+      wrap.appendChild(meta);
+      wrap.appendChild(el);
+      document.getElementById("messages").appendChild(wrap);
+      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      return wrap;
+    }
+
+    function appendTyping() {
+      const wrap = document.createElement("div");
+      wrap.className = "typing-wrap";
+      const meta = document.createElement("div");
+      meta.className = "typing-meta";
+      meta.textContent = "Meridian";
+      const container = document.createElement("div");
+      container.className = "typing-container";
+      const breather = document.createElement("div");
+      breather.className = "typing-breather";
+      breather.textContent = "[ processing thought ]";
+      const rhythmicStates = ["[ gathering context ]", "[ parsing inflection ]", "[ structuralizing response ]", "[ framing cadence ]"];
+      let stateIndex = 0;
+      const cycleInterval = setInterval(() => {
+        breather.textContent = rhythmicStates[stateIndex];
+        stateIndex = (stateIndex + 1) % rhythmicStates.length;
+      }, 3500);
+      container.appendChild(breather);
+      wrap.appendChild(meta);
+      wrap.appendChild(container);
+      document.getElementById("messages").appendChild(wrap);
+      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      const origRemove = wrap.remove.bind(wrap);
+      wrap.remove = () => {
+        clearInterval(cycleInterval);
+        origRemove();
+      };
+      return wrap;
+    }
+
+    function appendCrisis() {
+      const wrap = document.createElement("div");
+      wrap.className = "crisis-wrap";
+      const label = document.createElement("div");
+      label.className = "crisis-label";
+      label.textContent = "I'm concerned about your safety";
+      const body = document.createElement("div");
+      body.className = "crisis-body";
+      body.innerHTML = "Please reach out to someone right now.<br><br><strong>988 Suicide &amp; Crisis Lifeline</strong> — call or text 988 &nbsp;(US, free, 24 / 7)<br><strong>iCall</strong> — 9152987821 &nbsp;(India, Mon–Sat 8 am–10 pm IST)<br><strong>Samaritans</strong> — 116 123 &nbsp;(UK, free, 24 / 7)<br><br><a href='https://www.findahelpline.com' target='_blank'>findahelpline.com</a> — worldwide directory";
+      wrap.appendChild(label);
+      body.appendChild(document.createElement("br"));
+      wrap.appendChild(body);
+      document.getElementById("messages").appendChild(wrap);
+      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+
+    function appendRiskBadge(prob) {
+      const pct = Math.round(prob * 100);
+      const level = pct < 30 ? "low" : pct < 60 ? "moderate" : "elevated";
+      const last = document.querySelector(".msg-wrap:last-child .msg.assistant");
+      if (!last) return;
+      const el = document.createElement("div");
+      el.className = `risk-line risk-${level}`;
+      el.textContent = `— depression signal ${pct}% (${level})`;
+      last.appendChild(el);
+    }
+
+    // Initialize on DOM ready
+    window.addEventListener("DOMContentLoaded", async () => {
+      await requireAuth();
+      onModeOrModalityChange();
+    });
+  </script>
+</body>
+
+</html>
