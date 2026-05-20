@@ -2,13 +2,16 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Meridian — Clinical-Grade Mental Health Support</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <meta name="description"
+    content="Meridian combines domain-specific screening with evidence-based therapy techniques. Deterministic safety layers, guaranteed privacy, and quantified clinical output." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
+    rel="stylesheet" />
+
   <style>
     /* ── Reset & Variable Architecture ─────────────────── */
     *,
@@ -44,6 +47,18 @@
       line-height: 1.7;
     }
 
+    /* Fixed full screen background canvas shader */
+    #bg-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Organic film grain texture overlay */
     body::after {
       content: "";
       position: fixed;
@@ -51,11 +66,12 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 9999;
     }
 
+    /* Typographic Rules */
     h1,
     h2,
     h3,
@@ -73,7 +89,7 @@
       font-weight: 600;
     }
 
-    /* ── Navigation ─────────────────────────────── */
+    /* ── Navigation Workspace ───────────────────────────── */
     .nav-container {
       position: fixed;
       top: 1.5rem;
@@ -118,7 +134,7 @@
     .nav-links a.link {
       color: var(--dim);
       text-decoration: none;
-      transition: color 0.3s;
+      transition: color 0.3s var(--ease-out);
     }
 
     .nav-links a.link:hover {
@@ -144,7 +160,7 @@
       background: #000;
     }
 
-    /* ── Hero ──────────────────────────────────── */
+    /* ── Hero Section ───────────────────────────────────── */
     .hero {
       min-height: 100vh;
       display: flex;
@@ -167,6 +183,7 @@
       letter-spacing: -0.03em;
       max-width: 1100px;
       margin-bottom: 3rem;
+      color: var(--fg);
     }
 
     .hero h1 i {
@@ -183,19 +200,263 @@
       line-height: 1.8;
     }
 
-    .hero-actions {
+    /* ── Trust Grid Row ─────────────────────────────────── */
+    .trust-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 4rem;
+      padding: 5rem 2rem;
+      max-width: 1300px;
+      margin: 0 auto;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .trust-item {
       display: flex;
-      gap: 1.5rem;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .trust-item strong {
+      font-size: 0.75rem;
+    }
+
+    .trust-item span {
+      font-size: 0.95rem;
+      color: var(--dim);
+    }
+
+    /* ── Layout & Card Enhancements ──────────────────────── */
+    section {
+      padding: 12rem 2rem;
+      max-width: 1300px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      margin-bottom: 6rem;
+      max-width: 850px;
+    }
+
+    .section-title {
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      margin: 1.5rem 0 2rem;
+    }
+
+    .section-desc {
+      font-size: 1.1rem;
+      color: var(--dim);
+      max-width: 600px;
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 2.5rem;
+    }
+
+    .card {
+      padding: 4rem 3.5rem;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 24px;
+      transition: all 0.6s var(--ease-out);
+      box-shadow: 0 8px 32px -16px rgba(26, 23, 20, 0.03);
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.85);
+      transform: translateY(-6px);
+      border-color: rgba(255, 255, 255, 1);
+      box-shadow: 0 40px 80px -24px rgba(26, 23, 20, 0.12);
+    }
+
+    .card-sym {
+      font-size: 3rem;
+      color: var(--accent);
+      display: block;
+      margin-bottom: 2rem;
+    }
+
+    .card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .card p {
+      font-size: 1rem;
+      color: var(--dim);
+      line-height: 1.75;
+    }
+
+    /* ── Split Protocol Section ─────────────────────────── */
+    .protocol-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8rem;
+      align-items: start;
+    }
+
+    .protocol-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5rem;
+    }
+
+    .protocol-item {
+      position: relative;
+      padding-left: 4.5rem;
+    }
+
+    .protocol-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1px;
+      height: 100%;
+      background: rgba(26, 23, 20, 0.12);
+    }
+
+    .protocol-num {
+      position: absolute;
+      left: -0.5rem;
+      top: -0.2rem;
+      background: transparent;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .protocol-text h3 {
+      font-size: 2.4rem;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.02em;
+    }
+
+    .protocol-text p {
+      font-size: 1rem;
+      color: var(--dim);
+    }
+
+    /* ── Dual Pathways ──────────────────────────────────── */
+    .mode-card h3 {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 3rem;
+    }
+
+    .tag {
+      font-size: 0.75rem;
+      color: var(--fg);
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(26, 23, 20, 0.08);
+      padding: 0.6rem 1.4rem;
+      border-radius: 100px;
+    }
+
+    /* ── Interactive Call To Action ─────────────────────── */
+    .cta {
+      margin: 6rem auto 10rem;
+      padding: 10rem 4rem;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 40px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
       align-items: center;
     }
 
-    /* rest of landing page styles are identical to the original provided; omitted for brevity but present in full file */
-    /* ... (all other sections: trust-row, grid-cards, protocol, cta, footer, etc.) ... */
+    .cta h2 {
+      font-size: clamp(3rem, 7vw, 6rem);
+      margin-bottom: 2rem;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+
+    .cta p {
+      color: var(--dim);
+      margin-bottom: 4rem;
+      font-size: 1.15rem;
+      max-width: 550px;
+    }
+
+    footer {
+      padding: 5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-top: 1px solid var(--rule);
+      max-width: 1300px;
+      margin: 0 auto;
+      gap: 4rem;
+    }
+
+    .foot-note {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-align: right;
+      max-width: 500px;
+    }
+
+    /* ── Responsive Refinements ─────────────────────────── */
+    @media (max-width: 1024px) {
+      .protocol-container {
+        grid-template-columns: 1fr;
+        gap: 6rem;
+      }
+
+      .nav-links a.link {
+        display: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      section {
+        padding: 6rem 1rem;
+      }
+
+      .card {
+        padding: 3rem 2rem;
+      }
+
+      footer {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .foot-note {
+        text-align: center;
+      }
+
+      .cta {
+        padding: 6rem 1.5rem;
+      }
+    }
   </style>
 </head>
 
 <body>
+
   <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
   <header class="nav-container">
     <nav class="nav" aria-label="Main Navigation">
       <a href="index.html" class="nav-logo serif">Meridian</a>
@@ -203,29 +464,279 @@
         <a href="#why" class="link sans-label">The Gap</a>
         <a href="#clinical" class="link sans-label">Protocol</a>
         <a href="#modes" class="link sans-label">Interventions</a>
-        <a href="auth.html" class="btn-solid sans-label">Sign In</a>
+        <a href="index.html" class="btn-solid sans-label">Enter Portal</a>
       </div>
     </nav>
   </header>
+
   <main id="main-content">
     <section class="hero" aria-labelledby="hero-title">
       <span class="hero-eyebrow sans-label">Clinical-Grade Assessment Framework</span>
-      <h1 id="hero-title">Support that is <i>always there.</i><br>Screening that is <i>honest.</i></h1>
-      <p class="hero-sub">Bridging structural gaps in critical psychological support via private, verified digital
-        delivery pipelines. Continuous calibration, absolute data erasure.</p>
+      <h1 id="hero-title">Support that is <i>always there.</i><br />Screening that is <i>honest.</i></h1>
+      <p class="hero-sub">
+        Bridging structural gaps in critical psychological support via private, verified digital delivery pipelines.
+        Continuous calibration, absolute data erasure.
+      </p>
       <div class="hero-actions">
-        <a href="auth.html" class="btn-solid sans-label">Sign Up / Login</a>
-        <a href="index.html" class="btn-solid sans-label"
-          style="background:transparent; color:var(--fg); border:1px solid var(--rule);">Try a Guest Session</a>
+        <a href="index.html" class="btn-solid sans-label">Begin Session</a>
       </div>
     </section>
-    <!-- ... remaining sections unchanged ... -->
+
+    <section class="trust-row" aria-label="Key Commitments" role="list">
+      <div class="trust-item" role="listitem">
+        <strong class="sans-label">Immediate Entry</strong>
+        <span>Zero latency. Bypassing waitlists instantly.</span>
+      </div>
+      <div class="trust-item" role="listitem">
+        <strong class="sans-label">High-Performance Stability</strong>
+        <span>Operational and decoupled 24/7/365.</span>
+      </div>
+      <div class="trust-item" role="listitem">
+        <strong class="sans-label">Validated Architecture</strong>
+        <span>5 distinct therapeutic frameworks standard.</span>
+      </div>
+    </section>
+
+    <section id="why" aria-labelledby="why-title">
+      <header class="section-header">
+        <span class="sans-label" style="color: var(--accent);">Systemic Bottlenecks</span>
+        <h2 id="why-title" class="section-title">Traditional models scale linearly. Crisis scales exponentially.</h2>
+        <p class="section-desc">
+          When operational load breaks clinical systems, patients face high-friction wait intervals. Meridian addresses
+          the gap inside localized micro-sessions.
+        </p>
+      </header>
+
+      <div class="grid-cards">
+        <article class="card">
+          <span class="card-sym serif" aria-hidden="true">§</span>
+          <h3>Rationed Care Networks</h3>
+          <p>Traditional intakes carry prolonged latency profiles harmful to acute containment. Meridian offers
+            real-time conversational orientation on demand.</p>
+        </article>
+        <article class="card">
+          <span class="card-sym serif" aria-hidden="true">◊</span>
+          <h3>Prohibitive Capital</h3>
+          <p>Sustained care is an economic luxury. Meridian lowers baseline distribution friction to zero, normalizing
+            immediate access for underrepresented groups.</p>
+        </article>
+        <article class="card">
+          <span class="card-sym serif" aria-hidden="true">&mdash;</span>
+          <h3>Subjective Distortion</h3>
+          <p>Intake documentation struggles with self-reporting bias. Our real-time linguistics engine generates
+            neutral, stable behavioral markers clean of narrative distortion.</p>
+        </article>
+        <article class="card">
+          <span class="card-sym serif" aria-hidden="true">&times;</span>
+          <h3>Ephemeral Contexts</h3>
+          <p>Digital medical footprints are traceably permanent. Meridian protects data sovereignty by restricting
+            structural variables purely to localized session memory layers.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="clinical" aria-labelledby="clinical-title">
+      <div class="protocol-container">
+        <header class="section-header" style="margin-bottom: 0;">
+          <span class="sans-label" style="color: var(--accent);">Architectural Invariants</span>
+          <h2 id="clinical-title" class="section-title">Safety bounds enforced strictly via software state logic.</h2>
+          <p class="section-desc">
+            Operating rules are deterministic. The core runtime forces isolation across processing pathways, making
+            leakage or manipulation impossible.
+          </p>
+        </header>
+
+        <div class="protocol-list" role="list">
+          <article class="protocol-item" role="listitem">
+            <span class="protocol-num sans-label" aria-hidden="true">01</span>
+            <div class="protocol-text">
+              <h3 class="serif">Isolated Lexical Stream</h3>
+              <p>Localized parsing strips identifying structures from user queries before downstream analysis. The
+                engine reads structure, not identity.</p>
+            </div>
+          </article>
+          <article class="protocol-item" role="listitem">
+            <span class="protocol-num sans-label" aria-hidden="true">02</span>
+            <div class="protocol-text">
+              <h3 class="serif">Deterministic Escalation</h3>
+              <p>Crisis detection routines are hardcoded into the pipeline. Flagged syntax forces an immediate layout
+                break, outputting high-priority rescue routing vectors.</p>
+            </div>
+          </article>
+          <article class="protocol-item" role="listitem">
+            <span class="protocol-num sans-label" aria-hidden="true">03</span>
+            <div class="protocol-text">
+              <h3 class="serif">No Persisted Logs</h3>
+              <p>Session vectors run directly in memory. Explicit app instances strip, discard, and drop keys
+                automatically when a tab unloads or sessions timeout.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="modes" aria-labelledby="modes-title">
+      <header class="section-header">
+        <span class="sans-label" style="color: var(--accent);">Operational Profiles</span>
+        <h2 id="modes-title" class="section-title">Therapeutics and diagnostics, decoupled.</h2>
+      </header>
+
+      <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));">
+        <article class="card mode-card">
+          <span class="card-sym serif" aria-hidden="true">&#8767;</span>
+          <h3 class="serif">Therapeutic Routing</h3>
+          <p>Run dynamic conversations targeted around validated paradigms. The system structures interaction patterns
+            smoothly across chosen clinical configurations.</p>
+          <div class="tags" role="list" aria-label="Therapeutic Frameworks">
+            <span class="tag sans-label" role="listitem">CBT Engine</span>
+            <span class="tag sans-label" role="listitem">DBT Skills</span>
+            <span class="tag sans-label" role="listitem">Mindfulness</span>
+            <span class="tag sans-label" role="listitem">ACT Layer</span>
+          </div>
+        </article>
+
+        <article class="card mode-card">
+          <span class="card-sym serif" aria-hidden="true">&#9670;</span>
+          <h3 class="serif">Diagnostic Screening</h3>
+          <p>Communicate unconstrained. The model monitors patterns sequentially to draw an exportable linguistic
+            profile with calibrated probability indicators.</p>
+          <div class="tags" role="list" aria-label="Diagnostic Tools">
+            <span class="tag sans-label" role="listitem">Sequential Matrix</span>
+            <span class="tag sans-label" role="listitem">Calibrated Indicators</span>
+            <span class="tag sans-label" role="listitem">JSON Export</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="cta" aria-labelledby="cta-heading">
+      <h2 id="cta-heading" class="serif">Initiate a session<br />when you are ready.</h2>
+      <p>No user account creation required. Zero telemetry logs. Entirely executed inside your browser window.</p>
+      <a href="index.html" class="btn-solid sans-label">Open Secure Portal</a>
+    </section>
   </main>
+
+  <footer>
+    <span class="nav-logo serif">Meridian</span>
+    <p class="foot-note">
+      Meridian provides automated informational support frameworks and does not issue psychiatric diagnoses. For
+      emergencies, instantly query standard medical response systems or access localized crisis hotlines.
+    </p>
+  </footer>
+
   <script type="importmap">
-        { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
-    </script>
+    { "imports": { "three": "https://unpkg.com/three@0.128.0/build/three.module.js" } }
+  </script>
   <script type="module">
-    // ... (original Three.js background animation) ...
+    import * as THREE from 'three';
+
+    const canvas = document.getElementById('bg-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const geometry = new THREE.PlaneGeometry(2, 2);
+
+    const vertexShader = `
+      varying vec2 vUv;
+      void main() {
+        vUv = uv;
+        gl_Position = vec4(position, 1.0);
+      }
+    `;
+
+    const fragmentShader = `
+      precision highp float;
+      varying vec2 vUv;
+      uniform float uTime;
+      uniform vec2 uResolution;
+
+      vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+      vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+      vec3 permute(vec3 x) { return mod289(((x*34.0)+1.0)*x); }
+
+      float snoise(vec2 v) {
+        const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+        vec2 i  = floor(v + dot(v, C.yy) );
+        vec2 x0 = v -   i + dot(i, C.xx);
+        vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+        vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
+        i = mod289(i);
+        vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+        m = m*m; m = m*m;
+        vec3 x = 2.0 * fract(p * C.www) - 1.0; vec3 h = abs(x) - 0.5; vec3 ox = floor(x + 0.5); vec3 a0 = x - ox;
+        m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+        vec3 g; g.x  = a0.x  * x0.x  + h.x  * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
+      }
+
+      float fbm(vec2 p) {
+        float f = 0.0; float amp = 0.5; float freq = 1.0;
+        for(int i = 0; i < 4; i++) {
+          f += amp * snoise(p * freq); freq *= 2.0; amp *= 0.5;
+        }
+        return f;
+      }
+
+      void main() {
+        vec2 uv = vUv;
+         
+        float t = uTime * 0.1404;
+         
+        vec2 q = vec2(fbm(uv * 2.65 + vec2(t * 0.18, t * -0.1)), fbm(uv * 2.65 + vec2(t * 0.22, t * 0.13)));
+        vec2 r = vec2(fbm(uv * 3.1 + q + vec2(t * 0.45, t * 0.18)), fbm(uv * 3.1 + q - vec2(t * 0.25, t * 0.35)));
+        float flow = fbm(uv * 1.95 + r);
+
+        float gridX = abs(sin((uv.x + q.x * 0.28) * 16.0));
+        float gridY = abs(sin((uv.y + q.y * 0.28) * 16.0));
+        float grid = smoothstep(0.88, 1.0, gridX) + smoothstep(0.88, 1.0, gridY);
+        grid = grid * 0.12 * (1.0 - abs(flow) * 0.6);
+
+        vec3 bgColor = vec3(0.961, 0.949, 0.933);
+        vec3 accentColor = vec3(0.478, 0.416, 0.345);
+        vec3 midColor = vec3(0.88, 0.86, 0.83);
+
+        float grad = uv.y * 0.65 + flow * 0.35;
+        vec3 base = mix(bgColor, midColor, grad);
+         
+        float mixIntensity = 0.24;
+        base = mix(base, accentColor, flow * mixIntensity + 0.04);
+        base += grid * accentColor * 0.4;
+
+        float vignette = 1.0 - length(vUv - 0.5) * 1.1;
+        vignette = smoothstep(0.0, 1.0, vignette);
+        base = mix(bgColor, base, vignette);
+
+        gl_FragColor = vec4(base, 1.0);
+      }
+    `;
+
+    const uniforms = {
+      uTime: { value: 0 },
+      uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) }
+    };
+
+    const material = new THREE.ShaderMaterial({
+      vertexShader, fragmentShader, uniforms, transparent: false, depthWrite: false
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+    });
+
+    function animate(timestamp) {
+      uniforms.uTime.value = timestamp * 0.001;
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
   </script>
 </body>
 
