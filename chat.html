@@ -11,7 +11,7 @@
     rel="stylesheet" />
   <style>
     /* ═══════════════════════════════════════════════════════
-       DESIGN TOKENS
+       DESIGN TOKENS & RESET
        ═══════════════════════════════════════════════════════ */
     *,
     *::before,
@@ -51,66 +51,32 @@
       position: relative;
     }
 
-    /* Film grain */
-    body::before {
+    /* Film grain overlay */
+    body::after {
       content: "";
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 9999;
     }
 
-    /* Ambient glow orbs */
+    /* Dynamic ambient glow based on mode/modality */
     .ambient-orb {
       position: fixed;
       border-radius: 50%;
-      filter: blur(100px);
+      filter: blur(120px);
       pointer-events: none;
       z-index: -1;
-      transition: background 1.5s var(--ease-out);
+      transition: background 2s var(--ease-out);
     }
 
     .ambient-orb-1 {
-      width: 60vw;
-      height: 60vw;
-      top: -25%;
-      left: -15%;
+      width: 70vw;
+      height: 70vw;
+      top: -20%;
+      left: -10%;
       background: var(--glow-color);
-      animation: ambientDrift1 30s ease-in-out infinite;
-    }
-
-    .ambient-orb-2 {
-      width: 40vw;
-      height: 40vw;
-      bottom: -20%;
-      right: -10%;
-      background: rgba(184, 133, 108, 0.04);
-      animation: ambientDrift2 35s ease-in-out infinite;
-    }
-
-    @keyframes ambientDrift1 {
-
-      0%,
-      100% {
-        transform: translate(0, 0);
-      }
-
-      50% {
-        transform: translate(30px, 40px);
-      }
-    }
-
-    @keyframes ambientDrift2 {
-
-      0%,
-      100% {
-        transform: translate(0, 0);
-      }
-
-      50% {
-        transform: translate(-20px, -30px);
-      }
     }
 
     .serif {
@@ -120,50 +86,56 @@
 
     .sans-label {
       font-family: 'Syne', sans-serif;
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.25em;
       font-weight: 600;
     }
 
     /* ═══════════════════════════════════════════════════════
-       HEADER
+       HEADER & NAVIGATION
        ═══════════════════════════════════════════════════════ */
-    header {
+    .nav-container {
       position: fixed;
-      top: 1.25rem;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 1.5rem;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      z-index: 100;
+      padding: 0 2rem;
+      pointer-events: none;
+    }
+
+    .nav {
+      pointer-events: auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      width: calc(100% - 2.5rem);
-      max-width: 1200px;
-      padding: 0.7rem 2rem;
-      background: rgba(245, 242, 238, 0.7);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      width: 100%;
+      max-width: 1300px;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      background: rgba(245, 242, 238, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
       border-radius: 100px;
-      box-shadow: 0 8px 32px -8px rgba(26, 23, 20, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
-      z-index: 100;
+      box-shadow: 0 12px 40px -12px rgba(26, 23, 20, 0.06);
     }
 
-    .logo {
-      font-size: 1.35rem;
+    .nav-logo {
+      font-size: 1.6rem;
+      letter-spacing: -0.01em;
+      text-decoration: none;
       color: var(--fg);
-      letter-spacing: 0.01em;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      text-decoration: none;
-      flex-shrink: 0;
     }
 
     .logo-dot {
-      width: 5px;
-      height: 5px;
+      width: 6px;
+      height: 6px;
       background: var(--gold);
       border-radius: 50%;
       animation: pulse 4s ease-in-out infinite;
@@ -178,15 +150,15 @@
       }
 
       50% {
-        opacity: 0.3;
-        transform: scale(0.8);
+        opacity: 0.4;
+        transform: scale(0.85);
       }
     }
 
-    nav {
+    .nav-links {
       display: flex;
       align-items: center;
-      gap: 2.5rem;
+      gap: 2rem;
     }
 
     .ctrl-group {
@@ -206,12 +178,12 @@
 
     select {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.78rem;
+      font-size: 0.85rem;
       background: transparent;
       border: none;
       border-bottom: 1px solid rgba(106, 96, 90, 0.12);
       color: var(--fg);
-      padding: 0.2rem 1.4rem 0.2rem 0;
+      padding: 0.1rem 1.4rem 0.1rem 0;
       outline: none;
       cursor: pointer;
       appearance: none;
@@ -228,14 +200,12 @@
     }
 
     .hdr-note {
-      font-size: 0.55rem;
+      font-size: 0.65rem;
       color: var(--muted);
-      text-align: right;
-      line-height: 1.5;
       text-transform: none;
       letter-spacing: 0.02em;
-      font-weight: 500;
-      font-family: 'Syne', sans-serif;
+      font-family: 'IBM Plex Mono', monospace;
+      margin: 0 1rem;
     }
 
     /* ═══════════════════════════════════════════════════════
@@ -247,8 +217,8 @@
     }
 
     .profile-icon-btn {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       background: linear-gradient(135deg, #C4A882 0%, #7A6A58 100%);
       border: 2px solid rgba(255, 255, 255, 0.7);
@@ -257,35 +227,20 @@
       align-items: center;
       justify-content: center;
       transition: all 0.35s var(--ease-out);
-      box-shadow: 0 4px 16px rgba(26, 23, 20, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      box-shadow: 0 4px 16px rgba(26, 23, 20, 0.1);
       position: relative;
       overflow: hidden;
     }
 
-    .profile-icon-btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
-      pointer-events: none;
-    }
-
     .profile-icon-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(26, 23, 20, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      box-shadow: 0 8px 24px rgba(26, 23, 20, 0.18);
       border-color: rgba(255, 255, 255, 0.95);
     }
 
-    .profile-icon-btn:active {
-      transform: scale(0.95);
-      transition: transform 0.15s var(--ease-out);
-    }
-
     .profile-icon-svg {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       pointer-events: none;
     }
 
@@ -298,31 +253,23 @@
       stroke-linejoin: round;
     }
 
-    .profile-icon-svg .head {
-      fill: rgba(245, 242, 238, 0.25);
-      stroke: #F5F2EE;
-    }
-
-    /* Dropdown */
     .profile-dropdown {
       position: absolute;
       top: calc(100% + 12px);
       right: 0;
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
-      border: 1px solid rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.9);
       border-radius: 16px;
-      box-shadow: 0 16px 48px -12px rgba(26, 23, 20, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 1);
-      min-width: 200px;
+      box-shadow: 0 16px 48px -12px rgba(26, 23, 20, 0.15);
+      min-width: 220px;
       padding: 0.5rem 0;
       opacity: 0;
       visibility: hidden;
       transform: translateY(-8px) scale(0.96);
       transition: all 0.3s var(--ease-out);
       z-index: 200;
-      overflow: hidden;
     }
 
     .profile-dropdown.active {
@@ -338,17 +285,14 @@
     }
 
     .dropdown-user-email {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: var(--fg);
-      letter-spacing: -0.01em;
       word-break: break-all;
-      line-height: 1.3;
     }
 
     .dropdown-user-label {
       font-family: 'Syne', sans-serif;
-      font-size: 0.45rem;
+      font-size: 0.5rem;
       text-transform: uppercase;
       letter-spacing: 0.15em;
       color: var(--gold);
@@ -363,11 +307,11 @@
       padding: 0.6rem 1.2rem;
       cursor: pointer;
       font-family: 'Syne', sans-serif;
-      font-size: 0.58rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.15em;
       font-weight: 600;
-      color: var(--muted);
+      color: var(--muted-dark);
       text-decoration: none;
       transition: all 0.25s ease;
       border: none;
@@ -381,20 +325,10 @@
       color: var(--fg);
     }
 
-    .dropdown-item:active {
-      background: rgba(196, 168, 130, 0.15);
-    }
-
     .dropdown-item-icon {
       width: 16px;
       height: 16px;
-      flex-shrink: 0;
-      opacity: 0.6;
-      transition: opacity 0.25s ease;
-    }
-
-    .dropdown-item:hover .dropdown-item-icon {
-      opacity: 1;
+      opacity: 0.7;
     }
 
     .dropdown-divider {
@@ -412,40 +346,16 @@
       color: #9A4A4A;
     }
 
-    /* Dropdown arrow */
-    .dropdown-arrow {
-      position: absolute;
-      top: -6px;
-      right: 14px;
-      width: 12px;
-      height: 12px;
-      background: rgba(255, 255, 255, 0.75);
-      border-left: 1px solid rgba(255, 255, 255, 0.85);
-      border-top: 1px solid rgba(255, 255, 255, 0.85);
-      transform: rotate(45deg);
-      border-radius: 2px 0 0 0;
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s var(--ease-out);
-    }
-
-    .profile-dropdown.active .dropdown-arrow {
-      opacity: 1;
-      visibility: visible;
-    }
-
     /* ═══════════════════════════════════════════════════════
        MESSAGES
        ═══════════════════════════════════════════════════════ */
     #messages {
       flex: 1;
       overflow-y: auto;
-      padding: 7.5rem 5% 4rem;
+      padding: 8.5rem 5% 4rem;
       display: flex;
       flex-direction: column;
-      max-width: 840px;
+      max-width: 900px;
       width: 100%;
       margin: 0 auto;
       scroll-behavior: smooth;
@@ -459,7 +369,7 @@
     .msg-wrap {
       display: flex;
       flex-direction: column;
-      padding: 1.25rem 0;
+      padding: 1rem 0;
       opacity: 0;
       animation: msgAppear 0.6s var(--ease-out) forwards;
       transform-origin: bottom center;
@@ -480,7 +390,7 @@
     .msg-meta,
     .typing-meta {
       font-family: 'Syne', sans-serif;
-      font-size: 0.5rem;
+      font-size: 0.55rem;
       text-transform: uppercase;
       letter-spacing: 0.22em;
       color: var(--muted);
@@ -493,35 +403,35 @@
     }
 
     .msg {
-      font-size: 0.95rem;
-      line-height: 1.75;
-      font-weight: 300;
+      font-size: 1rem;
+      line-height: 1.7;
+      font-family: 'Syne', sans-serif;
+      font-weight: 500;
       letter-spacing: -0.01em;
+      padding: 1.25rem 1.75rem;
     }
 
     .msg.assistant {
-      color: var(--fg);
-      padding: 1.5rem 2rem;
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.85);
-      border-left: 2px solid var(--gold);
-      border-radius: 2px 20px 20px 20px;
-      box-shadow: 0 4px 20px -8px rgba(26, 23, 20, 0.05);
+      background: var(--dark);
+      color: var(--bg);
+      border-radius: 20px 20px 20px 4px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
       max-width: 85%;
       align-self: flex-start;
       white-space: pre-wrap;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .msg.user {
-      color: var(--dim);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      color: var(--fg);
+      border-radius: 20px 20px 4px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 8px 24px -8px rgba(26, 23, 20, 0.05);
       align-self: flex-end;
-      max-width: 70%;
-      padding: 1rem 1.5rem;
-      background: rgba(26, 23, 20, 0.035);
-      border-radius: 20px 2px 20px 20px;
-      border: 1px solid rgba(26, 23, 20, 0.04);
+      max-width: 75%;
     }
 
     /* ═══════════════════════════════════════════════════════
@@ -537,18 +447,18 @@
       display: inline-flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 1rem 1.75rem;
-      background: rgba(255, 255, 255, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.85);
-      border-left: 2px solid var(--gold);
-      border-radius: 2px 20px 20px 20px;
+      padding: 1.25rem 1.75rem;
+      background: var(--dark);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 20px 20px 20px 4px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
     }
 
     .typing-breather {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       letter-spacing: 0.12em;
-      color: var(--muted);
+      color: var(--gold);
       text-transform: lowercase;
       animation: kineticBreathe 3.5s ease-in-out infinite;
     }
@@ -558,12 +468,12 @@
       0%,
       100% {
         letter-spacing: 0.08em;
-        opacity: 0.4;
+        opacity: 0.5;
       }
 
       50% {
         letter-spacing: 0.22em;
-        opacity: 0.9;
+        opacity: 1;
       }
     }
 
@@ -573,42 +483,50 @@
     .input-zone {
       flex-shrink: 0;
       padding: 0 5% 2rem;
-      max-width: 900px;
+      max-width: 1000px;
       width: 100%;
       margin: 0 auto;
-      background: linear-gradient(to top, var(--bg) 70%, transparent);
       z-index: 50;
+      position: relative;
+    }
+
+    .input-zone::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      background: linear-gradient(to top, var(--bg) 40%, transparent);
+      z-index: -1;
+      pointer-events: none;
     }
 
     .input-bar-glass {
       display: flex;
       align-items: flex-end;
-      gap: 1rem;
-      background: rgba(255, 255, 255, 0.55);
-      backdrop-filter: blur(32px);
-      -webkit-backdrop-filter: blur(32px);
+      gap: 1.2rem;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border: 1px solid rgba(255, 255, 255, 0.8);
-      border-radius: 28px;
-      padding: 0.9rem 1.4rem;
-      box-shadow: 0 12px 36px -10px rgba(26, 23, 20, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 1);
+      border-radius: 32px;
+      padding: 1rem 1.5rem;
+      box-shadow: 0 16px 40px -12px rgba(26, 23, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);
       transition: all 0.4s var(--ease-out);
     }
 
     .input-bar-glass:focus-within {
-      background: rgba(255, 255, 255, 0.85);
-      border-color: rgba(196, 168, 130, 0.3);
-      box-shadow: 0 0 0 3px rgba(196, 168, 130, 0.08),
-        0 20px 50px -10px rgba(26, 23, 20, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 1);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(255, 255, 255, 1);
+      box-shadow: 0 20px 50px -10px rgba(26, 23, 20, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
       transform: translateY(-2px);
     }
 
     .input-who {
       color: var(--gold);
-      padding-bottom: 0.45rem;
+      padding-bottom: 0.6rem;
       flex-shrink: 0;
-      font-size: 0.55rem;
     }
 
     #inp {
@@ -617,17 +535,17 @@
       border: none;
       color: var(--fg);
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.95rem;
+      font-size: 1rem;
       outline: none;
       resize: none;
       max-height: 150px;
       line-height: 1.6;
-      padding: 0.4rem 0;
+      padding: 0.5rem 0;
     }
 
     #inp::placeholder {
       color: var(--muted);
-      opacity: 0.5;
+      opacity: 0.6;
     }
 
     #send-btn {
@@ -636,10 +554,10 @@
       border: none;
       border-radius: 100px;
       cursor: pointer;
-      padding: 0.7rem 1.4rem;
+      padding: 0.8rem 1.6rem;
       transition: all 0.3s var(--ease-spring);
-      margin-bottom: 0.1rem;
-      box-shadow: 0 4px 14px rgba(26, 23, 20, 0.15);
+      margin-bottom: 0.2rem;
+      box-shadow: 0 8px 24px rgba(26, 23, 20, 0.12);
       position: relative;
       overflow: hidden;
     }
@@ -654,8 +572,9 @@
     }
 
     #send-btn:hover:not(:disabled) {
-      transform: translateY(-2px) scale(1.03);
-      box-shadow: 0 8px 20px rgba(26, 23, 20, 0.2);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(26, 23, 20, 0.2);
+      background: #000;
     }
 
     #send-btn:hover:not(:disabled)::after {
@@ -663,14 +582,14 @@
     }
 
     #send-btn:disabled {
-      background: rgba(26, 23, 20, 0.06);
+      background: rgba(26, 23, 20, 0.08);
       color: transparent;
       box-shadow: none;
       cursor: default;
     }
 
     .input-footer {
-      margin-top: 0.8rem;
+      margin-top: 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -678,39 +597,53 @@
     }
 
     .input-hint {
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       color: var(--muted);
-      opacity: 0.6;
+      opacity: 0.8;
     }
 
     .foot-disclaimer {
-      color: var(--muted);
-      letter-spacing: 0.05em;
+      color: var(--muted-dark);
       text-transform: none;
-      font-size: 0.6rem;
-      opacity: 0.7;
+      font-size: 0.65rem;
     }
 
     .foot-disclaimer a {
       text-decoration: none;
-      border-bottom: 1px solid rgba(160, 144, 128, 0.3);
+      border-bottom: 1px solid rgba(160, 144, 128, 0.4);
       color: inherit;
       transition: all 0.3s;
     }
 
     .foot-disclaimer a:hover {
       border-color: var(--gold);
-      color: var(--accent);
+      color: var(--fg);
     }
 
     /* ═══════════════════════════════════════════════════════
-       SPECIAL: CRISIS, ACCUMULATION, TABLES
+       SPECIAL STATES (Markdown, Tables, Accumulation)
        ═══════════════════════════════════════════════════════ */
+    .msg.assistant a {
+      color: var(--gold);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(196, 168, 130, 0.4);
+    }
+
+    .msg.assistant a:hover {
+      border-color: var(--gold);
+    }
+
+    .msg.assistant strong {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
     .crisis-wrap {
       margin: 2rem 0;
       padding: 2.5rem;
-      background: rgba(176, 112, 112, 0.04);
-      border: 1px solid rgba(176, 112, 112, 0.12);
+      background: rgba(176, 112, 112, 0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(176, 112, 112, 0.2);
       border-left: 3px solid var(--crisis);
       border-radius: 4px 20px 20px 20px;
       animation: msgAppear 0.5s var(--ease-out) forwards;
@@ -718,7 +651,7 @@
 
     .crisis-label {
       font-family: 'Syne', sans-serif;
-      font-size: 0.6rem;
+      font-size: 0.65rem;
       text-transform: uppercase;
       letter-spacing: 0.2em;
       color: var(--crisis);
@@ -727,157 +660,153 @@
     }
 
     .crisis-body {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       line-height: 1.8;
       color: var(--fg);
-    }
-
-    .crisis-body strong {
-      font-weight: 500;
     }
 
     .crisis-body a {
       color: var(--crisis);
       text-decoration: none;
-      border-bottom: 1px solid rgba(176, 112, 112, 0.3);
+      border-bottom: 1px solid rgba(176, 112, 112, 0.4);
     }
 
     .accumulation-bubble {
+      background: rgba(0, 0, 0, 0.4);
       border: 1px dashed rgba(196, 168, 130, 0.3);
-      background: rgba(255, 254, 252, 0.5);
-      box-shadow: none;
-      border-radius: 16px;
       border-left: 2px solid var(--gold);
+      color: var(--fg-dark);
     }
 
     .accumulation-indicator {
-      margin-top: 1.2rem;
+      margin-top: 1.5rem;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
-      border-top: 1px solid rgba(26, 23, 20, 0.04);
-      padding-top: 0.8rem;
+      gap: 0.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 1rem;
     }
 
     .accumulation-track {
       font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.7rem;
+      font-size: 0.75rem;
       color: var(--gold);
       letter-spacing: 0.05em;
     }
 
     .accumulation-hint {
       font-family: 'Syne', sans-serif;
-      font-size: 0.5rem;
+      font-size: 0.55rem;
       text-transform: uppercase;
       letter-spacing: 0.15em;
-      color: var(--muted);
-      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
     }
 
-    /* Screening report tables */
     .screen-table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       margin: 2rem 0;
-      border: 1px solid rgba(26, 23, 20, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       overflow: hidden;
     }
 
     .screen-table th {
       font-family: 'Syne', sans-serif;
-      font-size: 0.5rem;
+      font-size: 0.55rem;
       text-transform: uppercase;
       letter-spacing: 0.2em;
-      color: var(--muted);
-      padding: 0.9rem 1rem;
+      color: var(--gold);
+      padding: 1rem 1.2rem;
       text-align: left;
-      background: rgba(26, 23, 20, 0.02);
-      border-bottom: 1px solid rgba(26, 23, 20, 0.06);
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .screen-table td {
-      padding: 0.9rem 1rem;
-      border-bottom: 1px solid rgba(26, 23, 20, 0.03);
+      padding: 1rem 1.2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      color: var(--bg);
     }
 
     .screen-report-title {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       color: var(--gold);
-      margin-bottom: 1rem;
-      margin-top: 1rem;
+      margin-bottom: 1.2rem;
+      margin-top: 1.2rem;
     }
 
     .screen-summary {
-      font-size: 0.95rem;
-      color: var(--fg);
-      margin-bottom: 0.75rem;
+      font-size: 1rem;
+      color: var(--bg);
+      margin-bottom: 0.8rem;
     }
 
     .screen-report-container .screen-summary:first-of-type::first-letter {
       font-family: 'Cormorant Garamond', serif;
-      font-size: 3rem;
+      font-size: 3.5rem;
       float: left;
       line-height: 0.85;
-      padding-right: 0.55rem;
+      padding-right: 0.6rem;
       margin-top: 0.15rem;
       color: var(--gold);
-      font-weight: 400;
     }
 
     .screen-disclaimer {
-      font-size: 0.75rem;
-      color: var(--dim);
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
       font-style: italic;
       margin-top: 1.5rem;
       padding-top: 1rem;
-      border-top: 1px dashed var(--rule);
+      border-top: 1px dashed rgba(255, 255, 255, 0.15);
     }
 
     .risk-line {
-      margin-top: 1rem;
+      margin-top: 1.2rem;
       font-family: 'Syne', sans-serif;
-      font-size: 0.55rem;
+      font-size: 0.6rem;
       text-transform: uppercase;
       letter-spacing: 0.15em;
       font-weight: 700;
-      padding: 0.35rem 0.75rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 4px;
       display: inline-block;
     }
 
     .risk-low {
-      background: rgba(112, 176, 120, 0.1);
-      color: #4A7A52;
+      background: rgba(112, 176, 120, 0.15);
+      color: #8FCA9D;
     }
 
     .risk-moderate {
-      background: rgba(176, 150, 112, 0.1);
-      color: #8A7048;
+      background: rgba(196, 168, 130, 0.15);
+      color: var(--gold);
     }
 
     .risk-elevated {
-      background: rgba(176, 112, 112, 0.1);
-      color: var(--crisis);
+      background: rgba(176, 112, 112, 0.2);
+      color: #E89A9A;
     }
 
     /* ═══════════════════════════════════════════════════════
        RESPONSIVE
        ═══════════════════════════════════════════════════════ */
     @media (max-width: 900px) {
-      header {
+      .nav-container {
+        padding: 0 1rem;
+      }
+
+      .nav {
         flex-wrap: wrap;
-        width: calc(100% - 2rem);
         padding: 0.8rem 1.25rem;
-        border-radius: 20px;
+        border-radius: 24px;
         gap: 0.8rem;
       }
 
-      nav {
+      .nav-links {
         width: 100%;
         justify-content: space-between;
         gap: 0.8rem;
@@ -889,7 +818,7 @@
       }
 
       #messages {
-        padding-top: 9rem;
+        padding-top: 10.5rem;
       }
 
       .profile-dropdown {
@@ -901,13 +830,15 @@
     @media (max-width: 600px) {
       .input-footer {
         flex-direction: column;
-        gap: 0.6rem;
+        gap: 0.8rem;
         text-align: center;
+        padding-bottom: 1rem;
       }
 
       .input-bar-glass {
-        padding: 0.7rem 1rem;
-        border-radius: 22px;
+        padding: 0.8rem 1rem;
+        border-radius: 24px;
+        gap: 0.8rem;
       }
 
       .msg.assistant,
@@ -915,18 +846,12 @@
         max-width: 95%;
       }
 
-      .profile-dropdown {
-        right: -20px;
-        min-width: 170px;
-        border-radius: 14px;
-      }
-
-      nav {
+      .nav-links {
         gap: 0.6rem;
       }
 
       .ctrl-group select {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         padding: 0.2rem 1rem 0.2rem 0;
       }
     }
@@ -935,72 +860,71 @@
 
 <body>
   <div class="ambient-orb ambient-orb-1" id="ambient-glow"></div>
-  <div class="ambient-orb ambient-orb-2"></div>
 
-  <header>
-    <a href="index.html" class="logo serif">Meridian<span class="logo-dot" aria-hidden="true"></span></a>
-    <nav>
-      <div class="ctrl-group">
-        <span class="ctrl-label">Mode</span>
-        <select id="mode-sel" onchange="onModeOrModalityChange()">
-          <option value="therapy">Therapy</option>
-          <option value="diagnosis">Screening</option>
-        </select>
-      </div>
-      <div class="ctrl-group" id="modality-group">
-        <span class="ctrl-label">Modality</span>
-        <select id="modal-sel" onchange="onModeOrModalityChange()">
-          <option value="cbt">CBT</option>
-          <option value="act">ACT</option>
-          <option value="dbt">DBT</option>
-          <option value="mindfulness">Mindfulness</option>
-          <option value="sfbt">Solution-Focused</option>
-        </select>
-      </div>
-      <p class="hdr-note" id="user-info" style="margin-left:0.5rem; margin-right:0.25rem;">Loading...</p>
+  <header class="nav-container">
+    <nav class="nav">
+      <a href="index.html" class="nav-logo serif">Meridian<span class="logo-dot" aria-hidden="true"></span></a>
+      <div class="nav-links">
+        <div class="ctrl-group">
+          <span class="ctrl-label">Mode</span>
+          <select id="mode-sel" onchange="onModeOrModalityChange()">
+            <option value="therapy">Therapy</option>
+            <option value="diagnosis">Screening</option>
+          </select>
+        </div>
+        <div class="ctrl-group" id="modality-group">
+          <span class="ctrl-label">Modality</span>
+          <select id="modal-sel" onchange="onModeOrModalityChange()">
+            <option value="cbt">CBT</option>
+            <option value="act">ACT</option>
+            <option value="dbt">DBT</option>
+            <option value="mindfulness">Mindfulness</option>
+            <option value="sfbt">Solution-Focused</option>
+          </select>
+        </div>
+        <p class="hdr-note" id="user-info">Loading...</p>
 
-      <!-- Profile Icon + Dropdown -->
-      <div class="profile-icon-wrapper" id="profile-icon-wrapper">
-        <button class="profile-icon-btn" id="profile-icon-btn" aria-label="Profile menu" aria-haspopup="true"
-          aria-expanded="false">
-          <svg class="profile-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <circle class="head" cx="12" cy="8" r="4" />
-            <path d="M4 21c0-4.418 3.582-8 8-8s8 3.582 8 8" />
-          </svg>
-        </button>
-        <div class="profile-dropdown" id="profile-dropdown">
-          <div class="dropdown-arrow"></div>
-          <div class="dropdown-user-info">
-            <div class="dropdown-user-label">Signed in as</div>
-            <div class="dropdown-user-email" id="dropdown-email">Loading...</div>
-          </div>
-          <div class="dropdown-divider"></div>
-          <a href="profile.html" class="dropdown-item" id="dropdown-profile">
-            <svg class="dropdown-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
+        <div class="profile-icon-wrapper" id="profile-icon-wrapper">
+          <button class="profile-icon-btn" id="profile-icon-btn" aria-label="Profile menu" aria-haspopup="true"
+            aria-expanded="false">
+            <svg class="profile-icon-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <circle class="head" cx="12" cy="8" r="4" />
+              <path d="M4 21c0-4.418 3.582-8 8-8s8 3.582 8 8" />
             </svg>
-            Profile
-          </a>
-          <a href="history.html" class="dropdown-item" id="dropdown-history">
-            <svg class="dropdown-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-            History
-          </a>
-          <div class="dropdown-divider"></div>
-          <button class="dropdown-item logout-item" id="dropdown-logout">
-            <svg class="dropdown-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-            Logout
           </button>
+          <div class="profile-dropdown" id="profile-dropdown">
+            <div class="dropdown-user-info">
+              <div class="dropdown-user-label">Signed in as</div>
+              <div class="dropdown-user-email" id="dropdown-email">Loading...</div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="profile.html" class="dropdown-item" id="dropdown-profile">
+              <svg class="dropdown-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              Profile
+            </a>
+            <a href="history.html" class="dropdown-item" id="dropdown-history">
+              <svg class="dropdown-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              History
+            </a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item logout-item" id="dropdown-logout">
+              <svg class="dropdown-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     </nav>
@@ -1030,9 +954,7 @@
 
   <script type="module">
     // ── Supabase Client & Auth ────────────────────────────
-    import {
-      createClient
-    } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
     const SUPABASE_URL = '__SUPABASE_URL__';
     const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1043,7 +965,6 @@
 
     let session = null;
 
-    // Protect page: redirect if not logged in
     async function requireAuth() {
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
@@ -1052,14 +973,12 @@
       }
       session = data.session;
       localStorage.setItem('sb_token', session.access_token);
-      // Show user info
       const email = session.user.email;
       document.getElementById('user-info').textContent = email;
       document.getElementById('dropdown-email').textContent = email;
       return session;
     }
 
-    // Auth headers for API calls
     function authHeaders() {
       const token = localStorage.getItem('sb_token');
       return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : {
@@ -1087,23 +1006,16 @@
 
     function toggleDropdown(e) {
       e.stopPropagation();
-      if (dropdownOpen) {
-        closeDropdown();
-      } else {
-        openDropdown();
-      }
+      if (dropdownOpen) closeDropdown();
+      else openDropdown();
     }
 
     profileIconBtn.addEventListener('click', toggleDropdown);
 
-    // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
-      if (dropdownOpen && !profileWrapper.contains(e.target)) {
-        closeDropdown();
-      }
+      if (dropdownOpen && !profileWrapper.contains(e.target)) closeDropdown();
     });
 
-    // Close dropdown on Escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && dropdownOpen) {
         closeDropdown();
@@ -1111,15 +1023,9 @@
       }
     });
 
-    // Close dropdown when a dropdown item is clicked (except logout which is handled separately)
-    document.getElementById('dropdown-profile').addEventListener('click', () => {
-      closeDropdown();
-    });
-    document.getElementById('dropdown-history').addEventListener('click', () => {
-      closeDropdown();
-    });
+    document.getElementById('dropdown-profile').addEventListener('click', closeDropdown);
+    document.getElementById('dropdown-history').addEventListener('click', closeDropdown);
 
-    // Logout
     document.getElementById('dropdown-logout').addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -1129,58 +1035,42 @@
       window.location.href = 'auth.html';
     });
 
-    // Also keep the original logout flow if any other element references it
-    // (No separate logout-btn now, but just in case)
-    const legacyLogoutBtn = document.getElementById('logout-btn');
-    if (legacyLogoutBtn) {
-      legacyLogoutBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
-        await supabase.auth.signOut();
-        localStorage.removeItem('sb_token');
-        window.location.href = 'auth.html';
-      });
-    }
-
-    // Helper to generate UUID v4
+    // ── Core Chat Logic ───────────────────────────────────
     function generateUUID() {
-      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-        return crypto.randomUUID();
-      }
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0;
         const v = c === 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
       });
     }
 
-    // Determine SESSION_ID and load past history if resuming
     let SESSION_ID;
     const urlParams = new URLSearchParams(window.location.search);
     const sessionParam = urlParams.get('session');
-    if (sessionParam) {
-      SESSION_ID = sessionParam;
-    } else {
-      SESSION_ID = generateUUID();
-    }
+    if (sessionParam) SESSION_ID = sessionParam;
+    else SESSION_ID = generateUUID();
 
-    // ── Existing app logic (adapted for JWT) ──────────────
     const chatHistory = [];
     let totalCharsSubmitted = 0;
     const ACCUM_TARGET = 800;
 
     const GLOW_THEMES = {
-      therapy_cbt: "rgba(196, 168, 130, 0.06)",
-      therapy_act: "rgba(184, 133, 108, 0.07)",
-      therapy_dbt: "rgba(130, 145, 160, 0.06)",
-      therapy_mindfulness: "rgba(130, 165, 140, 0.07)",
-      therapy_sfbt: "rgba(180, 155, 115, 0.06)",
-      diagnosis: "rgba(150, 145, 138, 0.06)"
+      therapy_cbt: "rgba(196, 168, 130, 0.08)",
+      therapy_act: "rgba(184, 133, 108, 0.09)",
+      therapy_dbt: "rgba(130, 145, 160, 0.08)",
+      therapy_mindfulness: "rgba(130, 165, 140, 0.09)",
+      therapy_sfbt: "rgba(180, 155, 115, 0.08)",
+      diagnosis: "rgba(150, 145, 138, 0.08)"
     };
 
     function autoResize(el) {
       el.style.height = "auto";
       el.style.height = Math.min(el.scrollHeight, 150) + "px";
     }
+
+    // EXPORT TO WINDOW FOR HTML INLINE EVENT HANDLERS
+    window.autoResize = autoResize;
 
     document.getElementById("inp").addEventListener("keydown", e => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -1198,6 +1088,9 @@
       const targetGlow = GLOW_THEMES[themeKey] || GLOW_THEMES.therapy_cbt;
       document.getElementById("ambient-glow").style.background = targetGlow;
     }
+
+    // EXPORT
+    window.onModeOrModalityChange = onModeOrModalityChange;
 
     async function sendMsg() {
       const inp = document.getElementById("inp");
@@ -1231,7 +1124,6 @@
 
         if (!res.ok) {
           if (res.status === 401) {
-            // Token expired/invalid – redirect to login
             localStorage.removeItem('sb_token');
             window.location.href = 'auth.html';
             return;
@@ -1263,44 +1155,38 @@
         }
       } catch (e) {
         typingEl.remove();
-        appendMsg("assistant",
-          "Connection error — is the server running?\nuvicorn backend.main:app --reload --host 0.0.0.0 --port 8000");
+        appendMsg("assistant", "Connection error — is the server running?\nuvicorn backend.main:app --reload --host 0.0.0.0 --port 8000");
       }
       document.getElementById("send-btn").disabled = false;
       document.getElementById("inp").focus();
     }
+
+    // EXPORT
+    window.sendMsg = sendMsg;
 
     function renderMarkdown(raw) {
       const parts = raw.split(/\n---\n/);
       const body = parts[0];
       const disclaimer = parts[1] || "";
       const lines = body.split("\n");
-      let html = '<div class="screen-report-container">',
-        i = 0;
+      let html = '<div class="screen-report-container">', i = 0;
       while (i < lines.length) {
         const line = lines[i];
         if (line.trim().startsWith("|")) {
           const tl = [];
-          while (i < lines.length && lines[i].trim().startsWith("|")) {
-            tl.push(lines[i]);
-            i++;
-          }
+          while (i < lines.length && lines[i].trim().startsWith("|")) { tl.push(lines[i]); i++; }
           const headers = tl[0].split("|").map(c => c.trim()).filter(Boolean);
-          html += '<table class="screen-table"><thead><tr>' + headers.map(h =>
-            `<th>${inlineFormat(h)}</th>`).join("") + "</tr></thead><tbody>";
+          html += '<table class="screen-table"><thead><tr>' + headers.map(h => `<th>${inlineFormat(h)}</th>`).join("") + "</tr></thead><tbody>";
           for (let r = 2; r < tl.length; r++) {
             const cells = tl[r].split("|").map(c => c.trim()).filter(Boolean);
-            if (cells.length) html += "<tr>" + cells.map(c => `<td>${inlineFormat(c)}</td>`).join(
-              "") + "</tr>";
+            if (cells.length) html += "<tr>" + cells.map(c => `<td>${inlineFormat(c)}</td>`).join("") + "</tr>";
           }
           html += "</tbody></table>";
           continue;
         }
         if (/^\*\*(.+?)\*\*$/.test(line.trim()) && line.trim().length < 60) {
-          html +=
-            `<div class="screen-report-title serif">${escHtml(line.trim().replace(/^\*\*|\*\*$/g, ""))}</div>`;
-          i++;
-          continue;
+          html += `<div class="screen-report-title serif">${escHtml(line.trim().replace(/^\*\*|\*\*$/g, ""))}</div>`;
+          i++; continue;
         }
         if (line.trim() === "") { i++; continue; }
         html += `<div class="screen-summary">${inlineFormat(line)}</div>`;
@@ -1315,15 +1201,13 @@
     }
 
     function inlineFormat(text) {
-      return escHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(
-        /(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
+      return escHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
     }
 
     function escHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 
     function isScreeningReport(text) {
-      return text.includes("Linguistic Screening Report") || (text.includes("| Indicator") && text.includes(
-        "Depression"));
+      return text.includes("Linguistic Screening Report") || (text.includes("| Indicator") && text.includes("Depression"));
     }
 
     function appendMsg(role, text) {
@@ -1389,9 +1273,7 @@
       const breather = document.createElement("div");
       breather.className = "typing-breather";
       breather.textContent = "[ processing thought ]";
-      const rhythmicStates = ["[ gathering context ]", "[ parsing inflection ]", "[ structuralizing response ]",
-        "[ framing cadence ]"
-      ];
+      const rhythmicStates = ["[ gathering context ]", "[ parsing inflection ]", "[ structuralizing response ]", "[ framing cadence ]"];
       let stateIndex = 0;
       const cycleInterval = setInterval(() => {
         breather.textContent = rhythmicStates[stateIndex];
@@ -1403,10 +1285,7 @@
       document.getElementById("messages").appendChild(wrap);
       wrap.scrollIntoView({ behavior: "smooth", block: "end" });
       const origRemove = wrap.remove.bind(wrap);
-      wrap.remove = () => {
-        clearInterval(cycleInterval);
-        origRemove();
-      };
+      wrap.remove = () => { clearInterval(cycleInterval); origRemove(); };
       return wrap;
     }
 
@@ -1453,20 +1332,17 @@
           throw new Error('Failed to load session messages');
         }
         const data = await res.json();
-        
-        // Clear the initial welcome message
+
         messagesContainer.innerHTML = "";
-        
-        // Clear chatHistory and rebuild it
         chatHistory.length = 0;
 
         if (data && data.length > 0) {
           data.forEach(msg => {
             const role = msg.role;
             const content = msg.content;
-            
+
             chatHistory.push({ role, content });
-            
+
             if (role === "assistant" && isScreeningReport(content)) {
               appendMsg("assistant", content);
             } else if (role === "assistant") {
@@ -1497,26 +1373,20 @@
       }
     }
 
-    // Initialize on DOM ready
     const init = async () => {
       const session = await requireAuth();
       if (!session) return;
       onModeOrModalityChange();
-      
+
       if (sessionParam) {
-        // Load existing session mode/modality
         try {
           const sessionsRes = await fetch(`${API_BASE}/sessions`, { headers: authHeaders() });
           if (sessionsRes.ok) {
             const sessions = await sessionsRes.json();
             const currentSession = sessions.find(s => s.id === SESSION_ID);
             if (currentSession) {
-              if (currentSession.mode) {
-                document.getElementById("mode-sel").value = currentSession.mode;
-              }
-              if (currentSession.modality) {
-                document.getElementById("modal-sel").value = currentSession.modality;
-              }
+              if (currentSession.mode) document.getElementById("mode-sel").value = currentSession.mode;
+              if (currentSession.modality) document.getElementById("modal-sel").value = currentSession.modality;
               onModeOrModalityChange();
             }
           }
