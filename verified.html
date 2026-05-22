@@ -7,27 +7,22 @@
     <title>Meridian · Verified</title>
     <meta name="description" content="Your account has been verified. Welcome to Meridian." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
         :root {
             --bg: #F5F2EE;
+            --dark: #0F0E0C;
             --fg: #1A1714;
-            --muted: #A09080;
-            --dim: #6A605A;
+            --gold: #C4A882;
             --accent: #7A6A58;
+            --muted: #9A8E82;
             --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
             --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
-            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-bg: rgba(255, 255, 255, 0.55);
             --glass-border: rgba(255, 255, 255, 0.7);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background: var(--bg);
@@ -43,152 +38,88 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        body::before {
-            content: "";
-            position: fixed;
-            top: -20%;
-            left: -10%;
-            width: 80vw;
-            height: 80vw;
-            background: radial-gradient(circle, rgba(122, 106, 88, 0.08) 0%, rgba(245, 242, 238, 0) 60%);
-            border-radius: 50%;
-            z-index: -1;
-            filter: blur(90px);
-            pointer-events: none;
-        }
-
         body::after {
             content: "";
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
             pointer-events: none;
             z-index: 9999;
         }
 
-        .serif {
-            font-family: 'Cormorant Garamond', serif;
-            font-weight: 400;
-        }
+        .orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: -1; }
+        .orb-1 { width: 350px; height: 350px; background: rgba(196,168,130,0.1); top: 15%; left: 10%; animation: od1 20s ease-in-out infinite; }
+        .orb-2 { width: 280px; height: 280px; background: rgba(184,133,108,0.07); bottom: 15%; right: 10%; animation: od2 26s ease-in-out infinite; }
+        @keyframes od1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(35px,45px)} }
+        @keyframes od2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-25px,-35px)} }
 
-        .sans-label {
-            font-family: 'Syne', sans-serif;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            font-weight: 600;
-        }
+        .serif { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
+        .sans-label { font-family: 'Syne', sans-serif; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; font-weight: 600; }
 
         .card {
             width: 100%;
-            max-width: 520px;
+            max-width: 480px;
             background: var(--glass-bg);
             backdrop-filter: blur(32px);
             -webkit-backdrop-filter: blur(32px);
             border: 1px solid var(--glass-border);
-            border-radius: 32px;
+            border-radius: 28px;
             padding: 3.5rem 2.5rem;
             text-align: center;
-            box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 50px -12px rgba(26,23,20,0.08), inset 0 1px 0 rgba(255,255,255,0.8);
             animation: fadeUp 0.7s var(--ease-out) forwards;
+            position: relative;
         }
 
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(25px)} to{opacity:1;transform:translateY(0)} }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .logo {
-            margin-bottom: 2.5rem;
-        }
-
-        .logo a {
-            text-decoration: none;
-            color: var(--fg);
-            font-size: 1.8rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .logo-dot {
-            width: 5px;
-            height: 5px;
-            background: var(--accent);
-            border-radius: 50%;
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            50% {
-                opacity: 0.3;
-                transform: scale(0.8);
-            }
-        }
+        .logo { margin-bottom: 2.5rem; }
+        .logo a { text-decoration: none; color: var(--fg); font-size: 1.8rem; display: inline-flex; align-items: center; gap: 0.4rem; }
+        .logo-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; animation: pulse 4s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.8)} }
 
         .check-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1.5rem;
-            color: var(--accent);
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(196,168,130,0.15), rgba(196,168,130,0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 1.8rem;
+            color: var(--gold);
         }
 
-        h2 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            letter-spacing: -0.02em;
-        }
-
-        p {
-            color: var(--dim);
-            font-size: 0.95rem;
-            margin-bottom: 2.5rem;
-            line-height: 1.6;
-        }
+        h2 { font-size: 2rem; margin-bottom: 1rem; letter-spacing: -0.02em; }
+        p { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; line-height: 1.6; }
 
         .btn-primary {
             display: inline-block;
-            background: var(--fg);
-            color: var(--bg);
-            border: none;
-            border-radius: 100px;
+            background: var(--fg); color: var(--bg);
+            border: none; border-radius: 100px;
             padding: 1rem 2.5rem;
-            font-family: 'Syne', sans-serif;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.4s var(--ease-spring);
-            box-shadow: 0 8px 24px rgba(26, 23, 20, 0.12);
+            font-family: 'Syne', sans-serif; font-size: 0.75rem;
+            text-transform: uppercase; letter-spacing: 0.2em; font-weight: 600;
+            text-decoration: none; cursor: pointer;
+            transition: all 0.5s var(--ease-spring);
+            box-shadow: 0 8px 24px rgba(26,23,20,0.12);
+            position: relative; overflow: hidden;
         }
+        .btn-primary::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent); transform:translateX(-100%); transition:transform 0.6s ease; }
+        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 16px 32px -6px rgba(26,23,20,0.25); background:#000; }
+        .btn-primary:hover::after { transform:translateX(100%); }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 16px 32px -6px rgba(26, 23, 20, 0.25);
-            background: #000;
+        @media (max-width: 480px) {
+            .card { padding: 2.5rem 1.5rem; border-radius: 24px; }
         }
     </style>
 </head>
 
 <body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
     <div class="card">
         <div class="logo">
             <a href="index.html" class="serif">Meridian<span class="logo-dot"></span></a>

@@ -7,28 +7,25 @@
     <title>Meridian · Profile</title>
     <meta name="description" content="Manage your Meridian profile and view past sessions." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
         :root {
             --bg: #F5F2EE;
+            --dark: #0F0E0C;
             --fg: #1A1714;
-            --muted: #A09080;
-            --dim: #6A605A;
+            --fg-dark: #E8E4DF;
+            --gold: #C4A882;
             --accent: #7A6A58;
+            --muted: #9A8E82;
+            --muted-dark: #6B6560;
             --rule: rgba(26, 23, 20, 0.08);
             --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
             --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.1);
-            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-bg: rgba(255, 255, 255, 0.55);
             --glass-border: rgba(255, 255, 255, 0.7);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             background: var(--bg);
@@ -44,95 +41,81 @@
             align-items: center;
         }
 
-        body::before {
-            content: "";
-            position: fixed;
-            top: -20%;
-            left: -10%;
-            width: 80vw;
-            height: 80vw;
-            background: radial-gradient(circle, rgba(122, 106, 88, 0.06) 0%, rgba(245, 242, 238, 0) 60%);
-            border-radius: 50%;
-            z-index: -1;
-            filter: blur(90px);
-            pointer-events: none;
-        }
-
         body::after {
             content: "";
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
             pointer-events: none;
             z-index: 9999;
         }
 
-        .serif {
-            font-family: 'Cormorant Garamond', serif;
-            font-weight: 400;
-        }
+        .orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: -1; }
+        .orb-1 { width: 400px; height: 400px; background: rgba(196,168,130,0.08); top: 5%; right: 10%; animation: od1 24s ease-in-out infinite; }
+        .orb-2 { width: 300px; height: 300px; background: rgba(184,133,108,0.06); bottom: 10%; left: 5%; animation: od2 30s ease-in-out infinite; }
+        @keyframes od1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,50px)} }
+        @keyframes od2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-30px)} }
 
-        .sans-label {
-            font-family: 'Syne', sans-serif;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            font-weight: 600;
-        }
+        .serif { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
+        .sans-label { font-family: 'Syne', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; font-weight: 600; }
 
-        /* ── Navigation Bar ──────────────────────────────── */
+        /* ── Navigation Bar ────────────────────────────── */
         .nav-bar {
             width: 100%;
             max-width: 1200px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 2rem;
+            padding: 0.8rem 2rem;
             margin-bottom: 3rem;
-            background: rgba(245, 242, 238, 0.6);
+            background: rgba(245, 242, 238, 0.7);
             backdrop-filter: blur(32px);
             -webkit-backdrop-filter: blur(32px);
             border: 1px solid var(--glass-border);
             border-radius: 100px;
-            box-shadow: 0 12px 32px -12px rgba(26, 23, 20, 0.05);
+            box-shadow: 0 8px 32px -8px rgba(26, 23, 20, 0.05),
+                         inset 0 1px 0 rgba(255,255,255,0.9);
         }
 
         .nav-logo {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             color: var(--fg);
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            letter-spacing: -0.01em;
         }
 
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            align-items: center;
-        }
+        .nav-links { display: flex; gap: 2rem; align-items: center; }
 
         .nav-links a {
-            color: var(--dim);
+            color: var(--muted);
             text-decoration: none;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             transition: color 0.3s;
+            font-family: 'Syne', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
         }
 
-        .nav-links a:hover {
-            color: var(--fg);
-        }
+        .nav-links a:hover { color: var(--fg); }
+        .nav-links a.active { color: var(--fg); }
 
         .btn-logout {
             background: transparent;
-            border: 1px solid rgba(26, 23, 20, 0.1);
+            border: 1px solid rgba(26, 23, 20, 0.08);
             padding: 0.5rem 1.2rem;
             border-radius: 100px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.4s var(--ease-out);
+            font-family: 'Syne', sans-serif;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+            color: var(--muted);
         }
 
         .btn-logout:hover {
@@ -141,185 +124,134 @@
             border-color: var(--fg);
         }
 
-        /* ── Profile Card ────────────────────────────────── */
-        .profile-card {
+        /* ── Cards ─────────────────────────────────────── */
+        .profile-card, .history-card {
             width: 100%;
             max-width: 750px;
             background: var(--glass-bg);
             backdrop-filter: blur(32px);
             -webkit-backdrop-filter: blur(32px);
             border: 1px solid var(--glass-border);
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            margin-bottom: 3rem;
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 16px 40px -12px rgba(26, 23, 20, 0.06),
+                         inset 0 1px 0 rgba(255,255,255,0.8);
+            margin-bottom: 2rem;
         }
 
         .section-title {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 2.2rem;
+            font-size: 2rem;
             margin-bottom: 2rem;
             letter-spacing: -0.01em;
         }
 
-        .form-row {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            margin-bottom: 2.5rem;
-        }
+        /* ── Form ──────────────────────────────────────── */
+        .form-row { display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2rem; }
 
         .form-group label {
             display: block;
             color: var(--accent);
             margin-bottom: 0.5rem;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
         }
 
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 0.85rem 1rem;
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(26, 23, 20, 0.08);
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.85rem 1rem;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(26,23,20,0.08);
             border-radius: 12px;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.9rem;
-            color: var(--fg);
-            outline: none;
-            transition: all 0.3s;
+            font-size: 0.9rem; color: var(--fg); outline: none;
+            transition: all 0.4s var(--ease-out);
         }
 
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: var(--accent);
-            background: rgba(255, 255, 255, 0.95);
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--gold);
+            background: #FFF;
+            box-shadow: 0 0 0 3px rgba(196,168,130,0.1), 0 4px 12px rgba(26,23,20,0.04);
         }
 
         .btn-primary {
-            background: var(--fg);
-            color: var(--bg);
-            border: none;
-            border-radius: 100px;
-            padding: 0.9rem 2rem;
-            font-family: 'Syne', sans-serif;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.4s var(--ease-spring);
-            box-shadow: 0 8px 24px rgba(26, 23, 20, 0.12);
+            background: var(--fg); color: var(--bg);
+            border: none; border-radius: 100px;
+            padding: 0.85rem 2rem;
+            font-family: 'Syne', sans-serif; font-size: 0.7rem;
+            text-transform: uppercase; letter-spacing: 0.2em; font-weight: 600;
+            cursor: pointer; transition: all 0.5s var(--ease-spring);
+            box-shadow: 0 8px 24px rgba(26,23,20,0.12);
+            position: relative; overflow: hidden;
         }
+        .btn-primary::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent); transform:translateX(-100%); transition:transform 0.6s ease; }
+        .btn-primary:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 16px 32px -6px rgba(26,23,20,0.25); background:#000; }
+        .btn-primary:hover:not(:disabled)::after { transform:translateX(100%); }
+        .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
 
-        .btn-primary:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 16px 32px -6px rgba(26, 23, 20, 0.25);
-            background: #000;
-        }
+        .status-msg { margin-top: 1rem; font-size: 0.8rem; text-align: center; min-height: 1.2em; }
+        .status-msg.success { color: #4A7A52; }
+        .status-msg.error { color: #B07070; }
 
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .status-msg {
-            margin-top: 1rem;
-            font-size: 0.8rem;
-            text-align: center;
-            min-height: 1.2em;
-        }
-
-        .status-msg.success {
-            color: #4A7A52;
-        }
-
-        .status-msg.error {
-            color: #B07070;
-        }
-
-        /* ── History List ────────────────────────────────── */
-        .history-card {
-            width: 100%;
-            max-width: 750px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(32px);
-            -webkit-backdrop-filter: blur(32px);
-            border: 1px solid var(--glass-border);
-            border-radius: 32px;
-            padding: 3rem 2.5rem;
-            box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-        }
-
+        /* ── Session History ────────────────────────────── */
         .session-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 0;
+            padding: 1.1rem 0;
             border-bottom: 1px solid var(--rule);
+            transition: background 0.3s;
         }
 
-        .session-item:last-child {
-            border-bottom: none;
-        }
+        .session-item:last-child { border-bottom: none; }
+        .session-item:hover { background: rgba(255,255,255,0.3); margin: 0 -1rem; padding-left: 1rem; padding-right: 1rem; border-radius: 8px; }
 
-        .session-date {
-            font-size: 0.9rem;
-            color: var(--fg);
-        }
-
-        .session-mode {
-            font-size: 0.75rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
+        .session-date { font-size: 0.9rem; color: var(--fg); font-weight: 400; }
+        .session-mode { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.2rem; }
 
         .session-link {
-            color: var(--accent);
+            color: var(--gold);
             text-decoration: none;
-            font-size: 0.8rem;
-            border-bottom: 1px solid transparent;
-            transition: border 0.3s;
+            font-size: 0.7rem;
+            font-family: 'Syne', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+            padding: 0.4rem 1rem;
+            border: 1px solid rgba(196,168,130,0.2);
+            border-radius: 100px;
+            transition: all 0.3s;
         }
 
         .session-link:hover {
-            border-bottom-color: var(--accent);
+            background: rgba(196,168,130,0.1);
+            border-color: var(--gold);
         }
 
-        .empty-state {
-            text-align: center;
-            color: var(--muted);
-            padding: 2rem 0;
-        }
+        .empty-state { text-align: center; color: var(--muted); padding: 2.5rem 0; font-size: 0.9rem; }
 
+        /* ── Responsive ────────────────────────────────── */
         @media (max-width: 600px) {
-            .nav-bar {
-                flex-wrap: wrap;
-                gap: 1rem;
-                border-radius: 24px;
-                padding: 1rem;
-            }
-
-            .nav-links {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .profile-card,
-            .history-card {
-                padding: 2rem 1.5rem;
-            }
+            .nav-bar { flex-wrap: wrap; gap: 0.8rem; border-radius: 20px; padding: 0.8rem 1rem; }
+            .nav-links { width: 100%; justify-content: space-between; }
+            .profile-card, .history-card { padding: 2rem 1.5rem; border-radius: 20px; }
         }
     </style>
 </head>
 
 <body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
     <nav class="nav-bar">
         <a href="chat.html" class="nav-logo serif">Meridian</a>
         <div class="nav-links">
-            <a href="chat.html" class="sans-label">Chat</a>
-            <a href="profile.html" class="sans-label" style="color:var(--fg); font-weight:600;">Profile</a>
-            <button id="logout-btn" class="btn-logout sans-label">Logout</button>
+            <a href="chat.html">Chat</a>
+            <a href="profile.html" class="active">Profile</a>
+            <a href="history.html">History</a>
+            <button id="logout-btn" class="btn-logout">Logout</button>
         </div>
     </nav>
 
@@ -328,11 +260,11 @@
         <form id="profile-form">
             <div class="form-row">
                 <div class="form-group">
-                    <label class="sans-label" for="display-name">Display Name</label>
+                    <label for="display-name">Display Name</label>
                     <input type="text" id="display-name" placeholder="Your name" required autocomplete="name" />
                 </div>
                 <div class="form-group">
-                    <label class="sans-label" for="preferred-modality">Preferred Modality</label>
+                    <label for="preferred-modality">Preferred Modality</label>
                     <select id="preferred-modality">
                         <option value="cbt">CBT</option>
                         <option value="act">ACT</option>
@@ -357,15 +289,13 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
         const SUPABASE_URL = '__SUPABASE_URL__';
-        const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';                 // Replace with your anon key
+        const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Backend API base
         const API_BASE = window.location.hostname === 'localhost'
             ? 'http://localhost:8000'
-            : 'https://astroknotsheep-meridian-api.hf.space'; // adjust to your actual API
+            : 'https://astroknotsheep-meridian-api.hf.space';
 
-        // Auth helpers
         function authHeaders() {
             const token = localStorage.getItem('sb_token');
             return token
@@ -373,18 +303,13 @@
                 : { 'Content-Type': 'application/json' };
         }
 
-        // Redirect if not logged in
         async function requireAuth() {
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = 'auth.html';
-                return null;
-            }
+            if (!session) { window.location.href = 'auth.html'; return null; }
             localStorage.setItem('sb_token', session.access_token);
             return session;
         }
 
-        // Load profile from backend
         async function loadProfile() {
             try {
                 const res = await fetch(`${API_BASE}/profile`, { headers: authHeaders() });
@@ -399,7 +324,6 @@
             }
         }
 
-        // Save profile
         document.getElementById('profile-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('save-btn');
@@ -424,7 +348,6 @@
                     const errData = await res.json().catch(() => ({}));
                     throw new Error(errData.detail || 'Update failed');
                 }
-                // Also update Supabase user metadata (client-side)
                 await supabase.auth.updateUser({ data: payload });
                 statusEl.textContent = 'Profile updated.';
                 statusEl.className = 'status-msg success';
@@ -437,7 +360,6 @@
             }
         });
 
-        // Load session history
         async function loadHistory() {
             const historyDiv = document.getElementById('history-list');
             try {
@@ -456,7 +378,7 @@
                             <div class="session-date">${new Date(s.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                             <div class="session-mode">${s.mode} · ${s.modality || '—'}</div>
                         </div>
-                        <a href="chat.html?session=${s.id}" class="session-link sans-label">Resume</a>
+                        <a href="chat.html?session=${s.id}" class="session-link">Resume</a>
                     </div>
                 `).join('');
             } catch (err) {
@@ -465,14 +387,12 @@
             }
         }
 
-        // Logout
         document.getElementById('logout-btn').addEventListener('click', async () => {
             await supabase.auth.signOut();
             localStorage.removeItem('sb_token');
             window.location.href = 'auth.html';
         });
 
-        // Initialize
         window.addEventListener('DOMContentLoaded', async () => {
             const session = await requireAuth();
             if (!session) return;
