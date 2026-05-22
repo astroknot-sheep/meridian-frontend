@@ -312,6 +312,7 @@
                 window.location.href = 'auth.html';
                 return null;
             }
+            localStorage.setItem('sb_token', session.access_token);
             return session;
         }
 
@@ -350,7 +351,7 @@
                             <div class="session-date">${formattedDate}</div>
                             <div class="session-mode">${mode}</div>
                             <div class="session-modality">${modality}</div>
-                            <a href="index.html?session=${sessionId}" class="session-link sans-label">Resume</a>
+                            <a href="chat.html?session=${sessionId}" class="session-link sans-label">Resume</a>
                         </div>
                     `;
                 }).join('');

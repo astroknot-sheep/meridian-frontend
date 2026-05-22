@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const files = ['auth.html', 'onboarding.html', 'index.html', 'profile.html', 'history.html', 'verified.html'];
+const files = ['auth.html', 'chat.html', 'onboarding.html', 'index.html', 'profile.html', 'history.html', 'verified.html'];
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;

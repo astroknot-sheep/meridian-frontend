@@ -380,6 +380,7 @@
                 window.location.href = 'auth.html';
                 return null;
             }
+            localStorage.setItem('sb_token', session.access_token);
             return session;
         }
 
@@ -455,7 +456,7 @@
                             <div class="session-date">${new Date(s.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
                             <div class="session-mode">${s.mode} · ${s.modality || '—'}</div>
                         </div>
-                        <a href="index.html?session=${s.id}" class="session-link sans-label">Resume</a>
+                        <a href="chat.html?session=${s.id}" class="session-link sans-label">Resume</a>
                     </div>
                 `).join('');
             } catch (err) {
