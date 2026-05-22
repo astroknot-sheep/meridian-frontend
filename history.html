@@ -259,7 +259,7 @@
         async function loadSessions() {
             const container = document.getElementById('history-container');
             try {
-                const res = await fetch(`${API_BASE}/profile/history`, { headers: authHeaders() });
+                const res = await fetch(`${API_BASE}/sessions`, { headers: authHeaders() });
                 if (!res.ok) {
                     if (res.status === 401) {
                         localStorage.removeItem('sb_token');
@@ -304,10 +304,16 @@
             window.location.href = 'auth.html';
         });
 
-        window.addEventListener('DOMContentLoaded', async () => {
+        const init = async () => {
             const session = await requireAuth();
-            if (session) { loadSessions(); }
-        });
+            if (session) { await loadSessions(); }
+        };
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 

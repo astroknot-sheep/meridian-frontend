@@ -363,7 +363,7 @@
         async function loadHistory() {
             const historyDiv = document.getElementById('history-list');
             try {
-                const res = await fetch(`${API_BASE}/profile/history`, { headers: authHeaders() });
+                const res = await fetch(`${API_BASE}/sessions`, { headers: authHeaders() });
                 if (!res.ok) throw new Error('Failed to load sessions');
                 const sessions = await res.json();
 
@@ -393,12 +393,18 @@
             window.location.href = 'auth.html';
         });
 
-        window.addEventListener('DOMContentLoaded', async () => {
+        const init = async () => {
             const session = await requireAuth();
             if (!session) return;
             await loadProfile();
             await loadHistory();
-        });
+        };
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 

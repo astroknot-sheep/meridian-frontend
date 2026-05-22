@@ -1141,9 +1141,30 @@
       });
     }
 
+    // Helper to generate UUID v4
+    function generateUUID() {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    // Determine SESSION_ID and load past history if resuming
+    let SESSION_ID;
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionParam = urlParams.get('session');
+    if (sessionParam) {
+      SESSION_ID = sessionParam;
+    } else {
+      SESSION_ID = generateUUID();
+    }
+
     // ── Existing app logic (adapted for JWT) ──────────────
-    const SESSION_ID = Math.random().toString(36).slice(2) + Date.now().toString(36);
-    const history = [];
+    const chatHistory = [];
     let totalCharsSubmitted = 0;
     const ACCUM_TARGET = 800;
 
@@ -1191,7 +1212,7 @@
       document.getElementById("send-btn").disabled = true;
 
       appendMsg("user", text);
-      history.push({ role: "user", content: text });
+      chatHistory.push({ role: "user", content: text });
       const typingEl = appendTyping();
 
       try {
@@ -1201,7 +1222,7 @@
           body: JSON.stringify({
             mode: currentMode,
             modality: document.getElementById("modal-sel").value,
-            messages: history,
+            messages: chatHistory,
             session_id: SESSION_ID
           })
         });
@@ -1229,10 +1250,10 @@
               const bodyText = accumMatch[3].trim();
               totalCharsSubmitted = charsDone;
               appendAccumulationBubble(bodyText, charsDone, charsTarget);
-              history.push({ role: "assistant", content: reply });
+              chatHistory.push({ role: "assistant", content: reply });
             } else {
               appendMsg("assistant", reply);
-              history.push({ role: "assistant", content: reply });
+              chatHistory.push({ role: "assistant", content: reply });
               if (data.risk_scores && data.risk_scores.depression !== undefined) {
                 appendRiskBadge(data.risk_scores.depression);
                 totalCharsSubmitted = 0;
@@ -1417,11 +1438,100 @@
       last.appendChild(el);
     }
 
+    async function loadSessionMessages() {
+      const messagesContainer = document.getElementById("messages");
+      try {
+        const res = await fetch(`${API_BASE}/sessions/${SESSION_ID}/messages`, {
+          headers: authHeaders()
+        });
+        if (!res.ok) {
+          if (res.status === 401) {
+            localStorage.removeItem('sb_token');
+            window.location.href = 'auth.html';
+            return;
+          }
+          throw new Error('Failed to load session messages');
+        }
+        const data = await res.json();
+        
+        // Clear the initial welcome message
+        messagesContainer.innerHTML = "";
+        
+        // Clear chatHistory and rebuild it
+        chatHistory.length = 0;
+
+        if (data && data.length > 0) {
+          data.forEach(msg => {
+            const role = msg.role;
+            const content = msg.content;
+            
+            chatHistory.push({ role, content });
+            
+            if (role === "assistant" && isScreeningReport(content)) {
+              appendMsg("assistant", content);
+            } else if (role === "assistant") {
+              const accumMatch = content.match(/^__ACCUMULATING__(\d+)\/(\d+)\n([\s\S]*)$/);
+              if (accumMatch) {
+                const charsDone = parseInt(accumMatch[1], 10);
+                const charsTarget = parseInt(accumMatch[2], 10);
+                const bodyText = accumMatch[3].trim();
+                appendAccumulationBubble(bodyText, charsDone, charsTarget);
+              } else {
+                appendMsg("assistant", content);
+              }
+            } else {
+              appendMsg("user", content);
+            }
+          });
+        } else {
+          messagesContainer.innerHTML = `
+            <div class="msg-wrap">
+              <div class="msg-meta">Meridian</div>
+              <div class="msg assistant">Hello. I'm here to support you. How are you feeling today?</div>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error(err);
+        messagesContainer.innerHTML = '<div style="text-align: center; color: #B07070; padding: 2rem 0;">Unable to load previous session messages.</div>';
+      }
+    }
+
     // Initialize on DOM ready
-    window.addEventListener("DOMContentLoaded", async () => {
-      await requireAuth();
+    const init = async () => {
+      const session = await requireAuth();
+      if (!session) return;
       onModeOrModalityChange();
-    });
+      
+      if (sessionParam) {
+        // Load existing session mode/modality
+        try {
+          const sessionsRes = await fetch(`${API_BASE}/sessions`, { headers: authHeaders() });
+          if (sessionsRes.ok) {
+            const sessions = await sessionsRes.json();
+            const currentSession = sessions.find(s => s.id === SESSION_ID);
+            if (currentSession) {
+              if (currentSession.mode) {
+                document.getElementById("mode-sel").value = currentSession.mode;
+              }
+              if (currentSession.modality) {
+                document.getElementById("modal-sel").value = currentSession.modality;
+              }
+              onModeOrModalityChange();
+            }
+          }
+        } catch (e) {
+          console.error("Failed to fetch session metadata:", e);
+        }
+        await loadSessionMessages();
+      }
+    };
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   </script>
 </body>
 
