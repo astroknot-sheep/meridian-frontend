@@ -7,7 +7,9 @@
     <title>Meridian · Onboarding</title>
     <meta name="description" content="Complete your Meridian profile and consent to begin." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
     <style>
         :root {
             --bg: #F5F2EE;
@@ -25,7 +27,11 @@
             --glass-border: rgba(255, 255, 255, 0.7);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             background: var(--bg);
@@ -51,14 +57,68 @@
             z-index: 9999;
         }
 
-        .orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: -1; }
-        .orb-1 { width: 400px; height: 400px; background: rgba(196, 168, 130, 0.1); top: 10%; left: 5%; animation: od1 22s ease-in-out infinite; }
-        .orb-2 { width: 300px; height: 300px; background: rgba(184, 133, 108, 0.08); bottom: 10%; right: 5%; animation: od2 28s ease-in-out infinite; }
-        @keyframes od1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,50px)} }
-        @keyframes od2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,-40px)} }
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: -1;
+        }
 
-        .serif { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
-        .sans-label { font-family: 'Syne', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; font-weight: 600; }
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(196, 168, 130, 0.1);
+            top: 10%;
+            left: 5%;
+            animation: od1 22s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(184, 133, 108, 0.08);
+            bottom: 10%;
+            right: 5%;
+            animation: od2 28s ease-in-out infinite;
+        }
+
+        @keyframes od1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0)
+            }
+
+            50% {
+                transform: translate(40px, 50px)
+            }
+        }
+
+        @keyframes od2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0)
+            }
+
+            50% {
+                transform: translate(-30px, -40px)
+            }
+        }
+
+        .serif {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 400;
+        }
+
+        .sans-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: 600;
+        }
 
         .onboarding-card {
             width: 100%;
@@ -69,67 +129,204 @@
             border: 1px solid var(--glass-border);
             border-radius: 28px;
             padding: 3rem 2.5rem;
-            box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08), inset 0 1px 0 rgba(255,255,255,0.8);
+            box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
             animation: cardUp 0.7s var(--ease-out) forwards;
             position: relative;
+            opacity: 0;
         }
 
-        @keyframes cardUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .onboarding-card.ready {
+            opacity: 1;
+        }
 
-        .logo { text-align: center; margin-bottom: 2.5rem; }
-        .logo a { text-decoration: none; color: var(--fg); font-size: 1.8rem; letter-spacing: -0.02em; display: inline-flex; align-items: center; gap: 0.4rem; }
-        .logo-dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; animation: pulse 4s ease-in-out infinite; }
-        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.8)} }
+        @keyframes cardUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
 
-        h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 400; margin-bottom: 1.5rem; text-align: center; letter-spacing: -0.01em; }
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
 
-        .form-group { margin-bottom: 1.8rem; }
-        .form-group label { display: block; font-size: 0.65rem; color: var(--accent); margin-bottom: 0.5rem; font-family: 'Syne', sans-serif; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600; }
-        .form-group input, .form-group select {
-            width: 100%; padding: 0.9rem 1rem;
-            background: rgba(255,255,255,0.8);
-            border: 1px solid rgba(26,23,20,0.08);
+        .logo {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo a {
+            text-decoration: none;
+            color: var(--fg);
+            font-size: 1.8rem;
+            letter-spacing: -0.02em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .logo-dot {
+            width: 5px;
+            height: 5px;
+            background: var(--gold);
+            border-radius: 50%;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: 0.3;
+                transform: scale(0.8)
+            }
+        }
+
+        h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.9rem;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            letter-spacing: -0.01em;
+        }
+
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.65rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-family: 'Syne', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(26, 23, 20, 0.08);
             border-radius: 12px;
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.9rem; color: var(--fg); outline: none;
+            font-size: 0.9rem;
+            color: var(--fg);
+            outline: none;
             transition: all 0.4s var(--ease-out);
         }
-        .form-group input:focus, .form-group select:focus {
+
+        .form-group input:focus,
+        .form-group select:focus {
             border-color: var(--gold);
             background: #FFF;
-            box-shadow: 0 0 0 3px rgba(196,168,130,0.1), 0 4px 12px rgba(26,23,20,0.04);
+            box-shadow: 0 0 0 3px rgba(196, 168, 130, 0.1), 0 4px 12px rgba(26, 23, 20, 0.04);
         }
 
         .consent-box {
-            display: flex; align-items: flex-start; gap: 0.8rem;
-            margin: 2rem 0; padding: 1.2rem;
-            background: rgba(255,255,255,0.6);
-            border: 1px solid rgba(26,23,20,0.05);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            margin: 2rem 0;
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(26, 23, 20, 0.05);
             border-radius: 14px;
         }
-        .consent-box input[type="checkbox"] { width: 1.1rem; height: 1.1rem; margin-top: 0.15rem; accent-color: var(--gold); }
-        .consent-text { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
-        .consent-text a { color: var(--gold); text-decoration: none; border-bottom: 1px solid rgba(196,168,130,0.3); transition: border 0.3s; }
-        .consent-text a:hover { border-color: var(--gold); }
+
+        .consent-box input[type="checkbox"] {
+            width: 1.1rem;
+            height: 1.1rem;
+            margin-top: 0.15rem;
+            accent-color: var(--gold);
+        }
+
+        .consent-text {
+            font-size: 0.8rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .consent-text a {
+            color: var(--gold);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(196, 168, 130, 0.3);
+            transition: border 0.3s;
+        }
+
+        .consent-text a:hover {
+            border-color: var(--gold);
+        }
 
         .btn-primary {
-            width: 100%; background: var(--fg); color: var(--bg);
-            border: none; border-radius: 100px; padding: 1rem 1.5rem;
-            font-family: 'Syne', sans-serif; font-size: 0.75rem;
-            text-transform: uppercase; letter-spacing: 0.2em; font-weight: 600;
-            cursor: pointer; transition: all 0.5s var(--ease-spring);
-            box-shadow: 0 8px 24px rgba(26,23,20,0.12);
-            margin-top: 0.5rem; position: relative; overflow: hidden;
+            width: 100%;
+            background: var(--fg);
+            color: var(--bg);
+            border: none;
+            border-radius: 100px;
+            padding: 1rem 1.5rem;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.5s var(--ease-spring);
+            box-shadow: 0 8px 24px rgba(26, 23, 20, 0.12);
+            margin-top: 0.5rem;
+            position: relative;
+            overflow: hidden;
         }
-        .btn-primary::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent); transform:translateX(-100%); transition:transform 0.6s ease; }
-        .btn-primary:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 16px 32px -6px rgba(26,23,20,0.25); background:#000; }
-        .btn-primary:hover:not(:disabled)::after { transform:translateX(100%); }
-        .btn-primary:disabled { opacity:0.5; cursor:not-allowed; box-shadow:none; transform:none; }
 
-        .error-msg { color: #B07070; font-size: 0.8rem; text-align: center; margin-top: 1rem; min-height: 1.2em; }
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 32px -6px rgba(26, 23, 20, 0.25);
+            background: #000;
+        }
+
+        .btn-primary:hover:not(:disabled)::after {
+            transform: translateX(100%);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .error-msg {
+            color: #B07070;
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 1rem;
+            min-height: 1.2em;
+        }
 
         @media (max-width: 480px) {
-            .onboarding-card { padding: 2rem 1.5rem; border-radius: 24px; }
+            .onboarding-card {
+                padding: 2rem 1.5rem;
+                border-radius: 24px;
+            }
         }
     </style>
 </head>
@@ -138,7 +335,7 @@
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
-    <div class="onboarding-card">
+    <div class="onboarding-card" id="card">
         <div class="logo">
             <a href="index.html" class="serif">Meridian<span class="logo-dot" aria-hidden="true"></span></a>
         </div>
@@ -147,7 +344,8 @@
         <form id="onboarding-form">
             <div class="form-group">
                 <label class="sans-label" for="display-name">Display Name</label>
-                <input type="text" id="display-name" placeholder="How should we call you?" required autocomplete="name" />
+                <input type="text" id="display-name" placeholder="How should we call you?" required
+                    autocomplete="name" />
             </div>
             <div class="form-group">
                 <label class="sans-label" for="preferred-modality">Preferred Therapy Modality</label>
@@ -167,32 +365,82 @@
                     <a href="#" target="_blank">Read more</a>
                 </div>
             </div>
-            <button type="submit" class="btn-primary" id="submit-btn">Enter Meridian</button>
+            <button type="submit" class="btn-primary" id="submit-btn" disabled>Enter Meridian</button>
             <div class="error-msg" id="error-msg" aria-live="polite"></div>
         </form>
     </div>
 
     <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
         const SUPABASE_URL = '__SUPABASE_URL__';
         const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
-
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        function authHeaders() {
-            const token = localStorage.getItem('sb_token');
-            return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+        const API_BASE = window.location.hostname === 'localhost'
+            ? 'http://localhost:8000'
+            : 'https://astroknotsheep-meridian-api.hf.space';
+
+        // Fresh-token aware auth headers (no stale localStorage reads).
+        async function authHeaders() {
+            const { data } = await supabase.auth.getSession();
+            if (!data.session) {
+                window.location.href = 'auth.html';
+                return { 'Content-Type': 'application/json' };
+            }
+            localStorage.setItem('sb_token', data.session.access_token);
+            return {
+                'Authorization': `Bearer ${data.session.access_token}`,
+                'Content-Type': 'application/json',
+            };
         }
 
+        // Guard: must be signed in. If already consented, skip onboarding.
+        let authReady = false;
         (async function guard() {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) { window.location.href = 'auth.html'; return; }
-            const name = session.user.user_metadata?.full_name || '';
-            document.getElementById('display-name').value = name;
+
+            localStorage.setItem('sb_token', session.access_token);
+
+            // If consent already granted, jump to chat — no point re-onboarding.
+            try {
+                const res = await fetch(`${API_BASE}/profile`, {
+                    headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }
+                });
+                if (res.ok) {
+                    const profile = await res.json();
+                    if (profile.consent_given) {
+                        window.location.href = 'chat.html';
+                        return;
+                    }
+                    // Pre-fill display name from auth metadata if available
+                    const meta = session.user.user_metadata || {};
+                    if (profile.display_name || meta.full_name || meta.display_name) {
+                        document.getElementById('display-name').value =
+                            profile.display_name || meta.full_name || meta.display_name;
+                    }
+                    if (profile.preferred_modality) {
+                        document.getElementById('preferred-modality').value = profile.preferred_modality;
+                    }
+                }
+            } catch (e) {
+                console.warn('Profile pre-check failed (non-fatal):', e);
+            }
+
+            authReady = true;
+            document.getElementById('card').classList.add('ready');
+            document.getElementById('submit-btn').disabled = false;
         })();
 
         document.getElementById('onboarding-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+
+            // Block submit until guard completes
+            if (!authReady) {
+                document.getElementById('error-msg').textContent = 'Loading… one moment.';
+                return;
+            }
+
             const btn = document.getElementById('submit-btn');
             const errorEl = document.getElementById('error-msg');
             errorEl.textContent = '';
@@ -211,14 +459,15 @@
             }
 
             try {
-                const apiBase = window.location.hostname === 'localhost'
-                    ? 'http://localhost:8000'
-                    : 'https://astroknotsheep-meridian-api.hf.space';
-
-                const res = await fetch(`${apiBase}/profile/consent`, {
+                const headers = await authHeaders();
+                const res = await fetch(`${API_BASE}/profile/consent`, {
                     method: 'POST',
-                    headers: authHeaders(),
-                    body: JSON.stringify({ display_name: displayName, preferred_modality: modality, consent_given: true })
+                    headers,
+                    body: JSON.stringify({
+                        display_name: displayName,
+                        preferred_modality: modality,
+                        consent_given: true,
+                    }),
                 });
 
                 if (!res.ok) {
@@ -226,11 +475,12 @@
                     throw new Error(errData.detail || 'Failed to save profile.');
                 }
 
-                await supabase.auth.updateUser({ data: { display_name: displayName, preferred_modality: modality } });
+                await supabase.auth.updateUser({
+                    data: { display_name: displayName, preferred_modality: modality }
+                });
                 window.location.href = 'chat.html';
             } catch (err) {
                 errorEl.textContent = err.message || 'Something went wrong. Please try again.';
-            } finally {
                 btn.disabled = false;
                 btn.textContent = 'Enter Meridian';
             }

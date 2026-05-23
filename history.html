@@ -7,7 +7,9 @@
     <title>Meridian · Session History</title>
     <meta name="description" content="Review your previous Meridian conversations." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
     <style>
         :root {
             --bg: #F5F2EE;
@@ -25,7 +27,11 @@
             --glass-border: rgba(255, 255, 255, 0.7);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             background: var(--bg);
@@ -50,16 +56,69 @@
             z-index: 9999;
         }
 
-        .orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: -1; }
-        .orb-1 { width: 380px; height: 380px; background: rgba(196,168,130,0.08); top: 10%; left: 5%; animation: od1 22s ease-in-out infinite; }
-        .orb-2 { width: 280px; height: 280px; background: rgba(184,133,108,0.06); bottom: 15%; right: 10%; animation: od2 28s ease-in-out infinite; }
-        @keyframes od1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(35px,50px)} }
-        @keyframes od2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-25px,-40px)} }
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            pointer-events: none;
+            z-index: -1;
+        }
 
-        .serif { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
-        .sans-label { font-family: 'Syne', sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.2em; font-weight: 600; }
+        .orb-1 {
+            width: 380px;
+            height: 380px;
+            background: rgba(196, 168, 130, 0.08);
+            top: 10%;
+            left: 5%;
+            animation: od1 22s ease-in-out infinite;
+        }
 
-        /* ── Navigation Bar ────────────────────────────── */
+        .orb-2 {
+            width: 280px;
+            height: 280px;
+            background: rgba(184, 133, 108, 0.06);
+            bottom: 15%;
+            right: 10%;
+            animation: od2 28s ease-in-out infinite;
+        }
+
+        @keyframes od1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0)
+            }
+
+            50% {
+                transform: translate(35px, 50px)
+            }
+        }
+
+        @keyframes od2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0)
+            }
+
+            50% {
+                transform: translate(-25px, -40px)
+            }
+        }
+
+        .serif {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 400;
+        }
+
+        .sans-label {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: 600;
+        }
+
         .nav-bar {
             width: 100%;
             max-width: 1200px;
@@ -73,8 +132,7 @@
             -webkit-backdrop-filter: blur(32px);
             border: 1px solid var(--glass-border);
             border-radius: 100px;
-            box-shadow: 0 8px 32px -8px rgba(26, 23, 20, 0.05),
-                         inset 0 1px 0 rgba(255,255,255,0.9);
+            box-shadow: 0 8px 32px -8px rgba(26, 23, 20, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
         }
 
         .nav-logo {
@@ -87,7 +145,11 @@
             letter-spacing: -0.01em;
         }
 
-        .nav-links { display: flex; gap: 2rem; align-items: center; }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
 
         .nav-links a {
             color: var(--muted);
@@ -100,8 +162,13 @@
             font-weight: 600;
         }
 
-        .nav-links a:hover { color: var(--fg); }
-        .nav-links a.active { color: var(--fg); }
+        .nav-links a:hover {
+            color: var(--fg);
+        }
+
+        .nav-links a.active {
+            color: var(--fg);
+        }
 
         .btn-logout {
             background: transparent;
@@ -124,7 +191,6 @@
             border-color: var(--fg);
         }
 
-        /* ── History Card ──────────────────────────────── */
         .history-card {
             width: 100%;
             max-width: 800px;
@@ -134,8 +200,7 @@
             border: 1px solid var(--glass-border);
             border-radius: 24px;
             padding: 2.5rem;
-            box-shadow: 0 16px 40px -12px rgba(26, 23, 20, 0.06),
-                         inset 0 1px 0 rgba(255,255,255,0.8);
+            box-shadow: 0 16px 40px -12px rgba(26, 23, 20, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
         }
 
         .section-title {
@@ -145,7 +210,10 @@
             letter-spacing: -0.01em;
         }
 
-        .session-list { display: flex; flex-direction: column; }
+        .session-list {
+            display: flex;
+            flex-direction: column;
+        }
 
         .session-row {
             display: grid;
@@ -160,12 +228,30 @@
             margin: 0 -0.5rem;
         }
 
-        .session-row:last-child { border-bottom: none; }
-        .session-row:hover { background: rgba(255,255,255,0.4); }
+        .session-row:last-child {
+            border-bottom: none;
+        }
 
-        .session-date { font-weight: 400; }
-        .session-mode { color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; }
-        .session-modality { color: var(--gold); font-size: 0.7rem; text-transform: capitalize; }
+        .session-row:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .session-date {
+            font-weight: 400;
+        }
+
+        .session-mode {
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.7rem;
+        }
+
+        .session-modality {
+            color: var(--gold);
+            font-size: 0.7rem;
+            text-transform: capitalize;
+        }
 
         .session-link {
             color: var(--gold);
@@ -176,18 +262,24 @@
             letter-spacing: 0.15em;
             font-weight: 600;
             padding: 0.4rem 1rem;
-            border: 1px solid rgba(196,168,130,0.2);
+            border: 1px solid rgba(196, 168, 130, 0.2);
             border-radius: 100px;
             transition: all 0.3s;
             white-space: nowrap;
         }
 
         .session-link:hover {
-            background: rgba(196,168,130,0.1);
+            background: rgba(196, 168, 130, 0.1);
             border-color: var(--gold);
         }
 
-        .empty-state { text-align: center; color: var(--muted); padding: 3rem 0; font-size: 0.9rem; line-height: 1.6; }
+        .empty-state {
+            text-align: center;
+            color: var(--muted);
+            padding: 3rem 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
 
         .loading-state {
             text-align: center;
@@ -196,17 +288,51 @@
             animation: loadPulse 1.6s infinite;
         }
 
-        @keyframes loadPulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+        @keyframes loadPulse {
 
-        .error-state { text-align: center; color: #B07070; padding: 3rem 0; }
+            0%,
+            100% {
+                opacity: 0.5
+            }
 
-        /* ── Responsive ────────────────────────────────── */
+            50% {
+                opacity: 1
+            }
+        }
+
+        .error-state {
+            text-align: center;
+            color: #B07070;
+            padding: 3rem 0;
+        }
+
         @media (max-width: 600px) {
-            .nav-bar { flex-wrap: wrap; gap: 0.8rem; border-radius: 20px; padding: 0.8rem 1rem; }
-            .nav-links { width: 100%; justify-content: space-between; }
-            .history-card { padding: 2rem 1.5rem; border-radius: 20px; }
-            .session-row { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-            .session-link { grid-column: span 2; justify-self: end; }
+            .nav-bar {
+                flex-wrap: wrap;
+                gap: 0.8rem;
+                border-radius: 20px;
+                padding: 0.8rem 1rem;
+            }
+
+            .nav-links {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .history-card {
+                padding: 2rem 1.5rem;
+                border-radius: 20px;
+            }
+
+            .session-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
+
+            .session-link {
+                grid-column: span 2;
+                justify-self: end;
+            }
         }
     </style>
 </head>
@@ -242,11 +368,18 @@
             ? 'http://localhost:8000'
             : 'https://astroknotsheep-meridian-api.hf.space';
 
-        function authHeaders() {
-            const token = localStorage.getItem('sb_token');
-            return token
-                ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-                : { 'Content-Type': 'application/json' };
+        // Always fetch a fresh token — Supabase rotates JWTs hourly.
+        async function authHeaders() {
+            const { data } = await supabase.auth.getSession();
+            if (!data.session) {
+                window.location.href = 'auth.html';
+                return { 'Content-Type': 'application/json' };
+            }
+            localStorage.setItem('sb_token', data.session.access_token);
+            return {
+                'Authorization': `Bearer ${data.session.access_token}`,
+                'Content-Type': 'application/json',
+            };
         }
 
         async function requireAuth() {
@@ -259,15 +392,19 @@
         async function loadSessions() {
             const container = document.getElementById('history-container');
             try {
-                const res = await fetch(`${API_BASE}/sessions`, { headers: authHeaders() });
-                if (!res.ok) {
-                    if (res.status === 401) {
-                        localStorage.removeItem('sb_token');
-                        window.location.href = 'auth.html';
-                        return;
-                    }
-                    throw new Error('Failed to fetch history');
+                const headers = await authHeaders();
+                const res = await fetch(`${API_BASE}/sessions`, { headers });
+
+                if (res.status === 401) {
+                    localStorage.removeItem('sb_token');
+                    window.location.href = 'auth.html';
+                    return;
                 }
+                if (res.status === 403) {
+                    window.location.href = 'onboarding.html';
+                    return;
+                }
+                if (!res.ok) throw new Error('Failed to fetch history');
 
                 const sessions = await res.json();
                 if (!sessions || sessions.length === 0) {

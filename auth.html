@@ -11,9 +11,6 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
         rel="stylesheet" />
     <style>
-        /* ═══════════════════════════════════════════════════
-           DESIGN TOKENS
-           ═══════════════════════════════════════════════════ */
         :root {
             --bg: #F5F2EE;
             --dark: #0F0E0C;
@@ -45,7 +42,6 @@
             height: 100vh;
         }
 
-        /* Film grain */
         body::after {
             content: "";
             position: fixed;
@@ -68,16 +64,12 @@
             font-weight: 600;
         }
 
-        /* ═══════════════════════════════════════════════════
-           SPLIT LAYOUT
-           ═══════════════════════════════════════════════════ */
         .auth-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
             min-height: 100vh;
         }
 
-        /* ── Visual Panel (Left) ───────────────────────── */
         .auth-visual {
             background: var(--dark);
             display: flex;
@@ -87,7 +79,6 @@
             overflow: hidden;
         }
 
-        /* Grid overlay */
         .visual-grid {
             position: absolute;
             inset: 0;
@@ -98,7 +89,6 @@
             pointer-events: none;
         }
 
-        /* Animated gradient orbs */
         .orb {
             position: absolute;
             border-radius: 50%;
@@ -137,15 +127,15 @@
 
             0%,
             100% {
-                transform: translate(0, 0) scale(1);
+                transform: translate(0, 0) scale(1)
             }
 
             33% {
-                transform: translate(40px, -70px) scale(1.08);
+                transform: translate(40px, -70px) scale(1.08)
             }
 
             66% {
-                transform: translate(-30px, 50px) scale(0.95);
+                transform: translate(-30px, 50px) scale(0.95)
             }
         }
 
@@ -153,15 +143,15 @@
 
             0%,
             100% {
-                transform: translate(0, 0) scale(1);
+                transform: translate(0, 0) scale(1)
             }
 
             33% {
-                transform: translate(-50px, -40px) scale(1.12);
+                transform: translate(-50px, -40px) scale(1.12)
             }
 
             66% {
-                transform: translate(35px, 60px) scale(0.9);
+                transform: translate(35px, 60px) scale(0.9)
             }
         }
 
@@ -169,15 +159,15 @@
 
             0%,
             100% {
-                transform: translate(0, 0) scale(1);
+                transform: translate(0, 0) scale(1)
             }
 
             33% {
-                transform: translate(60px, -30px) scale(0.92);
+                transform: translate(60px, -30px) scale(0.92)
             }
 
             66% {
-                transform: translate(-40px, -50px) scale(1.1);
+                transform: translate(-40px, -50px) scale(1.1)
             }
         }
 
@@ -210,7 +200,6 @@
             border: none;
         }
 
-        /* ── Auth Panel (Right) ────────────────────────── */
         .auth-panel {
             background: var(--bg);
             display: flex;
@@ -229,16 +218,15 @@
         @keyframes cardAppear {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(20px)
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0)
             }
         }
 
-        /* Logo (mobile only) */
         .auth-logo {
             text-align: center;
             margin-bottom: 2.5rem;
@@ -268,16 +256,15 @@
             0%,
             100% {
                 opacity: 1;
-                transform: scale(1);
+                transform: scale(1)
             }
 
             50% {
                 opacity: 0.3;
-                transform: scale(0.8);
+                transform: scale(0.8)
             }
         }
 
-        /* ── Toggle Tabs ───────────────────────────────── */
         .auth-toggle {
             display: flex;
             justify-content: center;
@@ -314,7 +301,6 @@
             color: var(--fg);
         }
 
-        /* ── Form Fields ───────────────────────────────── */
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -354,7 +340,6 @@
             opacity: 0.5;
         }
 
-        /* ── Primary Button ────────────────────────────── */
         .btn-primary {
             width: 100%;
             background: var(--fg);
@@ -399,7 +384,6 @@
             cursor: not-allowed;
         }
 
-        /* ── Status Messages ───────────────────────────── */
         .auth-error {
             color: #B07070;
             font-size: 0.8rem;
@@ -434,15 +418,11 @@
             color: var(--fg);
         }
 
-        /* ── Email Confirmation ────────────────────────── */
         .email-sent {
             text-align: center;
             animation: cardAppear 0.6s var(--ease-out) forwards;
         }
 
-        /* ═══════════════════════════════════════════════════
-           RESPONSIVE
-           ═══════════════════════════════════════════════════ */
         @media (max-width: 900px) {
             .auth-layout {
                 display: flex;
@@ -474,8 +454,7 @@
                 border: 1px solid var(--glass-border);
                 border-radius: 28px;
                 padding: 2.5rem 2rem;
-                box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+                box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
             }
 
             .auth-logo {
@@ -498,7 +477,6 @@
 
 <body>
     <div class="auth-layout">
-        <!-- ── Visual Panel ─────────────────────────────── -->
         <div class="auth-visual" aria-hidden="true">
             <div class="orb orb-1"></div>
             <div class="orb orb-2"></div>
@@ -511,20 +489,17 @@
             </div>
         </div>
 
-        <!-- ── Auth Panel ───────────────────────────────── -->
         <div class="auth-panel">
             <div class="auth-card" id="auth-card">
                 <div class="auth-logo">
                     <a href="index.html" class="serif">Meridian<span class="logo-dot"></span></a>
                 </div>
 
-                <!-- Toggle tabs -->
                 <div class="auth-toggle" id="auth-toggle">
                     <button id="login-tab" class="active">Sign In</button>
                     <button id="signup-tab">Create Account</button>
                 </div>
 
-                <!-- Sign In Form -->
                 <form id="login-form" autocomplete="on">
                     <div class="form-group">
                         <label class="sans-label" for="login-email">Email</label>
@@ -539,7 +514,6 @@
                     <button type="submit" class="btn-primary" id="login-submit">Enter Portal</button>
                 </form>
 
-                <!-- Sign Up Form -->
                 <form id="signup-form" style="display: none;" autocomplete="on">
                     <div class="form-group">
                         <label class="sans-label" for="signup-email">Email</label>
@@ -554,7 +528,6 @@
                     <button type="submit" class="btn-primary" id="signup-submit">Create Account</button>
                 </form>
 
-                <!-- Email confirmation message -->
                 <div id="email-confirmation-msg" style="display: none;" class="email-sent">
                     <p class="auth-info">
                         <strong>Check your inbox.</strong><br><br>
@@ -574,12 +547,38 @@
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-        // These placeholders will be replaced by Vercel build script
         const SUPABASE_URL = '__SUPABASE_URL__';
         const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // DOM elements
+        const API_BASE = window.location.hostname === 'localhost'
+            ? 'http://localhost:8000'
+            : 'https://astroknotsheep-meridian-api.hf.space';
+
+        // ── Consent-aware routing ──────────────────────────────
+        // After ANY successful authentication path, decide where to send
+        // the user based on whether they've already completed onboarding.
+        async function routePostAuth(accessToken) {
+            try {
+                const res = await fetch(`${API_BASE}/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (res.ok) {
+                    const profile = await res.json();
+                    window.location.href = profile.consent_given ? 'chat.html' : 'onboarding.html';
+                    return;
+                }
+                // Any non-OK from /profile → safest path is onboarding
+                window.location.href = 'onboarding.html';
+            } catch (e) {
+                console.error('Consent check failed, defaulting to onboarding:', e);
+                window.location.href = 'onboarding.html';
+            }
+        }
+
         const loginTab = document.getElementById('login-tab');
         const signupTab = document.getElementById('signup-tab');
         const loginForm = document.getElementById('login-form');
@@ -588,43 +587,37 @@
         const authToggle = document.getElementById('auth-toggle');
         const emailConfMsg = document.getElementById('email-confirmation-msg');
 
-        // Toggle forms
         function showLoginForm() {
-            loginTab.classList.add('active');
-            signupTab.classList.remove('active');
-            loginForm.style.display = 'block';
-            signupForm.style.display = 'none';
-            authToggle.style.display = 'flex';
-            emailConfMsg.style.display = 'none';
+            loginTab.classList.add('active'); signupTab.classList.remove('active');
+            loginForm.style.display = 'block'; signupForm.style.display = 'none';
+            authToggle.style.display = 'flex'; emailConfMsg.style.display = 'none';
             errorEl.textContent = '';
         }
         function showSignupForm() {
-            signupTab.classList.add('active');
-            loginTab.classList.remove('active');
-            signupForm.style.display = 'block';
-            loginForm.style.display = 'none';
-            authToggle.style.display = 'flex';
-            emailConfMsg.style.display = 'none';
+            signupTab.classList.add('active'); loginTab.classList.remove('active');
+            signupForm.style.display = 'block'; loginForm.style.display = 'none';
+            authToggle.style.display = 'flex'; emailConfMsg.style.display = 'none';
             errorEl.textContent = '';
         }
         loginTab.addEventListener('click', showLoginForm);
         signupTab.addEventListener('click', showSignupForm);
 
-        // Helper
         function setLoading(button, isLoading) {
             button.disabled = isLoading;
             button.textContent = isLoading ? 'Please wait…' : (button.id.includes('signup') ? 'Create Account' : 'Enter Portal');
         }
 
-        // Handle ?confirmed=true query parameter
+        // ── Handle email-confirmation redirect ─────────────────
         async function handleEmailConfirmationRedirect() {
             const params = new URLSearchParams(window.location.search);
             if (params.get('confirmed') !== 'true') return false;
 
-            const { data: { session }, error } = await supabase.auth.getSession();
+            const { data: { session } } = await supabase.auth.getSession();
             if (session) {
                 localStorage.setItem('sb_token', session.access_token);
-                window.location.href = 'verified.html';
+                // Skip verified.html "click to sign in" — they're already signed in.
+                // Route by consent: onboarding (first time) or chat (returning).
+                await routePostAuth(session.access_token);
                 return true;
             }
             errorEl.textContent = 'Verification successful. Please sign in.';
@@ -632,7 +625,7 @@
             return false;
         }
 
-        // Sign In
+        // ── Sign In ────────────────────────────────────────────
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
@@ -645,7 +638,7 @@
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) throw error;
                 localStorage.setItem('sb_token', data.session.access_token);
-                window.location.href = 'chat.html';
+                await routePostAuth(data.session.access_token);
             } catch (err) {
                 errorEl.textContent = err.message || 'Login failed. Check your credentials.';
             } finally {
@@ -653,7 +646,7 @@
             }
         });
 
-        // Sign Up
+        // ── Sign Up ────────────────────────────────────────────
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('signup-email').value.trim();
@@ -664,27 +657,24 @@
 
             try {
                 const { data, error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: {
-                        emailRedirectTo: `${window.location.origin}/auth.html?confirmed=true`
-                    }
+                    email, password,
+                    options: { emailRedirectTo: `${window.location.origin}/auth.html?confirmed=true` }
                 });
-
                 if (error) throw error;
 
                 if (data.session) {
+                    // Email confirmation is OFF → straight to onboarding.
                     localStorage.setItem('sb_token', data.session.access_token);
                     window.location.href = 'onboarding.html';
                     return;
                 }
 
+                // Email confirmation is ON → show "check inbox".
                 loginForm.style.display = 'none';
                 signupForm.style.display = 'none';
                 authToggle.style.display = 'none';
                 emailConfMsg.style.display = 'block';
                 errorEl.textContent = '';
-
             } catch (err) {
                 errorEl.textContent = err.message || 'Registration failed. Try a different email.';
             } finally {
@@ -692,14 +682,16 @@
             }
         });
 
-        // On page load
+        // ── On page load ───────────────────────────────────────
         window.addEventListener('DOMContentLoaded', async () => {
             const handled = await handleEmailConfirmationRedirect();
             if (handled) return;
 
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
-                window.location.href = 'chat.html';
+                // Already signed in — route by consent state.
+                localStorage.setItem('sb_token', session.access_token);
+                await routePostAuth(session.access_token);
                 return;
             }
 
