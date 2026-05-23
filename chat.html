@@ -1069,7 +1069,6 @@
       el.style.height = Math.min(el.scrollHeight, 150) + "px";
     }
 
-    // EXPORT TO WINDOW FOR HTML INLINE EVENT HANDLERS
     window.autoResize = autoResize;
 
     document.getElementById("inp").addEventListener("keydown", e => {
@@ -1089,8 +1088,32 @@
       document.getElementById("ambient-glow").style.background = targetGlow;
     }
 
-    // EXPORT
     window.onModeOrModalityChange = onModeOrModalityChange;
+
+    /**
+     * Helper to safely isolate and extract accumulation tags under all conditions.
+     * Uses a relaxed match configuration to clean text even if body text layout varies.
+     */
+    function parseAccumulating(text) {
+      const regex = /^__ACCUMULATING__(\d+)\/(\d+)(?:\n|\s)*([\s\S]*)$/;
+      const match = text.match(regex);
+      if (match) {
+        return {
+          isAccumulating: true,
+          charsDone: parseInt(match[1], 10),
+          charsTarget: parseInt(match[2], 10),
+          bodyText: match[3].trim()
+        };
+      }
+      // Safety fallback: Strip any remnant header text if standard matching failed
+      const safeText = text.replace(/^__ACCUMULATING__\d+\/\d+\n?/, "").trim();
+      return {
+        isAccumulating: false,
+        charsDone: 0,
+        charsTarget: 0,
+        bodyText: safeText
+      };
+    }
 
     async function sendMsg() {
       const inp = document.getElementById("inp");
@@ -1135,22 +1158,20 @@
             appendCrisis();
           } else {
             const reply = data.messages[0].content;
-            const accumMatch = reply.match(/^__ACCUMULATING__(\d+)\/(\d+)\n([\s\S]*)$/);
-            if (accumMatch) {
-              const charsDone = parseInt(accumMatch[1], 10);
-              const charsTarget = parseInt(accumMatch[2], 10);
-              const bodyText = accumMatch[3].trim();
-              totalCharsSubmitted = charsDone;
-              appendAccumulationBubble(bodyText, charsDone, charsTarget);
-              chatHistory.push({ role: "assistant", content: reply });
+            const parsed = parseAccumulating(reply);
+
+            if (parsed.isAccumulating) {
+              totalCharsSubmitted = parsed.charsDone;
+              appendAccumulationBubble(parsed.bodyText, parsed.charsDone, parsed.charsTarget);
             } else {
-              appendMsg("assistant", reply);
-              chatHistory.push({ role: "assistant", content: reply });
+              appendMsg("assistant", parsed.bodyText);
               if (data.risk_scores && data.risk_scores.depression !== undefined) {
                 appendRiskBadge(data.risk_scores.depression);
                 totalCharsSubmitted = 0;
               }
             }
+            // Maintain raw server contract context strings in core history
+            chatHistory.push({ role: "assistant", content: reply });
           }
         }
       } catch (e) {
@@ -1161,11 +1182,11 @@
       document.getElementById("inp").focus();
     }
 
-    // EXPORT
     window.sendMsg = sendMsg;
 
     function renderMarkdown(raw) {
-      const parts = raw.split(/\n---\n/);
+      const parsed = parseAccumulating(raw);
+      const parts = parsed.bodyText.split(/\n---\n/);
       const body = parts[0];
       const disclaimer = parts[1] || "";
       const lines = body.split("\n");
@@ -1218,14 +1239,19 @@
       meta.textContent = role === "user" ? "You" : "Meridian";
       const el = document.createElement("div");
       el.className = `msg ${role}`;
-      if (role === "assistant" && isScreeningReport(text)) {
-        el.innerHTML = renderMarkdown(text);
+
+      // Secondary structural guard filter step inside DOM creation
+      const parsed = parseAccumulating(text);
+      const cleanContent = parsed.bodyText;
+
+      if (role === "assistant" && isScreeningReport(cleanContent)) {
+        el.innerHTML = renderMarkdown(cleanContent);
         el.style.whiteSpace = "normal";
       } else if (role === "assistant") {
-        el.innerHTML = inlineFormat(text).replace(/\n/g, "<br>");
+        el.innerHTML = inlineFormat(cleanContent).replace(/\n/g, "<br>");
         el.style.whiteSpace = "normal";
       } else {
-        el.textContent = text;
+        el.textContent = cleanContent;
       }
       wrap.appendChild(meta);
       wrap.appendChild(el);
@@ -1346,14 +1372,11 @@
             if (role === "assistant" && isScreeningReport(content)) {
               appendMsg("assistant", content);
             } else if (role === "assistant") {
-              const accumMatch = content.match(/^__ACCUMULATING__(\d+)\/(\d+)\n([\s\S]*)$/);
-              if (accumMatch) {
-                const charsDone = parseInt(accumMatch[1], 10);
-                const charsTarget = parseInt(accumMatch[2], 10);
-                const bodyText = accumMatch[3].trim();
-                appendAccumulationBubble(bodyText, charsDone, charsTarget);
+              const parsed = parseAccumulating(content);
+              if (parsed.isAccumulating) {
+                appendAccumulationBubble(parsed.bodyText, parsed.charsDone, parsed.charsTarget);
               } else {
-                appendMsg("assistant", content);
+                appendMsg("assistant", parsed.bodyText);
               }
             } else {
               appendMsg("user", content);
