@@ -30,7 +30,11 @@
             --glass-border: rgba(255, 255, 255, 0.7);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'IBM Plex Mono', monospace;
@@ -51,7 +55,10 @@
             z-index: 9999;
         }
 
-        .serif { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
+        .serif {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 400;
+        }
 
         .sans-label {
             font-family: 'Syne', sans-serif;
@@ -85,8 +92,8 @@
             position: absolute;
             inset: 0;
             background-image:
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
             background-size: 55px 55px;
             pointer-events: none;
         }
@@ -127,19 +134,51 @@
         }
 
         @keyframes orbDrift1 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(40px, -70px) scale(1.08); }
-            66% { transform: translate(-30px, 50px) scale(0.95); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(40px, -70px) scale(1.08);
+            }
+
+            66% {
+                transform: translate(-30px, 50px) scale(0.95);
+            }
         }
+
         @keyframes orbDrift2 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(-50px, -40px) scale(1.12); }
-            66% { transform: translate(35px, 60px) scale(0.9); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(-50px, -40px) scale(1.12);
+            }
+
+            66% {
+                transform: translate(35px, 60px) scale(0.9);
+            }
         }
+
         @keyframes orbDrift3 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            33% { transform: translate(60px, -30px) scale(0.92); }
-            66% { transform: translate(-40px, -50px) scale(1.1); }
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(60px, -30px) scale(0.92);
+            }
+
+            66% {
+                transform: translate(-40px, -50px) scale(1.1);
+            }
         }
 
         .visual-content {
@@ -188,8 +227,15 @@
         }
 
         @keyframes cardAppear {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Logo (mobile only) */
@@ -218,8 +264,17 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.3; transform: scale(0.8); }
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
         }
 
         /* ── Toggle Tabs ───────────────────────────────── */
@@ -324,7 +379,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
             transform: translateX(-100%);
             transition: transform 0.6s ease;
         }
@@ -375,7 +430,9 @@
             transition: color 0.3s;
         }
 
-        .back-link:hover { color: var(--fg); }
+        .back-link:hover {
+            color: var(--fg);
+        }
 
         /* ── Email Confirmation ────────────────────────── */
         .email-sent {
@@ -418,15 +475,23 @@
                 border-radius: 28px;
                 padding: 2.5rem 2rem;
                 box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08),
-                             inset 0 1px 0 rgba(255, 255, 255, 0.8);
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8);
             }
 
-            .auth-logo { display: block; }
+            .auth-logo {
+                display: block;
+            }
         }
 
         @media (max-width: 480px) {
-            .auth-panel { padding: 1rem; }
-            .auth-card { padding: 2rem 1.5rem; border-radius: 24px; }
+            .auth-panel {
+                padding: 1rem;
+            }
+
+            .auth-card {
+                padding: 2rem 1.5rem;
+                border-radius: 24px;
+            }
         }
     </style>
 </head>
@@ -463,11 +528,13 @@
                 <form id="login-form" autocomplete="on">
                     <div class="form-group">
                         <label class="sans-label" for="login-email">Email</label>
-                        <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email" />
+                        <input type="email" id="login-email" placeholder="you@example.com" required
+                            autocomplete="email" />
                     </div>
                     <div class="form-group">
                         <label class="sans-label" for="login-password">Password</label>
-                        <input type="password" id="login-password" placeholder="········" required autocomplete="current-password" />
+                        <input type="password" id="login-password" placeholder="········" required
+                            autocomplete="current-password" />
                     </div>
                     <button type="submit" class="btn-primary" id="login-submit">Enter Portal</button>
                 </form>
@@ -476,11 +543,13 @@
                 <form id="signup-form" style="display: none;" autocomplete="on">
                     <div class="form-group">
                         <label class="sans-label" for="signup-email">Email</label>
-                        <input type="email" id="signup-email" placeholder="you@example.com" required autocomplete="email" />
+                        <input type="email" id="signup-email" placeholder="you@example.com" required
+                            autocomplete="email" />
                     </div>
                     <div class="form-group">
                         <label class="sans-label" for="signup-password">Password</label>
-                        <input type="password" id="signup-password" placeholder="Min. 8 characters" required minlength="8" autocomplete="new-password" />
+                        <input type="password" id="signup-password" placeholder="Min. 8 characters" required
+                            minlength="8" autocomplete="new-password" />
                     </div>
                     <button type="submit" class="btn-primary" id="signup-submit">Create Account</button>
                 </form>
@@ -492,7 +561,8 @@
                         We've sent a verification link to your email address.<br>
                         Click the link to complete your account, then come back here to sign in.
                     </p>
-                    <button class="btn-primary" onclick="location.reload()" style="margin-top:1.5rem">I've verified — sign in</button>
+                    <button class="btn-primary" onclick="location.reload()" style="margin-top:1.5rem">I've verified —
+                        sign in</button>
                 </div>
 
                 <div class="auth-error" id="auth-error" aria-live="polite"></div>
