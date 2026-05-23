@@ -10,9 +10,6 @@
     href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&family=Syne:wght@400;500;600;700&display=swap"
     rel="stylesheet" />
   <style>
-    /* ═══════════════════════════════════════════════════════
-       DESIGN TOKENS & RESET
-       ═══════════════════════════════════════════════════════ */
     *,
     *::before,
     *::after {
@@ -51,7 +48,6 @@
       position: relative;
     }
 
-    /* Film grain overlay */
     body::after {
       content: "";
       position: fixed;
@@ -61,7 +57,6 @@
       z-index: 9999;
     }
 
-    /* Dynamic ambient glow based on mode/modality */
     .ambient-orb {
       position: fixed;
       border-radius: 50%;
@@ -92,9 +87,6 @@
       font-weight: 600;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       HEADER & NAVIGATION
-       ═══════════════════════════════════════════════════════ */
     .nav-container {
       position: fixed;
       top: 1.5rem;
@@ -208,9 +200,6 @@
       margin: 0 1rem;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       PROFILE ICON & DROPDOWN
-       ═══════════════════════════════════════════════════════ */
     .profile-icon-wrapper {
       position: relative;
       flex-shrink: 0;
@@ -346,9 +335,6 @@
       color: #9A4A4A;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       MESSAGES
-       ═══════════════════════════════════════════════════════ */
     #messages {
       flex: 1;
       overflow-y: auto;
@@ -434,9 +420,6 @@
       max-width: 75%;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       TYPING INDICATOR
-       ═══════════════════════════════════════════════════════ */
     .typing-wrap {
       padding: 1.5rem 0;
       opacity: 0;
@@ -477,9 +460,6 @@
       }
     }
 
-    /* ═══════════════════════════════════════════════════════
-       INPUT ZONE
-       ═══════════════════════════════════════════════════════ */
     .input-zone {
       flex-shrink: 0;
       padding: 0 5% 2rem;
@@ -620,9 +600,6 @@
       color: var(--fg);
     }
 
-    /* ═══════════════════════════════════════════════════════
-       SPECIAL STATES (Markdown, Tables, Accumulation)
-       ═══════════════════════════════════════════════════════ */
     .msg.assistant a {
       color: var(--gold);
       text-decoration: none;
@@ -791,9 +768,6 @@
       color: #E89A9A;
     }
 
-    /* ═══════════════════════════════════════════════════════
-       RESPONSIVE
-       ═══════════════════════════════════════════════════════ */
     @media (max-width: 900px) {
       .nav-container {
         padding: 0 1rem;
@@ -953,17 +927,34 @@
   </div>
 
   <script type="module">
-    // ── Supabase Client & Auth ────────────────────────────
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
     const SUPABASE_URL = '__SUPABASE_URL__';
     const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const API_BASE = window.location.hostname === "localhost" ?
-      "http://localhost:8000" :
-      "https://astroknotsheep-meridian-api.hf.space";
+    const API_BASE = window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://astroknotsheep-meridian-api.hf.space';
 
     let session = null;
+
+    // ── FIX Bug 4: authHeaders is now async and always fetches a fresh token ──
+    // Previously read directly from localStorage — stale after Supabase token
+    // rotation (default 1 hour), causing silent 401 → redirect loops.
+    async function authHeaders() {
+      const { data } = await supabase.auth.getSession();
+      if (!data.session) {
+        window.location.href = 'auth.html';
+        return { 'Content-Type': 'application/json' };
+      }
+      // Always keep localStorage in sync with the live token.
+      localStorage.setItem('sb_token', data.session.access_token);
+      return {
+        'Authorization': `Bearer ${data.session.access_token}`,
+        'Content-Type': 'application/json',
+      };
+    }
 
     async function requireAuth() {
       const { data } = await supabase.auth.getSession();
@@ -979,69 +970,36 @@
       return session;
     }
 
-    function authHeaders() {
-      const token = localStorage.getItem('sb_token');
-      return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : {
-        'Content-Type': 'application/json'
-      };
-    }
-
-    // ── Profile Dropdown Logic ────────────────────────────
+    // ── Profile Dropdown ──────────────────────────────────────────────
     const profileIconBtn = document.getElementById('profile-icon-btn');
     const profileDropdown = document.getElementById('profile-dropdown');
     const profileWrapper = document.getElementById('profile-icon-wrapper');
     let dropdownOpen = false;
 
-    function openDropdown() {
-      dropdownOpen = true;
-      profileDropdown.classList.add('active');
-      profileIconBtn.setAttribute('aria-expanded', 'true');
-    }
-
-    function closeDropdown() {
-      dropdownOpen = false;
-      profileDropdown.classList.remove('active');
-      profileIconBtn.setAttribute('aria-expanded', 'false');
-    }
-
-    function toggleDropdown(e) {
-      e.stopPropagation();
-      if (dropdownOpen) closeDropdown();
-      else openDropdown();
-    }
+    function openDropdown() { dropdownOpen = true; profileDropdown.classList.add('active'); profileIconBtn.setAttribute('aria-expanded', 'true'); }
+    function closeDropdown() { dropdownOpen = false; profileDropdown.classList.remove('active'); profileIconBtn.setAttribute('aria-expanded', 'false'); }
+    function toggleDropdown(e) { e.stopPropagation(); dropdownOpen ? closeDropdown() : openDropdown(); }
 
     profileIconBtn.addEventListener('click', toggleDropdown);
-
-    document.addEventListener('click', (e) => {
-      if (dropdownOpen && !profileWrapper.contains(e.target)) closeDropdown();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && dropdownOpen) {
-        closeDropdown();
-        profileIconBtn.focus();
-      }
-    });
-
+    document.addEventListener('click', (e) => { if (dropdownOpen && !profileWrapper.contains(e.target)) closeDropdown(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && dropdownOpen) { closeDropdown(); profileIconBtn.focus(); } });
     document.getElementById('dropdown-profile').addEventListener('click', closeDropdown);
     document.getElementById('dropdown-history').addEventListener('click', closeDropdown);
 
     document.getElementById('dropdown-logout').addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      closeDropdown();
+      e.preventDefault(); e.stopPropagation(); closeDropdown();
       await supabase.auth.signOut();
       localStorage.removeItem('sb_token');
       window.location.href = 'auth.html';
     });
 
-    // ── Core Chat Logic ───────────────────────────────────
+    // ── Core Chat State ───────────────────────────────────────────────
     function generateUUID() {
-      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
-      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+        return crypto.randomUUID();
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
         const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
       });
     }
 
@@ -1056,44 +1014,35 @@
     const ACCUM_TARGET = 800;
 
     const GLOW_THEMES = {
-      therapy_cbt: "rgba(196, 168, 130, 0.08)",
-      therapy_act: "rgba(184, 133, 108, 0.09)",
-      therapy_dbt: "rgba(130, 145, 160, 0.08)",
-      therapy_mindfulness: "rgba(130, 165, 140, 0.09)",
-      therapy_sfbt: "rgba(180, 155, 115, 0.08)",
-      diagnosis: "rgba(150, 145, 138, 0.08)"
+      therapy_cbt: 'rgba(196, 168, 130, 0.08)',
+      therapy_act: 'rgba(184, 133, 108, 0.09)',
+      therapy_dbt: 'rgba(130, 145, 160, 0.08)',
+      therapy_mindfulness: 'rgba(130, 165, 140, 0.09)',
+      therapy_sfbt: 'rgba(180, 155, 115, 0.08)',
+      diagnosis: 'rgba(150, 145, 138, 0.08)',
     };
 
     function autoResize(el) {
-      el.style.height = "auto";
-      el.style.height = Math.min(el.scrollHeight, 150) + "px";
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 150) + 'px';
     }
-
     window.autoResize = autoResize;
 
-    document.getElementById("inp").addEventListener("keydown", e => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMsg();
-      }
+    document.getElementById('inp').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
     });
 
     function onModeOrModalityChange() {
-      const mode = document.getElementById("mode-sel").value;
-      const modality = document.getElementById("modal-sel").value;
-      document.getElementById("modality-group").style.display = mode === "therapy" ? "flex" : "none";
-      if (mode !== "diagnosis") totalCharsSubmitted = 0;
-      const themeKey = mode === "therapy" ? `therapy_${modality}` : "diagnosis";
+      const mode = document.getElementById('mode-sel').value;
+      const modality = document.getElementById('modal-sel').value;
+      document.getElementById('modality-group').style.display = mode === 'therapy' ? 'flex' : 'none';
+      if (mode !== 'diagnosis') totalCharsSubmitted = 0;
+      const themeKey = mode === 'therapy' ? `therapy_${modality}` : 'diagnosis';
       const targetGlow = GLOW_THEMES[themeKey] || GLOW_THEMES.therapy_cbt;
-      document.getElementById("ambient-glow").style.background = targetGlow;
+      document.getElementById('ambient-glow').style.background = targetGlow;
     }
-
     window.onModeOrModalityChange = onModeOrModalityChange;
 
-    /**
-     * Helper to safely isolate and extract accumulation tags under all conditions.
-     * Uses a relaxed match configuration to clean text even if body text layout varies.
-     */
     function parseAccumulating(text) {
       const regex = /^__ACCUMULATING__(\d+)\/(\d+)(?:\n|\s)*([\s\S]*)$/;
       const match = text.match(regex);
@@ -1102,56 +1051,61 @@
           isAccumulating: true,
           charsDone: parseInt(match[1], 10),
           charsTarget: parseInt(match[2], 10),
-          bodyText: match[3].trim()
+          bodyText: match[3].trim(),
         };
       }
-      // Safety fallback: Strip any remnant header text if standard matching failed
-      const safeText = text.replace(/^__ACCUMULATING__\d+\/\d+\n?/, "").trim();
       return {
         isAccumulating: false,
-        charsDone: 0,
-        charsTarget: 0,
-        bodyText: safeText
+        charsDone: 0, charsTarget: 0,
+        bodyText: text.replace(/^__ACCUMULATING__\d+\/\d+\n?/, '').trim(),
       };
     }
 
     async function sendMsg() {
-      const inp = document.getElementById("inp");
+      const inp = document.getElementById('inp');
       const text = inp.value.trim();
       if (!text) return;
 
-      const currentMode = document.getElementById("mode-sel").value;
-      if (currentMode === "diagnosis") totalCharsSubmitted += text.length;
+      const currentMode = document.getElementById('mode-sel').value;
+      if (currentMode === 'diagnosis') totalCharsSubmitted += text.length;
 
-      inp.value = "";
-      inp.style.height = "auto";
-      document.getElementById("send-btn").disabled = true;
+      inp.value = '';
+      inp.style.height = 'auto';
+      document.getElementById('send-btn').disabled = true;
 
-      appendMsg("user", text);
-      chatHistory.push({ role: "user", content: text });
+      appendMsg('user', text);
+      chatHistory.push({ role: 'user', content: text });
       const typingEl = appendTyping();
 
       try {
+        const headers = await authHeaders();  // FIX Bug 4: await fresh token
         const res = await fetch(`${API_BASE}/chat`, {
-          method: "POST",
-          headers: authHeaders(),
+          method: 'POST',
+          headers,
           body: JSON.stringify({
             mode: currentMode,
-            modality: document.getElementById("modal-sel").value,
+            modality: document.getElementById('modal-sel').value,
             messages: chatHistory,
-            session_id: SESSION_ID
-          })
+            session_id: SESSION_ID,
+          }),
         });
 
         typingEl.remove();
 
+        if (res.status === 401) {
+          localStorage.removeItem('sb_token');
+          window.location.href = 'auth.html';
+          return;
+        }
+
+        // FIX Bug 2 (frontend): 403 "consent_required" → redirect to onboarding
+        if (res.status === 403) {
+          window.location.href = 'onboarding.html';
+          return;
+        }
+
         if (!res.ok) {
-          if (res.status === 401) {
-            localStorage.removeItem('sb_token');
-            window.location.href = 'auth.html';
-            return;
-          }
-          appendMsg("assistant", `Server error (${res.status}). Please try again.`);
+          appendMsg('assistant', `Server error (${res.status}). Please try again.`);
         } else {
           const data = await res.json();
           if (data.crisis_detected) {
@@ -1159,272 +1113,261 @@
           } else {
             const reply = data.messages[0].content;
             const parsed = parseAccumulating(reply);
-
             if (parsed.isAccumulating) {
               totalCharsSubmitted = parsed.charsDone;
               appendAccumulationBubble(parsed.bodyText, parsed.charsDone, parsed.charsTarget);
             } else {
-              appendMsg("assistant", parsed.bodyText);
+              appendMsg('assistant', parsed.bodyText);
               if (data.risk_scores && data.risk_scores.depression !== undefined) {
                 appendRiskBadge(data.risk_scores.depression);
                 totalCharsSubmitted = 0;
               }
             }
-            // Maintain raw server contract context strings in core history
-            chatHistory.push({ role: "assistant", content: reply });
+            chatHistory.push({ role: 'assistant', content: reply });
           }
         }
       } catch (e) {
         typingEl.remove();
-        appendMsg("assistant", "Connection error — is the server running?\nuvicorn backend.main:app --reload --host 0.0.0.0 --port 8000");
+        appendMsg('assistant', 'Connection error — please check your internet connection and try again.');
       }
-      document.getElementById("send-btn").disabled = false;
-      document.getElementById("inp").focus();
-    }
 
+      document.getElementById('send-btn').disabled = false;
+      document.getElementById('inp').focus();
+    }
     window.sendMsg = sendMsg;
 
+    // ── Rendering helpers ─────────────────────────────────────────────
     function renderMarkdown(raw) {
       const parsed = parseAccumulating(raw);
       const parts = parsed.bodyText.split(/\n---\n/);
       const body = parts[0];
-      const disclaimer = parts[1] || "";
-      const lines = body.split("\n");
+      const disclaimer = parts[1] || '';
+      const lines = body.split('\n');
       let html = '<div class="screen-report-container">', i = 0;
       while (i < lines.length) {
         const line = lines[i];
-        if (line.trim().startsWith("|")) {
+        if (line.trim().startsWith('|')) {
           const tl = [];
-          while (i < lines.length && lines[i].trim().startsWith("|")) { tl.push(lines[i]); i++; }
-          const headers = tl[0].split("|").map(c => c.trim()).filter(Boolean);
-          html += '<table class="screen-table"><thead><tr>' + headers.map(h => `<th>${inlineFormat(h)}</th>`).join("") + "</tr></thead><tbody>";
+          while (i < lines.length && lines[i].trim().startsWith('|')) { tl.push(lines[i]); i++; }
+          const headers = tl[0].split('|').map(c => c.trim()).filter(Boolean);
+          html += '<table class="screen-table"><thead><tr>' + headers.map(h => `<th>${inlineFormat(h)}</th>`).join('') + '</tr></thead><tbody>';
           for (let r = 2; r < tl.length; r++) {
-            const cells = tl[r].split("|").map(c => c.trim()).filter(Boolean);
-            if (cells.length) html += "<tr>" + cells.map(c => `<td>${inlineFormat(c)}</td>`).join("") + "</tr>";
+            const cells = tl[r].split('|').map(c => c.trim()).filter(Boolean);
+            if (cells.length) html += '<tr>' + cells.map(c => `<td>${inlineFormat(c)}</td>`).join('') + '</tr>';
           }
-          html += "</tbody></table>";
-          continue;
+          html += '</tbody></table>'; continue;
         }
         if (/^\*\*(.+?)\*\*$/.test(line.trim()) && line.trim().length < 60) {
-          html += `<div class="screen-report-title serif">${escHtml(line.trim().replace(/^\*\*|\*\*$/g, ""))}</div>`;
+          html += `<div class="screen-report-title serif">${escHtml(line.trim().replace(/^\*\*|\*\*$/g, ''))}</div>`;
           i++; continue;
         }
-        if (line.trim() === "") { i++; continue; }
-        html += `<div class="screen-summary">${inlineFormat(line)}</div>`;
-        i++;
+        if (line.trim() === '') { i++; continue; }
+        html += `<div class="screen-summary">${inlineFormat(line)}</div>`; i++;
       }
       html += '</div>';
       if (disclaimer) {
-        const clean = disclaimer.replace(/^\*|\*$/gm, "").replace(/^\s*⚠️\s*/, "").trim();
+        const clean = disclaimer.replace(/^\*|\*$/gm, '').replace(/^\s*⚠️\s*/, '').trim();
         html += `<div class="screen-disclaimer">⚠ ${escHtml(clean)}</div>`;
       }
       return html;
     }
 
     function inlineFormat(text) {
-      return escHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
+      return escHtml(text)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
     }
 
-    function escHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function escHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
 
     function isScreeningReport(text) {
-      return text.includes("Linguistic Screening Report") || (text.includes("| Indicator") && text.includes("Depression"));
+      return text.includes('Linguistic Screening Report') || (text.includes('| Indicator') && text.includes('Depression'));
     }
 
     function appendMsg(role, text) {
-      const wrap = document.createElement("div");
-      wrap.className = "msg-wrap" + (role === "user" ? " user" : "");
-      const meta = document.createElement("div");
-      meta.className = "msg-meta";
-      meta.textContent = role === "user" ? "You" : "Meridian";
-      const el = document.createElement("div");
+      const wrap = document.createElement('div');
+      wrap.className = 'msg-wrap' + (role === 'user' ? ' user' : '');
+      const meta = document.createElement('div');
+      meta.className = 'msg-meta';
+      meta.textContent = role === 'user' ? 'You' : 'Meridian';
+      const el = document.createElement('div');
       el.className = `msg ${role}`;
-
-      // Secondary structural guard filter step inside DOM creation
       const parsed = parseAccumulating(text);
-      const cleanContent = parsed.bodyText;
-
-      if (role === "assistant" && isScreeningReport(cleanContent)) {
-        el.innerHTML = renderMarkdown(cleanContent);
-        el.style.whiteSpace = "normal";
-      } else if (role === "assistant") {
-        el.innerHTML = inlineFormat(cleanContent).replace(/\n/g, "<br>");
-        el.style.whiteSpace = "normal";
+      const clean = parsed.bodyText;
+      if (role === 'assistant' && isScreeningReport(clean)) {
+        el.innerHTML = renderMarkdown(clean); el.style.whiteSpace = 'normal';
+      } else if (role === 'assistant') {
+        el.innerHTML = inlineFormat(clean).replace(/\n/g, '<br>'); el.style.whiteSpace = 'normal';
       } else {
-        el.textContent = cleanContent;
+        el.textContent = clean;
       }
-      wrap.appendChild(meta);
-      wrap.appendChild(el);
-      document.getElementById("messages").appendChild(wrap);
-      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      wrap.appendChild(meta); wrap.appendChild(el);
+      document.getElementById('messages').appendChild(wrap);
+      wrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
       return wrap;
     }
 
     function appendAccumulationBubble(bodyText, charsDone, charsTarget) {
-      const wrap = document.createElement("div");
-      wrap.className = "msg-wrap";
-      const meta = document.createElement("div");
-      meta.className = "msg-meta";
-      meta.textContent = "Meridian";
-      const el = document.createElement("div");
-      el.className = "msg assistant accumulation-bubble";
-      const textDiv = document.createElement("div");
-      textDiv.innerHTML = inlineFormat(bodyText).replace(/\n/g, "<br>");
-      textDiv.style.whiteSpace = "normal";
+      const wrap = document.createElement('div'); wrap.className = 'msg-wrap';
+      const meta = document.createElement('div'); meta.className = 'msg-meta'; meta.textContent = 'Meridian';
+      const el = document.createElement('div'); el.className = 'msg assistant accumulation-bubble';
+      const textDiv = document.createElement('div');
+      textDiv.innerHTML = inlineFormat(bodyText).replace(/\n/g, '<br>');
+      textDiv.style.whiteSpace = 'normal';
       el.appendChild(textDiv);
-      const progressBlocks = 10;
-      const filledBlocks = Math.min(progressBlocks, Math.round((charsDone / charsTarget) * progressBlocks));
-      const trackString = "█".repeat(filledBlocks) + "░".repeat(progressBlocks - filledBlocks);
-      const indicator = document.createElement("div");
-      indicator.className = "accumulation-indicator";
-      indicator.innerHTML =
-        `<span class="accumulation-hint">Linguistic Mapping Integrity</span>
-        <span class="accumulation-track">${trackString} &nbsp;${charsDone}/${charsTarget} raw metrics</span>`;
+      const filled = Math.min(10, Math.round((charsDone / charsTarget) * 10));
+      const track = '█'.repeat(filled) + '░'.repeat(10 - filled);
+      const indicator = document.createElement('div'); indicator.className = 'accumulation-indicator';
+      indicator.innerHTML = `<span class="accumulation-hint">Linguistic Mapping Integrity</span><span class="accumulation-track">${track} &nbsp;${charsDone}/${charsTarget} raw metrics</span>`;
       el.appendChild(indicator);
-      wrap.appendChild(meta);
-      wrap.appendChild(el);
-      document.getElementById("messages").appendChild(wrap);
-      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      wrap.appendChild(meta); wrap.appendChild(el);
+      document.getElementById('messages').appendChild(wrap);
+      wrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
       return wrap;
     }
 
     function appendTyping() {
-      const wrap = document.createElement("div");
-      wrap.className = "typing-wrap";
-      const meta = document.createElement("div");
-      meta.className = "typing-meta";
-      meta.textContent = "Meridian";
-      const container = document.createElement("div");
-      container.className = "typing-container";
-      const breather = document.createElement("div");
-      breather.className = "typing-breather";
-      breather.textContent = "[ processing thought ]";
-      const rhythmicStates = ["[ gathering context ]", "[ parsing inflection ]", "[ structuralizing response ]", "[ framing cadence ]"];
-      let stateIndex = 0;
-      const cycleInterval = setInterval(() => {
-        breather.textContent = rhythmicStates[stateIndex];
-        stateIndex = (stateIndex + 1) % rhythmicStates.length;
-      }, 3500);
-      container.appendChild(breather);
-      wrap.appendChild(meta);
-      wrap.appendChild(container);
-      document.getElementById("messages").appendChild(wrap);
-      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      const wrap = document.createElement('div'); wrap.className = 'typing-wrap';
+      const meta = document.createElement('div'); meta.className = 'typing-meta'; meta.textContent = 'Meridian';
+      const container = document.createElement('div'); container.className = 'typing-container';
+      const breather = document.createElement('div'); breather.className = 'typing-breather'; breather.textContent = '[ processing thought ]';
+      const states = ['[ gathering context ]', '[ parsing inflection ]', '[ structuralizing response ]', '[ framing cadence ]'];
+      let idx = 0;
+      const interval = setInterval(() => { breather.textContent = states[idx]; idx = (idx + 1) % states.length; }, 3500);
+      container.appendChild(breather); wrap.appendChild(meta); wrap.appendChild(container);
+      document.getElementById('messages').appendChild(wrap);
+      wrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
       const origRemove = wrap.remove.bind(wrap);
-      wrap.remove = () => { clearInterval(cycleInterval); origRemove(); };
+      wrap.remove = () => { clearInterval(interval); origRemove(); };
       return wrap;
     }
 
     function appendCrisis() {
-      const wrap = document.createElement("div");
-      wrap.className = "crisis-wrap";
-      const label = document.createElement("div");
-      label.className = "crisis-label";
-      label.textContent = "I'm concerned about your safety";
-      const body = document.createElement("div");
-      body.className = "crisis-body";
-      body.innerHTML =
-        "Please reach out to someone right now.<br><br><strong>988 Suicide &amp; Crisis Lifeline</strong> — call or text 988 &nbsp;(US, free, 24 / 7)<br><strong>iCall</strong> — 9152987821 &nbsp;(India, Mon–Sat 8 am–10 pm IST)<br><strong>Samaritans</strong> — 116 123 &nbsp;(UK, free, 24 / 7)<br><br><a href='https://www.findahelpline.com' target='_blank'>findahelpline.com</a> — worldwide directory";
-      wrap.appendChild(label);
-      body.appendChild(document.createElement("br"));
-      wrap.appendChild(body);
-      document.getElementById("messages").appendChild(wrap);
-      wrap.scrollIntoView({ behavior: "smooth", block: "end" });
+      const wrap = document.createElement('div'); wrap.className = 'crisis-wrap';
+      const label = document.createElement('div'); label.className = 'crisis-label'; label.textContent = "I'm concerned about your safety";
+      const body = document.createElement('div'); body.className = 'crisis-body';
+      body.innerHTML = "Please reach out to someone right now.<br><br><strong>988 Suicide &amp; Crisis Lifeline</strong> — call or text 988 &nbsp;(US, free, 24/7)<br><strong>iCall</strong> — 9152987821 &nbsp;(India, Mon–Sat 8am–10pm IST)<br><strong>Samaritans</strong> — 116 123 &nbsp;(UK, free, 24/7)<br><br><a href='https://www.findahelpline.com' target='_blank'>findahelpline.com</a> — worldwide directory";
+      wrap.appendChild(label); wrap.appendChild(body);
+      document.getElementById('messages').appendChild(wrap);
+      wrap.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
 
     function appendRiskBadge(prob) {
       const pct = Math.round(prob * 100);
-      const level = pct < 30 ? "low" : pct < 60 ? "moderate" : "elevated";
-      const last = document.querySelector(".msg-wrap:last-child .msg.assistant");
+      const level = pct < 30 ? 'low' : pct < 60 ? 'moderate' : 'elevated';
+      const last = document.querySelector('.msg-wrap:last-child .msg.assistant');
       if (!last) return;
-      const el = document.createElement("div");
+      const el = document.createElement('div');
       el.className = `risk-line risk-${level}`;
       el.textContent = `— depression signal ${pct}% (${level})`;
       last.appendChild(el);
     }
 
     async function loadSessionMessages() {
-      const messagesContainer = document.getElementById("messages");
+      const container = document.getElementById('messages');
       try {
-        const res = await fetch(`${API_BASE}/sessions/${SESSION_ID}/messages`, {
-          headers: authHeaders()
-        });
-        if (!res.ok) {
-          if (res.status === 401) {
-            localStorage.removeItem('sb_token');
-            window.location.href = 'auth.html';
-            return;
-          }
-          throw new Error('Failed to load session messages');
-        }
-        const data = await res.json();
+        const headers = await authHeaders();  // FIX Bug 4
+        const res = await fetch(`${API_BASE}/sessions/${SESSION_ID}/messages`, { headers });
+        if (res.status === 401) { localStorage.removeItem('sb_token'); window.location.href = 'auth.html'; return; }
+        if (res.status === 403) { window.location.href = 'onboarding.html'; return; }
+        if (!res.ok) throw new Error('Failed to load session messages');
 
-        messagesContainer.innerHTML = "";
+        const data = await res.json();
+        container.innerHTML = '';
         chatHistory.length = 0;
 
         if (data && data.length > 0) {
           data.forEach(msg => {
-            const role = msg.role;
-            const content = msg.content;
-
+            const { role, content } = msg;
             chatHistory.push({ role, content });
-
-            if (role === "assistant" && isScreeningReport(content)) {
-              appendMsg("assistant", content);
-            } else if (role === "assistant") {
+            if (role === 'assistant' && isScreeningReport(content)) {
+              appendMsg('assistant', content);
+            } else if (role === 'assistant') {
               const parsed = parseAccumulating(content);
-              if (parsed.isAccumulating) {
-                appendAccumulationBubble(parsed.bodyText, parsed.charsDone, parsed.charsTarget);
-              } else {
-                appendMsg("assistant", parsed.bodyText);
-              }
+              parsed.isAccumulating
+                ? appendAccumulationBubble(parsed.bodyText, parsed.charsDone, parsed.charsTarget)
+                : appendMsg('assistant', parsed.bodyText);
             } else {
-              appendMsg("user", content);
+              appendMsg('user', content);
             }
           });
         } else {
-          messagesContainer.innerHTML = `
+          container.innerHTML = `
             <div class="msg-wrap">
               <div class="msg-meta">Meridian</div>
               <div class="msg assistant">Hello. I'm here to support you. How are you feeling today?</div>
-            </div>
-          `;
+            </div>`;
         }
       } catch (err) {
         console.error(err);
-        messagesContainer.innerHTML = '<div style="text-align: center; color: #B07070; padding: 2rem 0;">Unable to load previous session messages.</div>';
+        document.getElementById('messages').innerHTML =
+          '<div style="text-align:center;color:#B07070;padding:2rem 0;">Unable to load previous session messages.</div>';
+      }
+    }
+
+    // ── FIX Bug 3: auto-resume most recent session ────────────────────
+    // Previously a fresh visit to chat.html always generated a new UUID,
+    // so the user could never continue their last conversation without
+    // manually navigating to history.html first.
+    async function resumeOrStartSession() {
+      try {
+        const headers = await authHeaders();
+        const res = await fetch(`${API_BASE}/sessions`, { headers });
+        if (!res.ok) return;  // silently fall through — new session is fine
+
+        const sessions = await res.json();
+        if (!sessions || sessions.length === 0) return;
+
+        const latest = sessions[0];  // API returns newest-first
+
+        // Update URL without a full page reload so the Back button still works.
+        SESSION_ID = latest.id;
+        window.history.replaceState(null, '', `?session=${SESSION_ID}`);
+
+        // Restore mode / modality selectors to match the resumed session.
+        if (latest.mode) document.getElementById('mode-sel').value = latest.mode;
+        if (latest.modality) document.getElementById('modal-sel').value = latest.modality;
+        onModeOrModalityChange();
+
+        await loadSessionMessages();
+      } catch (e) {
+        console.error('Auto-resume failed, starting fresh session:', e);
+        // Non-fatal — the user gets a clean new session instead.
       }
     }
 
     const init = async () => {
-      const session = await requireAuth();
-      if (!session) return;
+      const sess = await requireAuth();
+      if (!sess) return;
       onModeOrModalityChange();
 
       if (sessionParam) {
+        // Explicit session param — load metadata then messages.
         try {
-          const sessionsRes = await fetch(`${API_BASE}/sessions`, { headers: authHeaders() });
-          if (sessionsRes.ok) {
-            const sessions = await sessionsRes.json();
-            const currentSession = sessions.find(s => s.id === SESSION_ID);
-            if (currentSession) {
-              if (currentSession.mode) document.getElementById("mode-sel").value = currentSession.mode;
-              if (currentSession.modality) document.getElementById("modal-sel").value = currentSession.modality;
+          const headers = await authHeaders();
+          const sessRes = await fetch(`${API_BASE}/sessions`, { headers });
+          if (sessRes.ok) {
+            const sessions = await sessRes.json();
+            const currentSess = sessions.find(s => s.id === SESSION_ID);
+            if (currentSess) {
+              if (currentSess.mode) document.getElementById('mode-sel').value = currentSess.mode;
+              if (currentSess.modality) document.getElementById('modal-sel').value = currentSess.modality;
               onModeOrModalityChange();
             }
           }
-        } catch (e) {
-          console.error("Failed to fetch session metadata:", e);
-        }
+        } catch (e) { console.error('Failed to fetch session metadata:', e); }
+
         await loadSessionMessages();
+      } else {
+        // FIX Bug 3: no session param → resume the most recent session.
+        await resumeOrStartSession();
       }
     };
 
-    if (document.readyState === 'loading') {
-      window.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
+    if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', init);
+    else init();
   </script>
 </body>
 
