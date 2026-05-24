@@ -1,0 +1,168 @@
+.card-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+  position: relative;
+}
+
+.card-shell {
+  width: 100%;
+  max-width: 520px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  border-radius: 28px;
+  padding: 3rem 2.5rem;
+  box-shadow: 0 20px 50px -12px rgba(26, 23, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  animation: card-shell-up 0.7s var(--ease-out) forwards;
+  position: relative;
+}
+
+@keyframes card-shell-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-logo {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+.card-logo a {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  color: var(--fg);
+  font-size: 1.8rem;
+  letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.card-shell h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.9rem;
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.form-group {
+  margin-bottom: 1.8rem;
+}
+.form-group label {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+  font-family: 'Syne', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-weight: 600;
+}
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(26, 23, 20, 0.08);
+  border-radius: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.9rem;
+  color: var(--fg);
+  outline: none;
+  transition: all 0.4s var(--ease-out);
+}
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--gold);
+  background: #FFF;
+  box-shadow: 0 0 0 3px rgba(196, 168, 130, 0.1), 0 4px 12px rgba(26, 23, 20, 0.04);
+}
+
+.consent-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  margin: 2rem 0;
+  padding: 1.2rem;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(26, 23, 20, 0.05);
+  border-radius: 14px;
+}
+.consent-box input[type='checkbox'] {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  accent-color: var(--gold);
+  flex-shrink: 0;
+}
+.consent-text {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.6;
+  cursor: pointer;
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--fg);
+  color: var(--bg);
+  border: none;
+  border-radius: 100px;
+  padding: 1rem 1.5rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-weight: 600;
+  transition: all 0.5s var(--ease-spring);
+  box-shadow: 0 8px 24px rgba(26, 23, 20, 0.12);
+  margin-top: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px -6px rgba(26,23,20,0.25);
+  background: #000;
+}
+.btn-primary:hover:not(:disabled)::after { transform: translateX(100%); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
+
+.error-msg {
+  color: #B07070;
+  font-size: 0.8rem;
+  text-align: center;
+  margin-top: 1rem;
+  min-height: 1.2em;
+}
+
+/* Verified page extras */
+.verified-card { text-align: center; padding: 3.5rem 2.5rem; max-width: 480px; }
+.verified-card p { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; line-height: 1.6; }
+.check-icon {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(196,168,130,0.15), rgba(196,168,130,0.05));
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.8rem;
+  color: var(--gold);
+}
+.auto-redirect-hint { font-size: 0.75rem; color: var(--muted); margin-top: 1.5rem; opacity: 0.7; }
+
+@media (max-width: 480px) {
+  .card-shell { padding: 2rem 1.5rem; border-radius: 24px; }
+}

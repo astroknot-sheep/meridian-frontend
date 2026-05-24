@@ -1,0 +1,113 @@
+.ambient-orbs {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.ambient-orbs::before,
+.ambient-orbs::after,
+.ambient-orbs > i {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  display: block;
+}
+
+/* ── soft (history / profile) ────────────────────────────── */
+.ambient-orbs--soft::before {
+  width: 400px;
+  height: 400px;
+  background: rgba(196, 168, 130, 0.08);
+  top: 10%;
+  left: 5%;
+  animation: orb-drift-1 22s ease-in-out infinite;
+}
+.ambient-orbs--soft::after {
+  width: 300px;
+  height: 300px;
+  background: rgba(184, 133, 108, 0.06);
+  bottom: 15%;
+  right: 10%;
+  animation: orb-drift-2 28s ease-in-out infinite;
+}
+
+/* ── card (auth / onboarding / verified) ─────────────────── */
+.ambient-orbs--card::before {
+  width: 400px;
+  height: 400px;
+  background: rgba(196, 168, 130, 0.1);
+  top: 10%;
+  left: 5%;
+  animation: orb-drift-1 22s ease-in-out infinite;
+}
+.ambient-orbs--card::after {
+  width: 300px;
+  height: 300px;
+  background: rgba(184, 133, 108, 0.08);
+  bottom: 10%;
+  right: 5%;
+  animation: orb-drift-2 28s ease-in-out infinite;
+}
+
+/* ── landing (3 large warm orbs) ─────────────────────────── */
+.ambient-orbs--landing {
+  z-index: -2;
+}
+.ambient-orbs--landing::before {
+  width: 500px;
+  height: 500px;
+  background: rgba(196, 168, 130, 0.35);
+  top: -15%;
+  left: -10%;
+  filter: blur(80px);
+  opacity: 0.18;
+  animation: orb-drift-1 22s ease-in-out infinite;
+}
+.ambient-orbs--landing::after {
+  width: 380px;
+  height: 380px;
+  background: rgba(160, 140, 115, 0.28);
+  bottom: -12%;
+  right: -8%;
+  filter: blur(80px);
+  opacity: 0.18;
+  animation: orb-drift-2 20s ease-in-out infinite;
+  animation-delay: -7s;
+}
+
+@keyframes orb-drift-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(60px, -40px) scale(1.12); }
+  50% { transform: translate(-30px, 50px) scale(0.92); }
+  75% { transform: translate(-50px, -30px) scale(1.06); }
+}
+
+@keyframes orb-drift-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-50px, -40px) scale(1.12); }
+  66% { transform: translate(35px, 60px) scale(0.9); }
+}
+
+/* ── Cursor glow ─────────────────────────────────────────── */
+.cursor-glow {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9998;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 168, 130, 0.09) 0%, rgba(196, 168, 130, 0.03) 30%, transparent 65%);
+  transform: translate(-50%, -50%);
+  transition: opacity 0.4s ease;
+  opacity: 0;
+}
+.cursor-glow--active {
+  opacity: 1;
+}
+
+@media (max-width: 600px) {
+  .cursor-glow { display: none; }
+}
