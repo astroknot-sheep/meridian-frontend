@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { apiFetch } from '../lib/api.js';
+import { apiFetch, getAuthHeaders, API_BASE } from '../lib/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import ProfileDropdown from '../components/ProfileDropdown.jsx';
 import '../styles/chat.css';
@@ -151,15 +151,8 @@ export default function Chat() {
   const loadSessionMessages = useCallback(async (id) => {
     try {
       const res = await apiFetch(`/sessions/${id}/messages`);
-      if (res.status === 401) {
-        await signOut();
-        window.location.href = '/auth';
-        return;
-      }
-      if (res.status === 403) {
-        window.location.href = '/onboarding';
-        return;
-      }
+      if (res.status === 401) { await signOut(); window.location.href = '/auth'; return; }
+      if (res.status === 403) { window.location.href = '/onboarding'; return; }
       if (!res.ok) throw new Error('Failed to load session messages');
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
@@ -180,7 +173,6 @@ export default function Chat() {
       const explicit = searchParams.get('session');
 
       if (explicit) {
-        // Pull session metadata so the selectors are restored.
         try {
           const res = await apiFetch('/sessions');
           if (res.ok) {
@@ -197,7 +189,6 @@ export default function Chat() {
         }
         await loadSessionMessages(explicit);
       } else {
-        // Resume the most recent session, if any.
         try {
           const res = await apiFetch('/sessions');
           if (res.ok) {
@@ -220,7 +211,17 @@ export default function Chat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Send a message ─────────────────────────────────────
+  /* ─────────────────────────────────────────────────────────
+     STREAMING send — reads SSE from /chat/stream.
+     Event types handled:
+       stream_start  → drop typing indicator
+       token         → append to in-progress assistant bubble
+       replace       → guardrail tripped, swap streamed text
+       message       → hardcoded full reply (phq9/diagnosis/etc.)
+       crisis        → swap to crisis UI, discard stream bubble
+       error         → discard stream bubble, show error message
+       done          → finalize bubble (markdown), attach risk score
+     ───────────────────────────────────────────────────────── */
   const sendMessage = async () => {
     const text = input.trim();
     if (!text || busy) return;
@@ -232,9 +233,40 @@ export default function Chat() {
     setBusy(true);
     setTyping(true);
 
+    // Per-send closure state
+    const streamMsgId = generateUUID();
+    let streamBubbleAdded = false;
+    let accumulated = '';
+    let crisisShown = false;
+
+    const ensureStreamBubble = () => {
+      if (streamBubbleAdded) return;
+      streamBubbleAdded = true;
+      setTyping(false);
+      setMessages((cur) => [
+        ...cur,
+        { id: streamMsgId, role: 'assistant', _streaming: true, content: '' },
+      ]);
+    };
+
+    const updateStreamBubble = (next) => {
+      setMessages((cur) =>
+        cur.map((m) => (m.id === streamMsgId ? { ...m, content: next } : m))
+      );
+    };
+
+    const removeStreamBubble = () => {
+      setMessages((cur) => cur.filter((m) => m.id !== streamMsgId));
+      streamBubbleAdded = false;
+    };
+
     try {
-      const res = await apiFetch('/chat', {
+      const headers = await getAuthHeaders();
+      if (!headers) { window.location.href = '/auth'; return; }
+
+      const res = await fetch(`${API_BASE}/chat/stream`, {
         method: 'POST',
+        headers,
         body: JSON.stringify({
           mode,
           modality,
@@ -242,18 +274,20 @@ export default function Chat() {
           session_id: sessionIdRef.current,
         }),
       });
-      setTyping(false);
 
       if (res.status === 401) {
+        setTyping(false);
         await signOut();
         window.location.href = '/auth';
         return;
       }
       if (res.status === 403) {
+        setTyping(false);
         window.location.href = '/onboarding';
         return;
       }
       if (!res.ok) {
+        setTyping(false);
         setMessages((cur) => [...cur, {
           role: 'assistant',
           content: `Server error (${res.status}). Please try again.`,
@@ -261,22 +295,111 @@ export default function Chat() {
         return;
       }
 
-      const data = await res.json();
-      if (data.crisis_detected) {
-        setMessages((cur) => [...cur, { role: 'assistant', _crisis: true, content: '' }]);
-        return;
-      }
-      const reply = data.messages[0].content;
-      const riskScores = data.risk_scores;
-      setMessages((cur) => {
-        const added = { role: 'assistant', content: reply };
-        if (riskScores && typeof riskScores.depression === 'number') {
-          added._riskProb = riskScores.depression;
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let sseBuffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        sseBuffer += decoder.decode(value, { stream: true });
+
+        // SSE events are delimited by a blank line. Split, keep the
+        // last (possibly partial) chunk in the buffer for next round.
+        const parts = sseBuffer.split('\n\n');
+        sseBuffer = parts.pop() || '';
+
+        for (const raw of parts) {
+          const line = raw.trim();
+          if (!line.startsWith('data:')) continue;
+          const json = line.slice(5).trimStart();
+          let data;
+          try { data = JSON.parse(json); } catch { continue; }
+
+          if (data.type === 'stream_start') {
+            setTyping(false);
+
+          } else if (data.type === 'token') {
+            ensureStreamBubble();
+            accumulated += data.content || '';
+            updateStreamBubble(accumulated);
+
+          } else if (data.type === 'replace') {
+            // Guardrail tripped — discard streamed tokens, show replacement
+            accumulated = data.content || '';
+            ensureStreamBubble();
+            updateStreamBubble(accumulated);
+
+          } else if (data.type === 'message') {
+            // Hardcoded full reply (phq9 / diagnosis / guardian-block)
+            setTyping(false);
+            const parsed = parseAccumulating(data.content || '');
+            if (parsed.isAccumulating) {
+              setMessages((cur) => [...cur, {
+                role: 'assistant',
+                content: data.content || '',
+              }]);
+            } else {
+              setMessages((cur) => [...cur, {
+                role: 'assistant',
+                content: parsed.bodyText,
+              }]);
+            }
+            accumulated = data.content || '';
+
+          } else if (data.type === 'crisis') {
+            setTyping(false);
+            if (streamBubbleAdded) removeStreamBubble();
+            setMessages((cur) => [...cur, { role: 'assistant', _crisis: true, content: '' }]);
+            crisisShown = true;
+
+          } else if (data.type === 'error') {
+            setTyping(false);
+            if (streamBubbleAdded) removeStreamBubble();
+            setMessages((cur) => [...cur, {
+              role: 'assistant',
+              content: data.message || 'Connection error — please try again.',
+            }]);
+
+          } else if (data.type === 'done') {
+            const riskProb = data.risk_scores?.depression;
+
+            if (streamBubbleAdded) {
+              // Finalize: drop _streaming so the renderer applies markdown,
+              // attach risk score if present.
+              setMessages((cur) =>
+                cur.map((m) =>
+                  m.id === streamMsgId
+                    ? {
+                        ...m,
+                        _streaming: false,
+                        content: accumulated,
+                        ...(typeof riskProb === 'number' ? { _riskProb: riskProb } : {}),
+                      }
+                    : m
+                )
+              );
+            } else if (typeof riskProb === 'number' && !crisisShown) {
+              // Non-streaming path (`message` event) — attach risk to last assistant
+              setMessages((cur) => {
+                const copy = [...cur];
+                for (let i = copy.length - 1; i >= 0; i--) {
+                  if (copy[i].role === 'assistant' && !copy[i]._crisis) {
+                    copy[i] = { ...copy[i], _riskProb: riskProb };
+                    break;
+                  }
+                }
+                return copy;
+              });
+            }
+          }
         }
-        return [...cur, added];
-      });
+      }
     } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Stream error:', err);
       setTyping(false);
+      if (streamBubbleAdded) removeStreamBubble();
       setMessages((cur) => [...cur, {
         role: 'assistant',
         content: 'Connection error — please check your internet connection and try again.',
@@ -341,7 +464,7 @@ export default function Chat() {
       {/* Messages ────────────────────────────────── */}
       <div className="messages">
         {messages.map((m, i) => (
-          <ChatMessage key={i} message={m} />
+          <ChatMessage key={m.id || i} message={m} />
         ))}
         {typing && (
           <div className="typing-wrap">
@@ -393,7 +516,21 @@ export default function Chat() {
 function ChatMessage({ message }) {
   if (message._crisis) return <CrisisBlock />;
 
-  const { role, content, _riskProb } = message;
+  const { role, content, _riskProb, _streaming } = message;
+
+  // ── Streaming assistant message (tokens still arriving) ──
+  if (role === 'assistant' && _streaming) {
+    return (
+      <div className="msg-wrap">
+        <div className="msg-meta">Meridian</div>
+        <div className="msg assistant" style={{ whiteSpace: 'pre-wrap' }}>
+          {content}
+          <span className="stream-cursor" aria-hidden="true" />
+        </div>
+      </div>
+    );
+  }
+
   const parsed = parseAccumulating(content);
 
   // Accumulating screening response
