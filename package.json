@@ -1,7 +1,23 @@
 {
-    "name": "meridian",
-    "private": true,
-    "scripts": {
-        "build": "node build.js"
-    }
+  "name": "meridian-react",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Meridian — private, evidence-based mental health support (React frontend).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "three": "0.128.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.2",
+    "vite": "^5.4.8"
+  }
 }
