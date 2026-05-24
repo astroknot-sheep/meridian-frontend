@@ -241,6 +241,18 @@
 }
 .msg.assistant strong { color: var(--gold); font-weight: 600; }
 
+/* ── Streaming cursor — visible while tokens arrive ────── */
+.stream-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  vertical-align: text-bottom;
+  margin-left: 3px;
+  background: var(--gold);
+  animation: stream-blink 1s steps(2, start) infinite;
+}
+@keyframes stream-blink { to { opacity: 0; } }
+
 /* ── Typing animation ──────────────────────────────────── */
 .typing-wrap { padding: 1.5rem 0; opacity: 0; animation: msg-appear 0.4s ease forwards; }
 .typing-container {
