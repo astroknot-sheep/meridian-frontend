@@ -32,7 +32,9 @@ const generateUUID = () => {
   });
 };
 
-/** Parse the `__ACCUMULATING__N/M\n…` envelope used by the screening mode. */
+/** Parse the `__ACCUMULATING__N/M\n…` envelope used by the screening mode.
+ *  N is chars submitted so far, M is the adaptive target (shrinks as the
+ *  backend's confidence in either direction grows — see diagnosis.py). */
 function parseAccumulating(text) {
   const m = (text || '').match(/^__ACCUMULATING__(\d+)\/(\d+)(?:\n|\s)*([\s\S]*)$/);
   if (m) {
@@ -371,11 +373,11 @@ export default function Chat() {
                 cur.map((m) =>
                   m.id === streamMsgId
                     ? {
-                        ...m,
-                        _streaming: false,
-                        content: accumulated,
-                        ...(typeof riskProb === 'number' ? { _riskProb: riskProb } : {}),
-                      }
+                      ...m,
+                      _streaming: false,
+                      content: accumulated,
+                      ...(typeof riskProb === 'number' ? { _riskProb: riskProb } : {}),
+                    }
                     : m
                 )
               );
@@ -533,7 +535,9 @@ function ChatMessage({ message }) {
 
   const parsed = parseAccumulating(content);
 
-  // Accumulating screening response
+  // Accumulating screening response. With Phase 10's adaptive target the
+  // second number (charsTarget) shrinks as the backend's confidence in
+  // either direction grows — so the bar fills faster on clearer signals.
   if (role === 'assistant' && parsed.isAccumulating) {
     const filled = Math.min(10, Math.round((parsed.charsDone / parsed.charsTarget) * 10));
     const track = '█'.repeat(filled) + '░'.repeat(10 - filled);
@@ -549,9 +553,9 @@ function ChatMessage({ message }) {
             }}
           />
           <div className="accumulation-indicator">
-            <span className="accumulation-hint">Linguistic Mapping Integrity</span>
+            <span className="accumulation-hint">Signal confidence</span>
             <span className="accumulation-track">
-              {track} &nbsp;{parsed.charsDone}/{parsed.charsTarget} raw metrics
+              {track} &nbsp;{parsed.charsDone}/{parsed.charsTarget} chars analyzed
             </span>
           </div>
         </div>
