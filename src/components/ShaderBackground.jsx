@@ -16,116 +16,91 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uResolution;
   uniform vec2 uMouse;
 
-  // ---------------------------------------------------------------------------
-  // 1. Hash & Noise (built from scratch – no copied code)
-  // ---------------------------------------------------------------------------
+  // ---------- Hashing & noise ----------
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
   }
 
-  float noise(vec2 p) {
+  // ---------- Voronoi distance (returns dist to nearest + edge thickness) ----------
+  float voronoi(vec2 uv, float scale, out float edge) {
+    vec2 p = uv * scale;
     vec2 i = floor(p);
     vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(
-      mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), f.x),
-      mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
-      f.y
-    );
-  }
+    float mDist = 1.0;
+    float mDist2 = 1.0;
 
-  float fbm(vec2 p) {
-    float val = 0.0;
-    float amp = 0.5;
-    float freq = 1.0;
-    for (int i = 0; i < 5; i++) {
-      val += amp * noise(p * freq);
-      freq *= 2.2;
-      amp *= 0.5;
+    for (int y = -1; y <= 1; y++) {
+      for (int x = -1; x <= 1; x++) {
+        vec2 neighbor = vec2(float(x), float(y));
+        vec2 point = vec2(hash(i + neighbor), hash(i + neighbor + 1.0)) * 0.8 + 0.1;
+        vec2 diff = neighbor + point - f;
+        float d = dot(diff, diff);
+        if (d < mDist) {
+          mDist2 = mDist;
+          mDist = d;
+        } else if (d < mDist2) {
+          mDist2 = d;
+        }
+      }
     }
-    return val;
+
+    edge = abs(sqrt(mDist2) - sqrt(mDist));
+    return sqrt(mDist);
   }
 
-  // ---------------------------------------------------------------------------
-  // 2. Colour palette (based on iq’s cosine palette)
-  // ---------------------------------------------------------------------------
-  vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
-    return a + b * cos(6.28318 * (c * t + d));
-  }
-
-  // ---------------------------------------------------------------------------
-  // 3. Main
-  // ---------------------------------------------------------------------------
+  // ---------- Main ----------
   void main() {
     vec2 uv = vUv;
-    float t = uTime * 0.1;
+    float t = uTime * 0.03;
 
-    // --- Domain warping – creates the glassy / aurora feel ---
-    vec2 q = vec2(
-      fbm(uv * 2.6 + vec2(t * 0.3, t * 0.1)),
-      fbm(uv * 2.6 + vec2(t * 0.2, t * 0.3))
-    );
-    vec2 r = vec2(
-      fbm(uv * 3.1 + q * 1.8 + vec2(t * 0.5, t * 0.2)),
-      fbm(uv * 3.1 + q * 1.8 - vec2(t * 0.3, t * 0.5))
-    );
+    // Mouse influence – gentle drift of the cracks
+    vec2 mouseShift = (uMouse - 0.5) * 0.1;
 
-    float warp = fbm(uv * 2.0 + r * 1.3);
-
-    // --- Aurora gradient ---
-    // Use the warped y-coordinate plus time to sample a colour palette
-    float gradientPos = uv.y * 0.8 + warp * 0.6 + t * 0.05;
-    vec3 aurora = palette(
-      gradientPos,
-      vec3(0.5, 0.5, 0.5),  // a – base intensity
-      vec3(0.5, 0.5, 0.5),  // b – amplitude
-      vec3(1.0, 1.0, 1.0),  // c – frequency
-      vec3(0.00, 0.10, 0.20) // d – phase (shifts colour range)
-    );
-
-    // --- Warm, earthy colour bias (calm, not rainbow) ---
-    aurora = mix(aurora, vec3(0.96, 0.93, 0.88), 0.3);
-
-    // --- Soft, glowing specks (like distant fireflies or silk threads) ---
-    float sparkle = 0.0;
-    for (int i = 0; i < 3; i++) {
-      vec2 grid = floor(uv * (15.0 + float(i) * 7.0) + float(i) * 0.7);
+    // Layer multiple scales of Voronoi cracks
+    float edgeAccum = 0.0;
+    float voronoiDist = 0.0;
+    for (int i = 0; i < 4; i++) {
+      float scale = 4.0 + float(i) * 3.5;
+      float edge = 0.0;
       vec2 offset = vec2(
-        hash(grid + vec2(0.3, 0.1) * float(i)) * 2.0 - 1.0,
-        hash(grid + vec2(0.7, 0.5) * float(i)) * 2.0 - 1.0
-      ) * 0.4;
-      vec2 starUV = fract(uv * (15.0 + float(i) * 7.0)) - 0.5;
-      float d = length(starUV - offset * 0.2);
-      sparkle += (0.02 / (d + 0.001)) * smoothstep(0.0, 0.3, d);
+        sin(t * 1.3 + float(i)) * 0.2 + mouseShift.x,
+        cos(t * 0.9 + float(i)) * 0.2 + mouseShift.y
+      );
+      float d = voronoi(uv + offset, scale, edge);
+      voronoiDist += d * (0.6 / scale);
+      // Thinner lines for smaller scales, thicker for larger
+      float thickness = 0.03 + float(i) * 0.01;
+      edgeAccum += smoothstep(0.0, thickness, edge) * (0.4 - float(i) * 0.08);
     }
-    sparkle *= 0.4;
+    edgeAccum = clamp(edgeAccum, 0.0, 1.0);
 
-    // --- Mouse interaction – subtle warm highlight + distortion ---
+    // Base colour – warm ceramic
+    vec3 cream    = vec3(0.961, 0.949, 0.933);
+    vec3 sand     = vec3(0.925, 0.890, 0.845);
+    vec3 gold     = vec3(0.78, 0.64, 0.48);
+    vec3 deep     = vec3(0.68, 0.48, 0.38);
+
+    // Gentle radial gradient
+    float radial = 1.0 - length(uv - 0.5) * 0.5;
+    vec3 base = mix(cream, sand, radial);
+
+    // The cracks become golden, with a soft glow around them
+    float crackGlow = edgeAccum * 0.7;
+    base = mix(base, gold, crackGlow * 0.8);
+
+    // Deepen the base slightly near the veins to give depth
+    base = mix(base, deep, crackGlow * 0.2);
+
+    // Mouse proximity adds a warm halo on the veins
     float mouseDist = length(uv - uMouse);
-    float mouseGlow = exp(-mouseDist * 2.8) * 0.25;          // soft glow
-    float mouseDistort = smoothstep(0.3, 0.0, mouseDist) * 0.04;
-    // Use mouse to slightly shift the warp
-    warp += (uMouse.x - 0.5) * mouseDistort * 3.0;
-    warp += (uMouse.y - 0.5) * mouseDistort * 3.0;
+    float mouseInfluence = smoothstep(0.3, 0.0, mouseDist) * 0.5;
+    base = mix(base, gold, mouseInfluence * 0.6);
 
-    // --- Final colour composition ---
-    vec3 colour = aurora;
+    // Very subtle vignette
+    float vignette = 1.0 - length(uv - 0.5) * 1.0;
+    base = mix(cream, base, smoothstep(0.2, 0.8, vignette));
 
-    // Blend the warm base
-    colour = mix(colour, vec3(0.98, 0.95, 0.92), 0.15 + warp * 0.1);
-
-    // Add sparkles
-    colour += sparkle * vec3(1.0, 0.95, 0.85);
-
-    // Mouse glow adds a soft golden touch
-    colour += mouseGlow * vec3(1.0, 0.92, 0.78);
-
-    // Subtle vignette
-    float vignette = 1.0 - length(vUv - 0.5) * 1.2;
-    vignette = smoothstep(0.0, 1.0, vignette);
-    colour = mix(vec3(0.95, 0.93, 0.90), colour, vignette);
-
-    gl_FragColor = vec4(colour, 1.0);
+    gl_FragColor = vec4(base, 1.0);
   }
 `;
 
@@ -136,11 +111,7 @@ export default function ShaderBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true,
-    });
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -184,8 +155,8 @@ export default function ShaderBackground() {
     const animate = (timestamp) => {
       uniforms.uTime.value = timestamp * 0.001;
       const m = uniforms.uMouse.value;
-      m.x += (target.x - m.x) * 0.03;
-      m.y += (target.y - m.y) * 0.03;
+      m.x += (target.x - m.x) * 0.04;
+      m.y += (target.y - m.y) * 0.04;
       renderer.render(scene, camera);
       raf = requestAnimationFrame(animate);
     };
