@@ -16,106 +16,116 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uResolution;
   uniform vec2 uMouse;
 
-  // Simplex 2D noise (smooth, organic)
-  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec3 permute(vec3 x) { return mod289(((x * 34.0) + 1.0) * x); }
-
-  float snoise(vec2 v) {
-    const vec4 C = vec4(0.211324865405187,
-                        0.366025403784439,
-                       -0.577350269189626,
-                        0.024390243902439);
-    vec2 i  = floor(v + dot(v, C.yy));
-    vec2 x0 = v - i + dot(i, C.xx);
-    vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-    vec4 x12 = x0.xyxy + C.xxzz;
-    x12.xy -= i1;
-    i = mod289(i);
-    vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0))
-                   + i.x + vec3(0.0, i1.x, 1.0));
-    vec3 m = max(0.5 - vec3(dot(x0, x0),
-                           dot(x12.xy, x12.xy),
-                           dot(x12.zw, x12.zw)), 0.0);
-    m = m * m;
-    m = m * m;
-    vec3 x = 2.0 * fract(p * C.www) - 1.0;
-    vec3 h = abs(x) - 0.5;
-    vec3 ox = floor(x + 0.5);
-    vec3 a0 = x - ox;
-    m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
-    vec3 g;
-    g.x  = a0.x * x0.x + h.x * x0.y;
-    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-    return 130.0 * dot(m, g);
+  // ---------------------------------------------------------------------------
+  // 1. Hash & Noise (built from scratch – no copied code)
+  // ---------------------------------------------------------------------------
+  float hash(vec2 p) {
+    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
   }
 
-  // Layered noise with domain warping
+  float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(
+      mix(hash(i + vec2(0.0, 0.0)), hash(i + vec2(1.0, 0.0)), f.x),
+      mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+      f.y
+    );
+  }
+
   float fbm(vec2 p) {
-    float f = 0.0;
+    float val = 0.0;
     float amp = 0.5;
     float freq = 1.0;
-    for (int i = 0; i < 6; i++) {
-      f += amp * snoise(p * freq);
-      freq *= 2.1;
-      amp *= 0.45;
+    for (int i = 0; i < 5; i++) {
+      val += amp * noise(p * freq);
+      freq *= 2.2;
+      amp *= 0.5;
     }
-    return f;
+    return val;
   }
 
+  // ---------------------------------------------------------------------------
+  // 2. Colour palette (based on iq’s cosine palette)
+  // ---------------------------------------------------------------------------
+  vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
+    return a + b * cos(6.28318 * (c * t + d));
+  }
+
+  // ---------------------------------------------------------------------------
+  // 3. Main
+  // ---------------------------------------------------------------------------
   void main() {
     vec2 uv = vUv;
-    float t = uTime * 0.08;
+    float t = uTime * 0.1;
 
-    // Warped coordinates for fluid movement
+    // --- Domain warping – creates the glassy / aurora feel ---
     vec2 q = vec2(
-      fbm(uv * 3.2 + vec2(t * 0.3, t * -0.15)),
-      fbm(uv * 3.2 + vec2(t * 0.35, t * 0.1))
+      fbm(uv * 2.6 + vec2(t * 0.3, t * 0.1)),
+      fbm(uv * 2.6 + vec2(t * 0.2, t * 0.3))
     );
     vec2 r = vec2(
-      fbm(uv * 3.5 + q * 1.5 + vec2(t * 0.6, t * 0.2)),
-      fbm(uv * 3.5 + q * 1.5 - vec2(t * 0.3, t * 0.4))
+      fbm(uv * 3.1 + q * 1.8 + vec2(t * 0.5, t * 0.2)),
+      fbm(uv * 3.1 + q * 1.8 - vec2(t * 0.3, t * 0.5))
     );
 
-    float flow = fbm(uv * 2.5 + r * 1.2);
+    float warp = fbm(uv * 2.0 + r * 1.3);
 
-    // Mouse interaction – soft spotlight
+    // --- Aurora gradient ---
+    // Use the warped y-coordinate plus time to sample a colour palette
+    float gradientPos = uv.y * 0.8 + warp * 0.6 + t * 0.05;
+    vec3 aurora = palette(
+      gradientPos,
+      vec3(0.5, 0.5, 0.5),  // a – base intensity
+      vec3(0.5, 0.5, 0.5),  // b – amplitude
+      vec3(1.0, 1.0, 1.0),  // c – frequency
+      vec3(0.00, 0.10, 0.20) // d – phase (shifts colour range)
+    );
+
+    // --- Warm, earthy colour bias (calm, not rainbow) ---
+    aurora = mix(aurora, vec3(0.96, 0.93, 0.88), 0.3);
+
+    // --- Soft, glowing specks (like distant fireflies or silk threads) ---
+    float sparkle = 0.0;
+    for (int i = 0; i < 3; i++) {
+      vec2 grid = floor(uv * (15.0 + float(i) * 7.0) + float(i) * 0.7);
+      vec2 offset = vec2(
+        hash(grid + vec2(0.3, 0.1) * float(i)) * 2.0 - 1.0,
+        hash(grid + vec2(0.7, 0.5) * float(i)) * 2.0 - 1.0
+      ) * 0.4;
+      vec2 starUV = fract(uv * (15.0 + float(i) * 7.0)) - 0.5;
+      float d = length(starUV - offset * 0.2);
+      sparkle += (0.02 / (d + 0.001)) * smoothstep(0.0, 0.3, d);
+    }
+    sparkle *= 0.4;
+
+    // --- Mouse interaction – subtle warm highlight + distortion ---
     float mouseDist = length(uv - uMouse);
-    float mouseGlow = smoothstep(0.4, 0.0, mouseDist) * 0.18;
+    float mouseGlow = exp(-mouseDist * 2.8) * 0.25;          // soft glow
+    float mouseDistort = smoothstep(0.3, 0.0, mouseDist) * 0.04;
+    // Use mouse to slightly shift the warp
+    warp += (uMouse.x - 0.5) * mouseDistort * 3.0;
+    warp += (uMouse.y - 0.5) * mouseDistort * 3.0;
 
-    // Subtle grid overlay (silken texture)
-    float gridX = abs(sin((uv.x + q.x * 0.4) * 18.0));
-    float gridY = abs(sin((uv.y + q.y * 0.4) * 18.0));
-    float grid = smoothstep(0.82, 1.0, gridX) + smoothstep(0.82, 1.0, gridY);
-    grid *= 0.06 * (1.0 - abs(flow) * 0.6);
+    // --- Final colour composition ---
+    vec3 colour = aurora;
 
-    // Colour palette – warm, earthy, sophisticated
-    vec3 cream    = vec3(0.961, 0.949, 0.933);
-    vec3 sand     = vec3(0.925, 0.890, 0.845);
-    vec3 gold     = vec3(0.78, 0.64, 0.48);
-    vec3 deep     = vec3(0.68, 0.48, 0.38);
+    // Blend the warm base
+    colour = mix(colour, vec3(0.98, 0.95, 0.92), 0.15 + warp * 0.1);
 
-    // Vertical + noise gradient
-    float grad = uv.y * 0.5 + flow * 0.5;
-    vec3 base = mix(cream, sand, grad);
+    // Add sparkles
+    colour += sparkle * vec3(1.0, 0.95, 0.85);
 
-    // Flow intensity modulates warmth
-    float intensity = 0.45 + mouseGlow * 0.5;
-    base = mix(base, gold, flow * intensity * 0.6 + 0.02);
-    base = mix(base, deep, max(flow * 0.1, 0.0));
+    // Mouse glow adds a soft golden touch
+    colour += mouseGlow * vec3(1.0, 0.92, 0.78);
 
-    // Mouse adds a touch of golden warmth
-    base = mix(base, gold, mouseGlow * 0.7);
-
-    // Subtle grid highlights
-    base += grid * gold * 0.4;
-
-    // Vignette – gentle fade toward edges
-    float vignette = 1.0 - length(vUv - 0.5) * 1.1;
+    // Subtle vignette
+    float vignette = 1.0 - length(vUv - 0.5) * 1.2;
     vignette = smoothstep(0.0, 1.0, vignette);
-    base = mix(cream, base, vignette);
+    colour = mix(vec3(0.95, 0.93, 0.90), colour, vignette);
 
-    gl_FragColor = vec4(base, 1.0);
+    gl_FragColor = vec4(colour, 1.0);
   }
 `;
 
@@ -126,7 +136,11 @@ export default function ShaderBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      antialias: true,
+      alpha: true,
+    });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -170,8 +184,8 @@ export default function ShaderBackground() {
     const animate = (timestamp) => {
       uniforms.uTime.value = timestamp * 0.001;
       const m = uniforms.uMouse.value;
-      m.x += (target.x - m.x) * 0.04;
-      m.y += (target.y - m.y) * 0.04;
+      m.x += (target.x - m.x) * 0.03;
+      m.y += (target.y - m.y) * 0.03;
       renderer.render(scene, camera);
       raf = requestAnimationFrame(animate);
     };
