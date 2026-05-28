@@ -82,11 +82,8 @@ const fragmentShader = /* glsl */ `
     return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
   }
 
-  /* Fractional Brownian Motion – 6 octaves, 3D input */
   float fbm(vec3 p) {
-    float f = 0.0;
-    float amp = 0.5;
-    float freq = 1.0;
+    float f = 0.0, amp = 0.5, freq = 1.0;
     for (int i = 0; i < 6; i++) {
       f += amp * snoise(p * freq);
       freq *= 2.0;
@@ -95,84 +92,68 @@ const fragmentShader = /* glsl */ `
     return f;
   }
 
-  /* Cosine colour palette (Inigo Quilez style) */
+  /* Cosine palette – dark AI mood: deep blues, purples, teal */
   vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
     return a + b * cos(6.28318 * (c * t + d));
   }
 
   void main() {
     vec2 uv = vUv;
-    float t = uTime * 0.15;
+    float t = uTime * 0.1;
     vec2 mouse = uMouse;
 
-    /* ---- Layered flow field (parallax feel) ---- */
-    // Primary flow – slow, deep
-    float flow1 = fbm(vec3(uv * 2.5, t * 0.2));
-    // Secondary flow – faster, offset by mouse
-    float flow2 = fbm(vec3(uv * 3.0 + flow1 * 0.6, t * 0.35 + mouse.x));
-    // Blend them
-    float flow = mix(flow1, flow2, 0.5);
+    // --- Flow field ---
+    float flow1 = fbm(vec3(uv * 2.5, t * 0.15));
+    float flow2 = fbm(vec3(uv * 3.2 + flow1 * 0.5, t * 0.25 + mouse.x * 0.3));
+    float flow  = mix(flow1, flow2, 0.5);
 
-    /* ---- Mouse interaction – liquid glow ---- */
+    // --- Mouse liquid glow (subtle) ---
     float mouseDist = length(uv - mouse);
-    float mouseGlow = smoothstep(0.4, 0.0, mouseDist) * 0.35;
-    // Mouse‑driven distortion
-    vec2 mouseWarp = (uv - mouse) * mouseGlow * 0.15;
-    float flowMouse = fbm(vec3(uv + mouseWarp, t * 0.5));
+    float mouseGlow = smoothstep(0.35, 0.0, mouseDist) * 0.2;
+    vec2 mouseWarp = (uv - mouse) * mouseGlow * 0.1;
+    float flowMouse = fbm(vec3(uv + mouseWarp, t * 0.4));
 
-    /* ---- Warped dual grid ---- */
-    float gridX1 = abs(sin((uv.x + flow * 0.4 + mouseWarp.x) * 12.0));
-    float gridY1 = abs(sin((uv.y + flow * 0.4 + mouseWarp.y) * 12.0));
-    float grid1 = smoothstep(0.85, 1.0, gridX1) + smoothstep(0.85, 1.0, gridY1);
+    // --- Faint tech grid ---
+    float gridX = abs(sin((uv.x + flow * 0.3) * 14.0));
+    float gridY = abs(sin((uv.y + flow * 0.3) * 14.0));
+    float grid = smoothstep(0.88, 1.0, gridX) + smoothstep(0.88, 1.0, gridY);
+    grid *= 0.12 * (1.0 - abs(flow) * 0.6);
 
-    // Second finer grid, rotating slowly
-    vec2 uv2 = mat2(0.8, 0.6, -0.6, 0.8) * uv;
-    float gridX2 = abs(sin((uv2.x + flow2 * 0.25) * 22.0));
-    float gridY2 = abs(sin((uv2.y - flow2 * 0.3) * 22.0));
-    float grid2 = smoothstep(0.9, 1.0, gridX2) + smoothstep(0.9, 1.0, gridY2);
+    // --- Dynamic colour (dark base, cool accents) ---
+    // Keep colours very dark, only subtle tints
+    float hueShift = flow * 0.2 + t * 0.02;
+    vec3 deepNavy  = vec3(0.02, 0.03, 0.08);   // almost black
+    vec3 midBlue   = vec3(0.05, 0.08, 0.22);
+    vec3 accentCyan = palette(hueShift,
+                              vec3(0.1, 0.15, 0.2),
+                              vec3(0.15, 0.2, 0.25),
+                              vec3(0.8, 0.5, 0.5),
+                              vec3(0.2, 0.3, 0.4));
+    vec3 accentPurple = palette(hueShift + 0.2,
+                                vec3(0.1, 0.1, 0.15),
+                                vec3(0.2, 0.1, 0.25),
+                                vec3(0.7, 0.3, 0.5),
+                                vec3(0.4, 0.2, 0.3));
 
-    float grid = (grid1 * 0.7 + grid2 * 0.4) * (1.0 - abs(flow) * 0.5);
+    // Base gradient from bottom (darker) to top (slightly lighter)
+    vec3 color = mix(deepNavy, midBlue, uv.y * 0.5);
+    // Infuse flow with very subtle colour shifts
+    color = mix(color, accentCyan, flow * 0.08 + 0.02);
+    color = mix(color, accentPurple, flowMouse * 0.06);
+    // Mouse glow adds a gentle halo
+    color = mix(color, accentCyan, mouseGlow * 0.25);
+    // Grid adds faint structure
+    color += grid * accentCyan * 0.6;
 
-    /* ---- Dynamic colour palette ---- */
-    // Palette parameters shift with time and flow
-    float hueShift = flow * 0.25 + t * 0.02;
-    vec3 bg   = vec3(0.96, 0.95, 0.93);          // warm paper base
-    vec3 col1 = palette(hueShift,
-                        vec3(0.5,0.5,0.5),
-                        vec3(0.5,0.5,0.5),
-                        vec3(1.0,1.0,1.0),
-                        vec3(0.00,0.10,0.20));
-    vec3 col2 = palette(hueShift + 0.15,
-                        vec3(0.5,0.5,0.5),
-                        vec3(0.5,0.5,0.5),
-                        vec3(1.0,1.0,1.0),
-                        vec3(0.30,0.20,0.20));
-    // Warm golden / amber tone (fixed base)
-    vec3 warmGold  = vec3(0.77, 0.66, 0.51);
-    vec3 softAmber = vec3(0.72, 0.53, 0.42);
-
-    /* ---- Compose colour ---- */
-    vec3 color = bg;
-    // Layer dynamic palette colours
-    color = mix(color, col1, flow * 0.4 + 0.1);
-    color = mix(color, col2, flowMouse * 0.3);
-    // Add warmth
-    color = mix(color, warmGold, abs(flow) * 0.15);
-    color = mix(color, softAmber, max(flow * 0.1, 0.0));
-    // Mouse light injection
-    color = mix(color, warmGold * 1.2, mouseGlow * 0.5);
-    color += grid * warmGold * 0.3;
-
-    /* ---- Organic vignette with noise ---- */
-    float toCenter = length(uv - 0.5) * 1.3;
-    // Distort vignette with flow so edges feel alive
+    // --- Organic vignette ---
+    float toCenter = length(uv - 0.5) * 1.25;
     float vignette = 1.0 - toCenter;
-    vignette = mix(vignette, vignette * (1.0 + flow * 0.2), 0.5);
+    vignette = mix(vignette, vignette * (1.0 + flow * 0.15), 0.5);
     vignette = smoothstep(0.0, 1.0, vignette);
-    color = mix(bg * 0.9, color, vignette);
+    color = mix(deepNavy * 0.5, color, vignette);
 
-    /* ---- Subtle film grain ---- */
-    float grain = snoise(vec3(uv * 500.0, t * 10.0)) * 0.02;
+    // --- Subtle film grain (for that premium texture) ---
+    float grain = snoise(vec3(uv * 400.0, t * 8.0)) * 0.015;
     color += grain;
 
     gl_FragColor = vec4(color, 1.0);
@@ -214,7 +195,6 @@ export default function ShaderBackground() {
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    // Smooth mouse lerp
     let target = { x: 0.5, y: 0.5 };
     const onMouse = (e) => {
       target.x = e.clientX / window.innerWidth;
