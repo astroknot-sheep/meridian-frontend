@@ -16,76 +16,89 @@ const fragmentShader = /* glsl */ `
   uniform vec2 uResolution;
   uniform vec2 uMouse;
 
-  // ---------- Soft noise for gentle undulation ----------
+  // ---------- Hashing & noise ----------
   float hash(vec2 p) {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
   }
 
-  float noise(vec2 p) {
+  // ---------- Voronoi distance (returns dist to nearest + edge thickness) ----------
+  float voronoi(vec2 uv, float scale, out float edge) {
+    vec2 p = uv * scale;
     vec2 i = floor(p);
     vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    float a = hash(i);
-    float b = hash(i + vec2(1.0, 0.0));
-    float c = hash(i + vec2(0.0, 1.0));
-    float d = hash(i + vec2(1.0, 1.0));
-    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
-  }
+    float mDist = 1.0;
+    float mDist2 = 1.0;
 
-  // Multi-octave smooth noise
-  float fbm(vec2 p) {
-    float f = 0.0;
-    float amp = 0.5;
-    float freq = 1.0;
-    for (int i = 0; i < 5; i++) {
-      f += amp * noise(p * freq);
-      freq *= 2.0;
-      amp *= 0.5;
+    for (int y = -1; y <= 1; y++) {
+      for (int x = -1; x <= 1; x++) {
+        vec2 neighbor = vec2(float(x), float(y));
+        vec2 point = vec2(hash(i + neighbor), hash(i + neighbor + 1.0)) * 0.8 + 0.1;
+        vec2 diff = neighbor + point - f;
+        float d = dot(diff, diff);
+        if (d < mDist) {
+          mDist2 = mDist;
+          mDist = d;
+        } else if (d < mDist2) {
+          mDist2 = d;
+        }
+      }
     }
-    return f;
+
+    edge = abs(sqrt(mDist2) - sqrt(mDist));
+    return sqrt(mDist);
   }
 
+  // ---------- Main ----------
   void main() {
     vec2 uv = vUv;
-    float t = uTime * 0.04;
+    float t = uTime * 0.03;
 
-    // Very slow, large-scale undulation
-    vec2 uvShifted = uv + vec2(
-      fbm(uv * 2.0 + t * 0.2),
-      fbm(uv * 2.0 - t * 0.3)
-    ) * 0.2;
+    // Mouse influence – gentle drift of the cracks
+    vec2 mouseShift = (uMouse - 0.5) * 0.1;
 
-    // Light/dark waves – incredibly soft
-    float wave1 = fbm(uvShifted * 3.5 + t * 0.1) * 0.5 + 0.5;
-    float wave2 = fbm(uvShifted * 1.8 - t * 0.15) * 0.4 + 0.5;
-    float softPattern = (wave1 * 0.6 + wave2 * 0.4);
+    // Layer multiple scales of Voronoi cracks
+    float edgeAccum = 0.0;
+    float voronoiDist = 0.0;
+    for (int i = 0; i < 4; i++) {
+      float scale = 4.0 + float(i) * 3.5;
+      float edge = 0.0;
+      vec2 offset = vec2(
+        sin(t * 1.3 + float(i)) * 0.2 + mouseShift.x,
+        cos(t * 0.9 + float(i)) * 0.2 + mouseShift.y
+      );
+      float d = voronoi(uv + offset, scale, edge);
+      voronoiDist += d * (0.6 / scale);
+      // Thinner lines for smaller scales, thicker for larger
+      float thickness = 0.03 + float(i) * 0.01;
+      edgeAccum += smoothstep(0.0, thickness, edge) * (0.4 - float(i) * 0.08);
+    }
+    edgeAccum = clamp(edgeAccum, 0.0, 1.0);
 
-    // Warm spotlight that follows the mouse gently
-    float mouseDist = length(uv - uMouse);
-    float mouseGlow = 1.0 - smoothstep(0.0, 0.55, mouseDist);
-    mouseGlow = pow(mouseGlow, 2.5) * 0.22; // soft, wide halo
-
-    // Brand colours
+    // Base colour – warm ceramic
     vec3 cream    = vec3(0.961, 0.949, 0.933);
     vec3 sand     = vec3(0.925, 0.890, 0.845);
     vec3 gold     = vec3(0.78, 0.64, 0.48);
     vec3 deep     = vec3(0.68, 0.48, 0.38);
 
-    // Base gradient: cream at top, sand at bottom
-    vec3 base = mix(cream, sand, uv.y * 0.5 + 0.1);
+    // Gentle radial gradient
+    float radial = 1.0 - length(uv - 0.5) * 0.5;
+    vec3 base = mix(cream, sand, radial);
 
-    // Soft pattern adds subtle warmth variation
-    base = mix(base, sand, softPattern * 0.3);
-    base = mix(base, gold, softPattern * 0.12);
+    // The cracks become golden, with a soft glow around them
+    float crackGlow = edgeAccum * 0.7;
+    base = mix(base, gold, crackGlow * 0.8);
 
-    // Mouse glow adds a golden, nurturing spotlight
-    base = mix(base, gold, mouseGlow);
-    base = mix(base, cream, mouseGlow * 0.3); // keeps it from getting too dark
+    // Deepen the base slightly near the veins to give depth
+    base = mix(base, deep, crackGlow * 0.2);
+
+    // Mouse proximity adds a warm halo on the veins
+    float mouseDist = length(uv - uMouse);
+    float mouseInfluence = smoothstep(0.3, 0.0, mouseDist) * 0.5;
+    base = mix(base, gold, mouseInfluence * 0.6);
 
     // Very subtle vignette
-    float vignette = 1.0 - length(uv - 0.5) * 0.9;
-    vignette = smoothstep(0.1, 0.8, vignette);
-    base = mix(cream, base, vignette);
+    float vignette = 1.0 - length(uv - 0.5) * 1.0;
+    base = mix(cream, base, smoothstep(0.2, 0.8, vignette));
 
     gl_FragColor = vec4(base, 1.0);
   }
