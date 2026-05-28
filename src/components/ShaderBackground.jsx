@@ -1,27 +1,9 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-/**
- * Meridian — flowing gradient background.
- *
- * Technique (the same family used on Stripe / Luma / design-forward landing
- * pages, adapted to Meridian's warm paper-and-gold palette):
- *   1. Layered simplex "waves" at several scales, drifting in opposite
- *      directions with a deliberately subtle directional flow.
- *   2. Each band carries its own slow "lightness field"; bands are blended
- *      with a signed-distance alpha that is softened by a quintic smoothstep
- *      (this is what produces the long, silky, variable-blur edges).
- *   3. The final lightness is mapped through a 5-stop warm colour ramp, so
- *      the field breathes between cream, sand and soft gold rather than
- *      flat-shading a single hue.
- *   4. A faint diagonal orientation + an animated film-grain & dither pass
- *      kill banding and give the "designed, not generated" texture.
- *
- * Craft details: a ~10s breathing cycle (calming, on-theme), a cursor warm-
- * pool that idles into an autonomous drift, reduced-motion support, and a
- * tab-visibility pause to stay light on the GPU.
- */
-
+/* ------------------------------------------------------------------ */
+/*  Shaders                                                           */
+/* ------------------------------------------------------------------ */
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
   void main() {
@@ -34,144 +16,172 @@ const fragmentShader = /* glsl */ `
   precision highp float;
   varying vec2 vUv;
   uniform float uTime;
-  uniform vec2  uResolution;
-  uniform vec2  uMouse;
+  uniform vec2 uResolution;
+  uniform vec2 uMouse;
 
-  // ── Ashima 2D simplex noise ───────────────────────────────
-  vec3 mod289(vec3 x){ return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec2 mod289(vec2 x){ return x - floor(x * (1.0 / 289.0)) * 289.0; }
-  vec3 permute(vec3 x){ return mod289(((x * 34.0) + 1.0) * x); }
-  float snoise(vec2 v){
-    const vec4 C = vec4(0.211324865405187, 0.366025403784439,
-                       -0.577350269189626, 0.024390243902439);
-    vec2 i  = floor(v + dot(v, C.yy));
-    vec2 x0 = v -   i + dot(i, C.xx);
-    vec2 i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-    vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
+  // ---------- 3D Simplex noise (compact) ----------
+  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  vec4 permute(vec4 x) { return mod289(((x * 34.0) + 1.0) * x); }
+  vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+
+  float snoise(vec3 v) {
+    const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
+    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+
+    vec3 i  = floor(v + dot(v, C.yyy));
+    vec3 x0 = v - i + dot(i, C.xxx);
+
+    vec3 g = step(x0.yzx, x0.xyz);
+    vec3 l = 1.0 - g;
+    vec3 i1 = min(g.xyz, l.zxy);
+    vec3 i2 = max(g.xyz, l.zxy);
+
+    vec3 x1 = x0 - i1 + C.xxx;
+    vec3 x2 = x0 - i2 + C.yyy;
+    vec3 x3 = x0 - D.yyy;
+
     i = mod289(i);
-    vec3 p = permute(permute(i.y + vec3(0.0, i1.y, 1.0)) + i.x + vec3(0.0, i1.x, 1.0));
-    vec3 m = max(0.5 - vec3(dot(x0, x0), dot(x12.xy, x12.xy), dot(x12.zw, x12.zw)), 0.0);
-    m = m * m; m = m * m;
-    vec3 x  = 2.0 * fract(p * C.www) - 1.0;
-    vec3 h  = abs(x) - 0.5;
-    vec3 ox = floor(x + 0.5);
-    vec3 a0 = x - ox;
-    m *= 1.79284291400159 - 0.85373472095314 * (a0 * a0 + h * h);
-    vec3 g;
-    g.x  = a0.x * x0.x + h.x * x0.y;
-    g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-    return 130.0 * dot(m, g);
+    vec4 p = permute(permute(permute(
+             i.z + vec4(0.0, i1.z, i2.z, 1.0))
+           + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+           + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+
+    float n_ = 0.142857142857;
+    vec3 ns = n_ * D.wyz - D.xzx;
+
+    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+
+    vec4 x_ = floor(j * ns.z);
+    vec4 y_ = floor(j - 7.0 * x_);
+
+    vec4 x = x_ * ns.x + ns.yyyy;
+    vec4 y = y_ * ns.x + ns.yyyy;
+    vec4 h = 1.0 - abs(x) - abs(y);
+
+    vec4 b0 = vec4(x.xy, y.xy);
+    vec4 b1 = vec4(x.zw, y.zw);
+
+    vec4 s0 = floor(b0) * 2.0 + 1.0;
+    vec4 s1 = floor(b1) * 2.0 + 1.0;
+    vec4 sh = -step(h, vec4(0.0));
+
+    vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+    vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+
+    vec3 p0 = vec3(a0.xy, h.x);
+    vec3 p1 = vec3(a0.zw, h.y);
+    vec3 p2 = vec3(a1.xy, h.z);
+    vec3 p3 = vec3(a1.zw, h.w);
+
+    vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
+    p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+
+    vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
+    m = m * m;
+    return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
   }
 
-  // Cheap hash for grain / dither.
-  float hash21(vec2 p){
-    p = fract(p * vec2(123.34, 456.21));
-    p += dot(p, p + 45.32);
-    return fract(p.x * p.y);
+  /* Fractional Brownian Motion – 6 octaves, 3D input */
+  float fbm(vec3 p) {
+    float f = 0.0;
+    float amp = 0.5;
+    float freq = 1.0;
+    for (int i = 0; i < 6; i++) {
+      f += amp * snoise(p * freq);
+      freq *= 2.0;
+      amp *= 0.5;
+    }
+    return f;
   }
 
-  // Quintic smoothstep (iq) — softer than the built-in.
-  float qstep(float t){ return t * t * t * (t * (6.0 * t - 15.0) + 10.0); }
-
-  // ── Wave shape: stacked simplex with subtle directional flow ──
-  float flowField(vec2 uv, float offset){
-    float t = uTime * 0.060;            // slow, meditative
-    float F = 0.05;                     // flow is felt, never seen
-    float n = 0.0;
-    n += snoise(vec2(uv.x * 2.4 + F * 1.0 * t + offset,        uv.y * 1.2 + t * 0.12)) * 0.55;
-    n += snoise(vec2(uv.x * 4.1 - F * 0.6 * t + offset * 1.3,  uv.y * 1.0 - t * 0.16)) * 0.30;
-    n += snoise(vec2(uv.x * 7.0 + F * 0.8 * t + offset * 0.7,  uv.y * 0.8 + t * 0.09)) * 0.16;
-    return n;                           // ~ -1..1
+  /* Cosine colour palette (Inigo Quilez style) */
+  vec3 palette(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
+    return a + b * cos(6.28318 * (c * t + d));
   }
 
-  // ── Lightness field: large sweeping fades that map to colour ──
-  float lightField(vec2 uv, float offset){
-    float t = uTime * 0.050;
-    float F = 0.07;
-    float n = 0.5;
-    n += snoise(vec2(uv.x * 1.6 + F * 1.0 * t + offset,        uv.y * 3.0)) * 0.30;
-    n += snoise(vec2(uv.x * 1.0 - F * 0.6 * t + offset * 1.7,  uv.y * 2.4)) * 0.26;
-    n += snoise(vec2(uv.x * 0.6 + F * 0.8 * t + offset * 0.4,  uv.y * 1.8)) * 0.22;
-    return clamp(n, 0.0, 1.0);
-  }
+  void main() {
+    vec2 uv = vUv;
+    float t = uTime * 0.15;
+    vec2 mouse = uMouse;
 
-  // ── One soft band, blended by signed distance + dynamic blur ──
-  float waveAlpha(vec2 uv, float baseY, float amp, float offset){
-    float wy   = baseY + flowField(uv, offset) * amp;
-    float dist = wy - uv.y;                         // in uv units
-    float bn   = snoise(vec2(uv.x * 3.0 + uTime * 0.05 + offset, uTime * 0.04));
-    float bt   = pow((bn + 1.0) * 0.5, 5.0);        // bias toward "sharp"
-    float blur = mix(0.012, 0.16, bt);              // periods of crisp / hazy
-    float a    = clamp(0.5 + dist / blur, 0.0, 1.0);
-    return qstep(a);
-  }
+    /* ---- Layered flow field (parallax feel) ---- */
+    // Primary flow – slow, deep
+    float flow1 = fbm(vec3(uv * 2.5, t * 0.2));
+    // Secondary flow – faster, offset by mouse
+    float flow2 = fbm(vec3(uv * 3.0 + flow1 * 0.6, t * 0.35 + mouse.x));
+    // Blend them
+    float flow = mix(flow1, flow2, 0.5);
 
-  // ── 5-stop warm ramp: troughs warm, mid cream-bright, peaks gold ──
-  vec3 calcColor(float t){
-    vec3 c1 = vec3(0.700, 0.580, 0.490);  // warm taupe (shadow)
-    vec3 c2 = vec3(0.918, 0.882, 0.835);  // sand
-    vec3 c3 = vec3(0.965, 0.953, 0.937);  // cream (brightest)
-    vec3 c4 = vec3(0.792, 0.690, 0.533);  // gold
-    vec3 c5 = vec3(0.745, 0.564, 0.447);  // soft amber (glow)
-    float N = 4.0;
-    vec3 c = c1;
-    c = mix(c, c2, clamp((t - 0.0 / N) * N, 0.0, 1.0));
-    c = mix(c, c3, clamp((t - 1.0 / N) * N, 0.0, 1.0));
-    c = mix(c, c4, clamp((t - 2.0 / N) * N, 0.0, 1.0));
-    c = mix(c, c5, clamp((t - 3.0 / N) * N, 0.0, 1.0));
-    return c;
-  }
+    /* ---- Mouse interaction – liquid glow ---- */
+    float mouseDist = length(uv - mouse);
+    float mouseGlow = smoothstep(0.4, 0.0, mouseDist) * 0.35;
+    // Mouse‑driven distortion
+    vec2 mouseWarp = (uv - mouse) * mouseGlow * 0.15;
+    float flowMouse = fbm(vec3(uv + mouseWarp, t * 0.5));
 
-  void main(){
-    vec2  uv     = vUv;
-    float aspect = uResolution.x / max(uResolution.y, 1.0);
-    float breathe = 0.5 + 0.5 * sin(uTime * 0.16);   // ~10s calming cycle
+    /* ---- Warped dual grid ---- */
+    float gridX1 = abs(sin((uv.x + flow * 0.4 + mouseWarp.x) * 12.0));
+    float gridY1 = abs(sin((uv.y + flow * 0.4 + mouseWarp.y) * 12.0));
+    float grid1 = smoothstep(0.85, 1.0, gridX1) + smoothstep(0.85, 1.0, gridY1);
 
-    // Faint diagonal orientation (sampling-space only → no edge gaps).
-    float ang = -0.10;
-    mat2  R   = mat2(cos(ang), -sin(ang), sin(ang), cos(ang));
-    vec2  suv = (uv - 0.5);  suv.x *= aspect;
-    suv = R * suv;           suv.x /= aspect;
-    suv += 0.5;
+    // Second finer grid, rotating slowly
+    vec2 uv2 = mat2(0.8, 0.6, -0.6, 0.8) * uv;
+    float gridX2 = abs(sin((uv2.x + flow2 * 0.25) * 22.0));
+    float gridY2 = abs(sin((uv2.y - flow2 * 0.3) * 22.0));
+    float grid2 = smoothstep(0.9, 1.0, gridX2) + smoothstep(0.9, 1.0, gridY2);
 
-    // Three lightness fields, blended through two drifting bands.
-    float bg = lightField(suv,   0.0);
-    float l1 = lightField(suv,  60.0);
-    float l2 = lightField(suv, 130.0);
-    float a1 = waveAlpha (suv, 0.68, 0.16,  17.0);
-    float a2 = waveAlpha (suv, 0.34, 0.20,  73.0);
+    float grid = (grid1 * 0.7 + grid2 * 0.4) * (1.0 - abs(flow) * 0.5);
 
-    float L = bg;
-    L = mix(L, l1, a1);
-    L = mix(L, l2, a2);
+    /* ---- Dynamic colour palette ---- */
+    // Palette parameters shift with time and flow
+    float hueShift = flow * 0.25 + t * 0.02;
+    vec3 bg   = vec3(0.96, 0.95, 0.93);          // warm paper base
+    vec3 col1 = palette(hueShift,
+                        vec3(0.5,0.5,0.5),
+                        vec3(0.5,0.5,0.5),
+                        vec3(1.0,1.0,1.0),
+                        vec3(0.00,0.10,0.20));
+    vec3 col2 = palette(hueShift + 0.15,
+                        vec3(0.5,0.5,0.5),
+                        vec3(0.5,0.5,0.5),
+                        vec3(1.0,1.0,1.0),
+                        vec3(0.30,0.20,0.20));
+    // Warm golden / amber tone (fixed base)
+    vec3 warmGold  = vec3(0.77, 0.66, 0.51);
+    vec3 softAmber = vec3(0.72, 0.53, 0.42);
 
-    vec3 col = calcColor(clamp(L, 0.0, 1.0));
+    /* ---- Compose colour ---- */
+    vec3 color = bg;
+    // Layer dynamic palette colours
+    color = mix(color, col1, flow * 0.4 + 0.1);
+    color = mix(color, col2, flowMouse * 0.3);
+    // Add warmth
+    color = mix(color, warmGold, abs(flow) * 0.15);
+    color = mix(color, softAmber, max(flow * 0.1, 0.0));
+    // Mouse light injection
+    color = mix(color, warmGold * 1.2, mouseGlow * 0.5);
+    color += grid * warmGold * 0.3;
 
-    // Keep the upper area airy so hero text always reads cleanly.
-    col = mix(col, vec3(0.965, 0.953, 0.937), smoothstep(0.55, 1.0, uv.y) * 0.16);
+    /* ---- Organic vignette with noise ---- */
+    float toCenter = length(uv - 0.5) * 1.3;
+    // Distort vignette with flow so edges feel alive
+    float vignette = 1.0 - toCenter;
+    vignette = mix(vignette, vignette * (1.0 + flow * 0.2), 0.5);
+    vignette = smoothstep(0.0, 1.0, vignette);
+    color = mix(bg * 0.9, color, vignette);
 
-    // Cursor warm-pool — a soft pour of light that follows you.
-    vec2  d  = uv - uMouse;  d.x *= aspect;
-    float mp = smoothstep(0.50, 0.0, length(d));
-    col = mix(col, vec3(0.808, 0.706, 0.545), mp * 0.10);
-    col += vec3(0.055, 0.042, 0.024) * mp * (0.6 + 0.4 * breathe);
+    /* ---- Subtle film grain ---- */
+    float grain = snoise(vec3(uv * 500.0, t * 10.0)) * 0.02;
+    color += grain;
 
-    // Gentle bloom on the brightest crests, modulated by the breath.
-    col += vec3(0.04, 0.034, 0.022) * pow(clamp(L, 0.0, 1.0), 3.0) * (0.5 + 0.5 * breathe);
-
-    // Warm, soft vignette (never crushes to black).
-    float vig = smoothstep(1.25, 0.35, length((uv - 0.5) * vec2(aspect, 1.0)));
-    col *= mix(0.955, 1.0, vig);
-
-    // Animated film grain + 8-bit dither — the premium, non-generated finish.
-    float grain = hash21(gl_FragCoord.xy + fract(uTime) * 131.0);
-    col += (grain - 0.5) * 0.024;
-    col += (hash21(gl_FragCoord.xy * 0.37 + 11.0) - 0.5) / 255.0;
-
-    gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    gl_FragColor = vec4(color, 1.0);
   }
 `;
 
+/* ------------------------------------------------------------------ */
+/*  Component                                                         */
+/* ------------------------------------------------------------------ */
 export default function ShaderBackground() {
   const canvasRef = useRef(null);
 
@@ -179,28 +189,9 @@ export default function ShaderBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const reduceMotion =
-      window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const coarse =
-      window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-
-    let renderer;
-    try {
-      renderer = new THREE.WebGLRenderer({
-        canvas,
-        antialias: true,
-        alpha: false,
-        powerPreference: 'high-performance',
-      });
-    } catch (e) {
-      // No WebGL → leave the canvas blank; the page background shows through.
-      return;
-    }
-
-    const dprCap = coarse ? 1.25 : 1.5;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprCap));
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0xf5f2ee, 1);
 
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -209,86 +200,49 @@ export default function ShaderBackground() {
     const uniforms = {
       uTime: { value: 0 },
       uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
-      uMouse: { value: new THREE.Vector2(0.5, 0.62) },
+      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
     };
 
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
       uniforms,
+      transparent: false,
       depthWrite: false,
-      depthTest: false,
     });
 
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    // Pointer state (eased) + autonomous idle drift.
-    const pointer = { x: 0.5, y: 0.62 };
-    const target = { x: 0.5, y: 0.62 };
-    let lastMove = -100;
-    let elapsed = 0;
-    let last = performance.now();
-    let raf = 0;
-    let running = true;
-
-    const onMove = (e) => {
-      const cx = e.touches ? e.touches[0].clientX : e.clientX;
-      const cy = e.touches ? e.touches[0].clientY : e.clientY;
-      target.x = cx / window.innerWidth;
-      target.y = 1.0 - cy / window.innerHeight;
-      lastMove = elapsed;
+    // Smooth mouse lerp
+    let target = { x: 0.5, y: 0.5 };
+    const onMouse = (e) => {
+      target.x = e.clientX / window.innerWidth;
+      target.y = 1.0 - e.clientY / window.innerHeight;
     };
     const onResize = () => {
       renderer.setSize(window.innerWidth, window.innerHeight);
       uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
     };
-    const onVisibility = () => {
-      const wasRunning = running;
-      running = !document.hidden;
-      if (running && !wasRunning) {
-        last = performance.now();
-        raf = requestAnimationFrame(animate);
-      }
-    };
 
-    window.addEventListener('mousemove', onMove, { passive: true });
-    window.addEventListener('touchmove', onMove, { passive: true });
+    window.addEventListener('mousemove', onMouse);
     window.addEventListener('resize', onResize);
-    document.addEventListener('visibilitychange', onVisibility);
 
-    const speed = reduceMotion ? 0.12 : 1.0;
-    const ease = reduceMotion ? 0.012 : 0.035;
-
-    function animate(now) {
-      if (!running) return;
-      const dt = Math.min((now - last) / 1000, 0.05);
-      last = now;
-      elapsed += dt * speed;
-      uniforms.uTime.value = elapsed;
-
-      // After a few idle seconds, let the light drift on a slow path so the
-      // background still feels alive on touch devices / when the mouse rests.
-      if (elapsed - lastMove > 2.5) {
-        const a = elapsed * 0.06;
-        target.x = 0.5 + Math.cos(a) * 0.22;
-        target.y = 0.6 + Math.sin(a * 0.8) * 0.16;
-      }
-      pointer.x += (target.x - pointer.x) * ease;
-      pointer.y += (target.y - pointer.y) * ease;
-      uniforms.uMouse.value.set(pointer.x, pointer.y);
-
+    let raf;
+    const animate = (timestamp) => {
+      uniforms.uTime.value = timestamp * 0.001;
+      const m = uniforms.uMouse.value;
+      m.x += (target.x - m.x) * 0.05;
+      m.y += (target.y - m.y) * 0.05;
       renderer.render(scene, camera);
       raf = requestAnimationFrame(animate);
-    }
+    };
     raf = requestAnimationFrame(animate);
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('mousemove', onMouse);
       window.removeEventListener('resize', onResize);
-      document.removeEventListener('visibilitychange', onVisibility);
       geometry.dispose();
       material.dispose();
       renderer.dispose();
