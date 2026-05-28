@@ -1,0 +1,2081 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meridian — The Engineering Journey</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..700,0..100,0..1&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --paper: #F5F2EE;
+            --paper-2: #FAF8F4;
+            --paper-3: #EFEAE2;
+            --ink: #1A1815;
+            --ink-2: #3D362D;
+            --ink-3: #6C6356;
+            --ink-4: #9A9082;
+            --hair: #D9D0C3;
+            --hair-2: #C9BFAF;
+            --gold: #B89968;
+            --gold-deep: #8A6F3E;
+            --moss: #6A9970;
+            --rust: #B07060;
+            --amber: #C89060;
+            --sev-min: #7AAE82;
+            --sev-mild: #C9B27A;
+            --sev-mod: #D6A064;
+            --sev-modsev: #C88060;
+            --sev-sev: #B06868;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html,
+        body {
+            background: var(--paper);
+            color: var(--ink);
+            font-family: "Newsreader", Georgia, serif;
+            font-size: 16px;
+            line-height: 1.65;
+            font-weight: 380;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility
+        }
+
+        body {
+            background-image:
+                radial-gradient(1200px 600px at 80% -10%, rgba(184, 153, 104, 0.07), transparent 60%),
+                radial-gradient(900px 500px at -10% 30%, rgba(106, 153, 112, 0.04), transparent 60%);
+            background-attachment: fixed;
+        }
+
+        /* paper grain */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+            opacity: .035;
+            mix-blend-mode: multiply;
+        }
+
+        .wrap {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 80px 36px 140px
+        }
+
+        @media (max-width:640px) {
+            .wrap {
+                padding: 48px 22px 96px
+            }
+        }
+
+        /* HEADER */
+        .masthead {
+            border-bottom: 1px solid var(--hair);
+            padding-bottom: 36px;
+            margin-bottom: 64px;
+            position: relative
+        }
+
+        .eyebrow {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 11px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 28px
+        }
+
+        .eyebrow .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--gold);
+            border-radius: 50%
+        }
+
+        .eyebrow .sep {
+            flex: 1;
+            height: 1px;
+            background: var(--hair)
+        }
+
+        h1.title {
+            font-family: "Fraunces", serif;
+            font-weight: 340;
+            font-size: clamp(44px, 7vw, 84px);
+            line-height: .96;
+            letter-spacing: -0.025em;
+            font-variation-settings: "opsz" 144, "SOFT" 30;
+            margin-bottom: 8px
+        }
+
+        h1.title .em {
+            font-style: italic;
+            font-weight: 330;
+            color: var(--gold-deep)
+        }
+
+        .subtitle {
+            font-family: "Fraunces", serif;
+            font-size: clamp(20px, 2.4vw, 26px);
+            line-height: 1.3;
+            color: var(--ink-2);
+            font-weight: 340;
+            font-style: italic;
+            max-width: 600px;
+            margin-top: 18px;
+            font-variation-settings: "opsz" 36
+        }
+
+        .meta-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-top: 42px;
+            padding-top: 28px;
+            border-top: 1px solid var(--hair)
+        }
+
+        @media (max-width:640px) {
+            .meta-strip {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 22px
+            }
+        }
+
+        .meta-cell .k {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 10px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 6px
+        }
+
+        .meta-cell .v {
+            font-family: "Fraunces", serif;
+            font-size: 17px;
+            color: var(--ink);
+            font-variation-settings: "opsz" 24
+        }
+
+        /* SECTIONS */
+        section {
+            margin-top: 88px
+        }
+
+        .sec-num {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 11px;
+            color: var(--gold-deep);
+            letter-spacing: .2em;
+            margin-bottom: 14px
+        }
+
+        h2 {
+            font-family: "Fraunces", serif;
+            font-weight: 360;
+            font-size: clamp(30px, 4vw, 44px);
+            line-height: 1.08;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+            font-variation-settings: "opsz" 72
+        }
+
+        h2 .em {
+            font-style: italic;
+            color: var(--gold-deep);
+            font-weight: 340
+        }
+
+        h3 {
+            font-family: "Fraunces", serif;
+            font-weight: 420;
+            font-size: 22px;
+            line-height: 1.25;
+            margin: 36px 0 12px;
+            letter-spacing: -0.01em;
+            font-variation-settings: "opsz" 36
+        }
+
+        h4 {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .2em;
+            color: var(--ink-3);
+            margin: 28px 0 10px
+        }
+
+        p {
+            margin-bottom: 14px;
+            color: var(--ink-2)
+        }
+
+        p strong {
+            color: var(--ink);
+            font-weight: 520
+        }
+
+        .lede {
+            font-family: "Fraunces", serif;
+            font-size: 20px;
+            line-height: 1.5;
+            color: var(--ink-2);
+            font-variation-settings: "opsz" 36;
+            max-width: 680px;
+            margin-bottom: 24px
+        }
+
+        /* PHASE CARD */
+        .phase {
+            position: relative;
+            padding-top: 64px;
+            margin-top: 80px;
+            border-top: 1px solid var(--hair)
+        }
+
+        .phase:first-of-type {
+            margin-top: 40px
+        }
+
+        .phase-head {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 22px;
+            align-items: start;
+            margin-bottom: 32px
+        }
+
+        @media (max-width:640px) {
+            .phase-head {
+                grid-template-columns: 1fr;
+                gap: 6px
+            }
+        }
+
+        .phase-num {
+            font-family: "Fraunces", serif;
+            font-size: 64px;
+            line-height: .85;
+            color: var(--gold);
+            font-weight: 300;
+            font-variation-settings: "opsz" 144, "SOFT" 50
+        }
+
+        .phase-titles .kicker {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 10px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 8px
+        }
+
+        .phase-titles h2.phase-h {
+            font-family: "Fraunces", serif;
+            font-size: clamp(26px, 3.4vw, 36px);
+            line-height: 1.1;
+            letter-spacing: -0.018em;
+            font-weight: 360;
+            margin: 0;
+            font-variation-settings: "opsz" 48
+        }
+
+        .phase-titles h2.phase-h .em {
+            font-style: italic;
+            color: var(--gold-deep)
+        }
+
+        /* W4 grid */
+        .w4 {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0 26px;
+            margin: 20px 0 28px;
+            border-top: 1px solid var(--hair);
+            border-bottom: 1px solid var(--hair);
+            padding: 18px 0
+        }
+
+        .w4 dt {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 10px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            padding: 6px 0;
+            align-self: start
+        }
+
+        .w4 dd {
+            padding: 6px 0;
+            color: var(--ink-2);
+            font-size: 15.5px;
+            border-bottom: 1px dashed var(--hair)
+        }
+
+        .w4 dt:last-of-type,
+        .w4 dd:last-of-type {
+            border-bottom: 0
+        }
+
+        /* CALLOUTS */
+        .callout {
+            border-left: 2px solid var(--gold);
+            background: linear-gradient(90deg, rgba(184, 153, 104, 0.06), transparent 60%);
+            padding: 18px 22px;
+            margin: 24px 0;
+            border-radius: 0 4px 4px 0
+        }
+
+        .callout .label {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 10px;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--gold-deep);
+            margin-bottom: 8px
+        }
+
+        .callout p {
+            margin-bottom: 6px;
+            font-size: 15px
+        }
+
+        .callout.crisis {
+            border-left-color: var(--rust);
+            background: linear-gradient(90deg, rgba(176, 112, 96, 0.07), transparent 60%)
+        }
+
+        .callout.crisis .label {
+            color: var(--rust)
+        }
+
+        /* CODE */
+        pre {
+            background: #1A1815;
+            color: #E8DFD0;
+            padding: 20px 22px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 12.5px;
+            line-height: 1.6;
+            margin: 18px 0;
+            position: relative
+        }
+
+        pre::before {
+            content: attr(data-lang);
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            font-size: 9.5px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: #9A9082;
+            font-weight: 500
+        }
+
+        .tok-key {
+            color: #D6A064
+        }
+
+        .tok-str {
+            color: #A8C49A
+        }
+
+        .tok-com {
+            color: #6C6356;
+            font-style: italic
+        }
+
+        .tok-fn {
+            color: #C4A882
+        }
+
+        .tok-num {
+            color: #D8A878
+        }
+
+        code.inline {
+            font-family: "JetBrains Mono", monospace;
+            background: var(--paper-3);
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: .86em;
+            color: var(--ink);
+            border: 1px solid var(--hair)
+        }
+
+        /* DIAGRAM */
+        .diagram {
+            margin: 36px -10px;
+            padding: 24px;
+            background: var(--paper-2);
+            border: 1px solid var(--hair);
+            border-radius: 6px;
+            position: relative
+        }
+
+        .diagram .cap {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 10px;
+            letter-spacing: .2em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center
+        }
+
+        .diagram .cap .fig {
+            color: var(--gold-deep)
+        }
+
+        .diagram svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            font-family: "Newsreader", serif
+        }
+
+        .diagram svg text {
+            font-family: "Newsreader", serif
+        }
+
+        .diagram svg .mono {
+            font-family: "JetBrains Mono", monospace
+        }
+
+        /* TIMELINE */
+        .timeline-wrap {
+            margin: 30px -10px
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 14.5px
+        }
+
+        thead th {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 10px;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            color: var(--ink-3);
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--ink-3);
+            font-weight: 500
+        }
+
+        tbody td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--hair);
+            vertical-align: top;
+            color: var(--ink-2)
+        }
+
+        tbody td:first-child {
+            font-family: "Fraunces", serif;
+            color: var(--ink);
+            font-weight: 420
+        }
+
+        /* RULES LIST */
+        .rules {
+            list-style: none;
+            counter-reset: r;
+            margin: 18px 0
+        }
+
+        .rules li {
+            position: relative;
+            padding: 14px 14px 14px 56px;
+            border-bottom: 1px solid var(--hair);
+            counter-increment: r
+        }
+
+        .rules li:before {
+            content: counter(r, decimal-leading-zero);
+            position: absolute;
+            left: 0;
+            top: 14px;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 11px;
+            color: var(--gold-deep);
+            letter-spacing: .1em
+        }
+
+        .rules li .name {
+            font-family: "Fraunces", serif;
+            font-size: 17px;
+            color: var(--ink);
+            display: block;
+            margin-bottom: 3px
+        }
+
+        .rules li .desc {
+            font-size: 14.5px;
+            color: var(--ink-3)
+        }
+
+        /* BUG ITEM */
+        .bug {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--hair);
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            gap: 18px
+        }
+
+        @media (max-width:640px) {
+            .bug {
+                grid-template-columns: 1fr;
+                gap: 6px
+            }
+        }
+
+        .bug .ix {
+            font-family: "Fraunces", serif;
+            font-size: 38px;
+            line-height: .9;
+            color: var(--rust);
+            font-variation-settings: "opsz" 72;
+            font-style: italic;
+            font-weight: 330
+        }
+
+        .bug h4 {
+            margin-top: 0;
+            color: var(--ink);
+            font-family: "Fraunces", serif;
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 18px;
+            font-variation-settings: "opsz" 24;
+            font-weight: 440
+        }
+
+        .bug .row {
+            margin-top: 8px
+        }
+
+        .bug .row b {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 10px;
+            letter-spacing: .2em;
+            color: var(--ink-3);
+            text-transform: uppercase;
+            font-weight: 500;
+            margin-right: 8px
+        }
+
+        /* FOOTER */
+        footer {
+            margin-top: 120px;
+            padding-top: 32px;
+            border-top: 1px solid var(--hair);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 14px;
+            color: var(--ink-3);
+            font-family: "JetBrains Mono", monospace;
+            font-size: 10.5px;
+            letter-spacing: .16em;
+            text-transform: uppercase
+        }
+
+        footer .mark {
+            font-family: "Fraunces", serif;
+            font-style: italic;
+            font-size: 16px;
+            color: var(--gold-deep);
+            text-transform: none;
+            letter-spacing: -.005em
+        }
+
+        /* small flourishes */
+        .ornament {
+            display: block;
+            text-align: center;
+            color: var(--gold);
+            font-size: 22px;
+            letter-spacing: 1em;
+            margin: 60px 0 40px;
+            opacity: .6
+        }
+
+        ul.clean {
+            list-style: none;
+            padding-left: 0;
+            margin: 14px 0
+        }
+
+        ul.clean li {
+            position: relative;
+            padding: 6px 0 6px 22px;
+            color: var(--ink-2);
+            font-size: 15px
+        }
+
+        ul.clean li:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 16px;
+            width: 10px;
+            height: 1px;
+            background: var(--gold)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+
+        <!-- ============== MASTHEAD ============== -->
+        <header class="masthead">
+            <div class="eyebrow"><span class="dot"></span><span>An Engineering Chronicle</span><span
+                    class="sep"></span><span>v.Phase 10 · May 2026</span></div>
+            <h1 class="title">Meridian<span class="em">.</span></h1>
+            <p class="subtitle">From a fragile multi-page prototype to a clinical-grade mental health companion: the
+                why, what, when, and where of every architectural decision.</p>
+
+            <dl class="meta-strip">
+                <div class="meta-cell">
+                    <div class="k">Window</div>
+                    <div class="v">May 20 — 25, 2026</div>
+                </div>
+                <div class="meta-cell">
+                    <div class="k">Phases</div>
+                    <div class="v">10 shipped</div>
+                </div>
+                <div class="meta-cell">
+                    <div class="k">Stack</div>
+                    <div class="v">FastAPI · React · Supabase</div>
+                </div>
+                <div class="meta-cell">
+                    <div class="k">Domain</div>
+                    <div class="v">Clinical AI</div>
+                </div>
+            </dl>
+        </header>
+
+        <!-- ============== OVERVIEW ============== -->
+        <section id="overview">
+            <div class="sec-num">§ 00 / PRELUDE</div>
+            <h2>What <span class="em">Meridian</span> is, in one breath.</h2>
+            <p class="lede">A private, evidence-based mental health platform that routes every user turn through
+                deterministic safety guardrails before any LLM ever sees the text — backed by a stateful LangGraph DAG,
+                local ONNX classifiers, Presidio PII redaction, and cross-session pgvector memory.</p>
+
+            <p>This document reconstructs the journey from the first static HTML commit (<code
+                    class="inline">3ac7760</code>) to the current adaptive-screening, prompt-cached, SPA topology at
+                HEAD (<code class="inline">7632b90</code>). Each phase is recorded with four anchors — <em>why</em> the
+                pivot was forced, <em>what</em> was actually built, <em>when</em> it landed, and <em>where</em> in the
+                codebase it lives — so the trail is recoverable, not merely commemorative.</p>
+
+            <!-- TIMELINE DIAGRAM -->
+            <div class="diagram timeline-wrap">
+                <div class="cap"><span class="fig">Fig. 01</span><span>Six days · ten phases · two architectures</span>
+                </div>
+                <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+                    <!-- baseline -->
+                    <line x1="40" y1="120" x2="840" y2="120" stroke="#C9BFAF" stroke-width="1" />
+                    <!-- ticks -->
+                    <g font-family="JetBrains Mono" font-size="9" fill="#6C6356" letter-spacing="1.5">
+                        <text x="40" y="148">MAY 20</text>
+                        <text x="200" y="148">MAY 22</text>
+                        <text x="400" y="148">MAY 23</text>
+                        <text x="560" y="148">MAY 24</text>
+                        <text x="800" y="148" text-anchor="end">MAY 25</text>
+                    </g>
+                    <!-- date dots -->
+                    <g fill="#C9BFAF">
+                        <circle cx="40" cy="120" r="2" />
+                        <circle cx="200" cy="120" r="2" />
+                        <circle cx="400" cy="120" r="2" />
+                        <circle cx="560" cy="120" r="2" />
+                        <circle cx="800" cy="120" r="2" />
+                    </g>
+                    <!-- phase nodes -->
+                    <g>
+                        <!-- 1 -->
+                        <line x1="60" y1="120" x2="60" y2="90" stroke="#B89968" />
+                        <circle cx="60" cy="90" r="6" fill="#F5F2EE" stroke="#B89968" stroke-width="1.5" />
+                        <text x="60" y="76" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#8A6F3E" letter-spacing="1">P1</text>
+                        <text x="60" y="62" text-anchor="middle" font-family="Newsreader" font-size="10" fill="#3D362D"
+                            font-style="italic">Decouple</text>
+                        <!-- 2 -->
+                        <line x1="160" y1="120" x2="160" y2="100" stroke="#B89968" />
+                        <circle cx="160" cy="100" r="5" fill="#F5F2EE" stroke="#B89968" stroke-width="1.5" />
+                        <text x="160" y="92" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#8A6F3E">P2</text>
+                        <text x="160" y="78" text-anchor="middle" font-family="Newsreader" font-size="10" fill="#3D362D"
+                            font-style="italic">Supabase</text>
+                        <!-- 3 -->
+                        <line x1="380" y1="120" x2="380" y2="90" stroke="#B89968" />
+                        <circle cx="380" cy="90" r="5" fill="#F5F2EE" stroke="#B89968" stroke-width="1.5" />
+                        <text x="380" y="82" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#8A6F3E">P3</text>
+                        <text x="380" y="68" text-anchor="middle" font-family="Newsreader" font-size="10" fill="#3D362D"
+                            font-style="italic">Consent</text>
+                        <!-- 4 -->
+                        <line x1="500" y1="120" x2="500" y2="160" stroke="#B07060" />
+                        <circle cx="500" cy="160" r="5" fill="#F5F2EE" stroke="#B07060" stroke-width="1.5" />
+                        <text x="500" y="174" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#B07060">P4</text>
+                        <text x="500" y="188" text-anchor="middle" font-family="Newsreader" font-size="10"
+                            fill="#3D362D" font-style="italic">Q9 Guard</text>
+                        <!-- 5 -->
+                        <line x1="580" y1="120" x2="580" y2="90" stroke="#B89968" />
+                        <circle cx="580" cy="90" r="5" fill="#F5F2EE" stroke="#B89968" stroke-width="1.5" />
+                        <text x="580" y="82" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#8A6F3E">P5</text>
+                        <text x="580" y="68" text-anchor="middle" font-family="Newsreader" font-size="10" fill="#3D362D"
+                            font-style="italic">React SPA</text>
+                        <!-- 6 -->
+                        <line x1="650" y1="120" x2="650" y2="160" stroke="#B89968" />
+                        <circle cx="650" cy="160" r="5" fill="#F5F2EE" stroke="#B89968" stroke-width="1.5" />
+                        <text x="650" y="174" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#8A6F3E">P6</text>
+                        <text x="650" y="188" text-anchor="middle" font-family="Newsreader" font-size="10"
+                            fill="#3D362D" font-style="italic">SSE Stream</text>
+                        <!-- 7 -->
+                        <line x1="710" y1="120" x2="710" y2="100" stroke="#B89968" />
+                        <circle cx="710" cy="100" r="5" fill="#F5F2EE" stroke="#B89968" stroke-width="1.5" />
+                        <text x="710" y="92" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#8A6F3E">P7</text>
+                        <text x="710" y="78" text-anchor="middle" font-family="Newsreader" font-size="10" fill="#3D362D"
+                            font-style="italic">pgvector</text>
+                        <!-- 8/9 -->
+                        <line x1="770" y1="120" x2="770" y2="160" stroke="#B89968" />
+                        <circle cx="770" cy="160" r="5" fill="#F5F2EE" stroke="#B89968" stroke-width="1.5" />
+                        <text x="770" y="174" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#8A6F3E">P8·9</text>
+                        <text x="770" y="188" text-anchor="middle" font-family="Newsreader" font-size="10"
+                            fill="#3D362D" font-style="italic">PHQ-9 · Cache</text>
+                        <!-- 10 -->
+                        <line x1="820" y1="120" x2="820" y2="80" stroke="#6A9970" />
+                        <circle cx="820" cy="80" r="7" fill="#F5F2EE" stroke="#6A9970" stroke-width="2" />
+                        <text x="820" y="66" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#6A9970" font-weight="500">P10</text>
+                        <text x="820" y="52" text-anchor="middle" font-family="Newsreader" font-size="10" fill="#3D362D"
+                            font-style="italic">SPRT</text>
+                    </g>
+                    <!-- now arrow -->
+                    <g>
+                        <text x="820" y="208" text-anchor="middle" font-family="JetBrains Mono" font-size="8"
+                            fill="#6A9970" letter-spacing="2">HEAD</text>
+                    </g>
+                </svg>
+            </div>
+        </section>
+
+        <!-- ============== ARCHITECTURE ============== -->
+        <section id="architecture">
+            <div class="sec-num">§ 01 / TOPOLOGY</div>
+            <h2>The production <span class="em">shape</span>.</h2>
+            <p>Compute-intensive ML and state orchestration are physically separated from edge-cached delivery. The
+                client never touches the model; the model never serves a stylesheet.</p>
+
+            <div class="diagram">
+                <div class="cap"><span class="fig">Fig. 02</span><span>Three-layer topology · JWT-gated request
+                        path</span></div>
+                <svg viewBox="0 0 880 540" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
+                            orient="auto-start-reverse">
+                            <path d="M0,0 L10,5 L0,10 z" fill="#9A9082" />
+                        </marker>
+                    </defs>
+
+                    <!-- Edge Layer -->
+                    <rect x="40" y="30" width="800" height="110" rx="4" fill="none" stroke="#D9D0C3"
+                        stroke-dasharray="3 3" />
+                    <text x="56" y="50" font-family="JetBrains Mono" font-size="9" fill="#8A6F3E"
+                        letter-spacing="2">EDGE · VERCEL CDN</text>
+                    <!-- nodes inside edge -->
+                    <g>
+                        <rect x="60" y="62" width="160" height="58" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                        <text x="140" y="86" text-anchor="middle" font-family="Newsreader" font-size="13"
+                            fill="#1A1815">React SPA</text>
+                        <text x="140" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#6C6356">Vite · Router · Auth</text>
+
+                        <rect x="240" y="62" width="160" height="58" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                        <text x="320" y="86" text-anchor="middle" font-family="Newsreader" font-size="13"
+                            fill="#1A1815">Shader Canvas</text>
+                        <text x="320" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#6C6356">three.js · fbm noise</text>
+
+                        <rect x="420" y="62" width="160" height="58" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                        <text x="500" y="86" text-anchor="middle" font-family="Newsreader" font-size="13"
+                            fill="#1A1815">SSE Reader</text>
+                        <text x="500" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#6C6356">ReadableStream</text>
+
+                        <rect x="600" y="62" width="220" height="58" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                        <text x="710" y="86" text-anchor="middle" font-family="Newsreader" font-size="13"
+                            fill="#1A1815">PHQ-9 Trajectory Chart</text>
+                        <text x="710" y="104" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#6C6356">bespoke SVG</text>
+                    </g>
+
+                    <!-- ML Layer -->
+                    <rect x="40" y="180" width="800" height="190" rx="4" fill="none" stroke="#D9D0C3"
+                        stroke-dasharray="3 3" />
+                    <text x="56" y="200" font-family="JetBrains Mono" font-size="9" fill="#8A6F3E"
+                        letter-spacing="2">RUNTIME · HUGGING FACE SPACES</text>
+
+                    <g>
+                        <rect x="60" y="216" width="170" height="46" rx="3" fill="#EFEAE2" stroke="#C9BFAF" />
+                        <text x="145" y="244" text-anchor="middle" font-family="Newsreader" font-size="13"
+                            fill="#1A1815">FastAPI Gateway</text>
+
+                        <rect x="60" y="282" width="170" height="64" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                        <text x="145" y="304" text-anchor="middle" font-family="Newsreader" font-size="12"
+                            fill="#1A1815">LangGraph DAG</text>
+                        <text x="145" y="322" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5"
+                            fill="#6C6356">Guardian → Security</text>
+                        <text x="145" y="336" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5"
+                            fill="#6C6356">→ Router → Node</text>
+
+                        <rect x="260" y="216" width="240" height="130" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                        <text x="380" y="236" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#8A6F3E" letter-spacing="1.5">SAFETY NODES</text>
+                        <line x1="280" y1="246" x2="480" y2="246" stroke="#D9D0C3" />
+                        <text x="380" y="266" text-anchor="middle" font-family="Newsreader" font-size="12"
+                            fill="#3D362D">Guardian — abuse / moderation</text>
+                        <text x="380" y="288" text-anchor="middle" font-family="Newsreader" font-size="12"
+                            fill="#3D362D">Security — Presidio PHI redaction</text>
+                        <text x="380" y="310" text-anchor="middle" font-family="Newsreader" font-size="12"
+                            fill="#3D362D">Crisis — safety helpline card</text>
+                        <text x="380" y="332" text-anchor="middle" font-family="Newsreader" font-size="12"
+                            fill="#3D362D">PHQ-9 Q9 — implicit-answer guard</text>
+
+                        <rect x="530" y="216" width="290" height="130" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                        <text x="675" y="236" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#8A6F3E" letter-spacing="1.5">CLASSIFIERS · GENERATORS</text>
+                        <line x1="550" y1="246" x2="800" y2="246" stroke="#D9D0C3" />
+                        <text x="675" y="266" text-anchor="middle" font-family="Newsreader" font-size="12"
+                            fill="#3D362D">all-MiniLM-L6-v2 — embeddings</text>
+                        <text x="675" y="288" text-anchor="middle" font-family="Newsreader" font-size="12"
+                            fill="#3D362D">MentalRoBERTa ONNX — tokenizer</text>
+                        <text x="675" y="310" text-anchor="middle" font-family="Newsreader" font-size="12"
+                            fill="#3D362D">LinearSVC — depression signal</text>
+                        <text x="675" y="332" text-anchor="middle" font-family="Newsreader" font-size="12"
+                            fill="#3D362D">GPT-4o-mini — cache-aligned</text>
+                    </g>
+
+                    <!-- DB Layer -->
+                    <rect x="40" y="410" width="800" height="100" rx="4" fill="none" stroke="#D9D0C3"
+                        stroke-dasharray="3 3" />
+                    <text x="56" y="430" font-family="JetBrains Mono" font-size="9" fill="#8A6F3E"
+                        letter-spacing="2">STATE · SUPABASE (POSTGRESQL)</text>
+                    <g>
+                        <rect x="60" y="446" width="200" height="48" rx="3" fill="#EFEAE2" stroke="#C9BFAF" />
+                        <text x="160" y="468" text-anchor="middle" font-family="Newsreader" font-size="13"
+                            fill="#1A1815">Relational tables</text>
+                        <text x="160" y="484" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#6C6356">sessions · messages · phq9</text>
+
+                        <rect x="280" y="446" width="200" height="48" rx="3" fill="#EFEAE2" stroke="#C9BFAF" />
+                        <text x="380" y="468" text-anchor="middle" font-family="Newsreader" font-size="13"
+                            fill="#1A1815">pgvector (384-d)</text>
+                        <text x="380" y="484" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#6C6356">ivfflat · cosine</text>
+
+                        <rect x="500" y="446" width="200" height="48" rx="3" fill="#EFEAE2" stroke="#C9BFAF" />
+                        <text x="600" y="468" text-anchor="middle" font-family="Newsreader" font-size="13"
+                            fill="#1A1815">Row-Level Security</text>
+                        <text x="600" y="484" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#6C6356">auth.uid() == user_id</text>
+
+                        <rect x="720" y="446" width="100" height="48" rx="3" fill="#EFEAE2" stroke="#C9BFAF" />
+                        <text x="770" y="468" text-anchor="middle" font-family="Newsreader" font-size="13"
+                            fill="#1A1815">audit_log</text>
+                        <text x="770" y="484" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                            fill="#6C6356">write-only</text>
+                    </g>
+
+                    <!-- arrows -->
+                    <line x1="140" y1="120" x2="145" y2="216" stroke="#9A9082" stroke-width="1"
+                        marker-end="url(#arr)" />
+                    <text x="80" y="170" font-family="JetBrains Mono" font-size="9" fill="#6C6356">① JWT POST</text>
+
+                    <line x1="145" y1="346" x2="145" y2="446" stroke="#9A9082" stroke-width="1"
+                        marker-end="url(#arr)" />
+                    <text x="155" y="400" font-family="JetBrains Mono" font-size="9" fill="#6C6356">② persist</text>
+
+                    <line x1="710" y1="446" x2="600" y2="120" stroke="#9A9082" stroke-width="0.8" stroke-dasharray="3 2"
+                        marker-end="url(#arr)" />
+                    <text x="685" y="380" font-family="JetBrains Mono" font-size="9" fill="#6C6356">③ direct read
+                        (RLS)</text>
+                </svg>
+            </div>
+        </section>
+
+        <!-- ============== DAG ============== -->
+        <section id="dag">
+            <div class="sec-num">§ 02 / THE GRAPH</div>
+            <h2>Every turn passes through <span class="em">deterministic</span> guardrails.</h2>
+            <p>Standard chatbots pipe user input straight to an LLM. Meridian doesn't. <code
+                    class="inline">ClinicalState</code> flows through a LangGraph DAG where each node is small,
+                testable, and can short-circuit the path before any generative model is invoked.</p>
+
+            <div class="diagram">
+                <div class="cap"><span class="fig">Fig. 03</span><span>LangGraph DAG · ClinicalState transitions</span>
+                </div>
+                <svg viewBox="0 0 880 540" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
+                            orient="auto-start-reverse">
+                            <path d="M0,0 L10,5 L0,10 z" fill="#8A7B68" />
+                        </marker>
+                    </defs>
+
+                    <!-- start -->
+                    <ellipse cx="440" cy="40" rx="80" ry="20" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="440" y="46" text-anchor="middle" font-family="Newsreader" font-size="13" fill="#1A1815"
+                        font-style="italic">user message</text>
+
+                    <!-- guardian -->
+                    <line x1="440" y1="60" x2="440" y2="92" stroke="#8A7B68" marker-end="url(#arr2)" />
+                    <path d="M380,120 L500,120 L440,178 Z M380,120 L440,62 L500,120 Z" fill="#FAF8F4"
+                        stroke="#C9BFAF" />
+                    <text x="440" y="118" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                        fill="#8A6F3E">01</text>
+                    <text x="440" y="138" text-anchor="middle" font-family="Newsreader" font-size="13"
+                        fill="#1A1815">Guardian</text>
+
+                    <!-- blocked branch -->
+                    <line x1="380" y1="148" x2="160" y2="148" stroke="#B07060" stroke-width="1"
+                        marker-end="url(#arr2)" />
+                    <text x="270" y="142" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#B07060"
+                        letter-spacing="1">BLOCKED</text>
+                    <rect x="60" y="130" width="200" height="42" rx="3" fill="#FAF8F4" stroke="#B07060" />
+                    <text x="160" y="155" text-anchor="middle" font-family="Newsreader" font-size="13"
+                        fill="#3D362D">Block · return policy msg</text>
+
+                    <!-- allowed -->
+                    <line x1="440" y1="178" x2="440" y2="210" stroke="#8A7B68" marker-end="url(#arr2)" />
+                    <text x="500" y="200" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#6C6356"
+                        letter-spacing="1">ALLOWED</text>
+
+                    <!-- security -->
+                    <rect x="350" y="210" width="180" height="50" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="440" y="230" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                        fill="#8A6F3E">02</text>
+                    <text x="440" y="248" text-anchor="middle" font-family="Newsreader" font-size="13"
+                        fill="#1A1815">Security · Presidio redact</text>
+
+                    <!-- supervisor -->
+                    <line x1="440" y1="260" x2="440" y2="292" stroke="#8A7B68" marker-end="url(#arr2)" />
+                    <path d="M340,322 L540,322 L440,392 Z M340,322 L440,262 L540,322 Z" fill="#FAF8F4"
+                        stroke="#C9BFAF" />
+                    <text x="440" y="322" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                        fill="#8A6F3E">03</text>
+                    <text x="440" y="344" text-anchor="middle" font-family="Newsreader" font-size="13"
+                        fill="#1A1815">Supervisor Router</text>
+
+                    <!-- branches downward -->
+                    <line x1="380" y1="370" x2="120" y2="430" stroke="#B07060" marker-end="url(#arr2)" />
+                    <text x="220" y="396" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                        fill="#B07060">crisis</text>
+
+                    <line x1="410" y1="380" x2="320" y2="430" stroke="#8A7B68" marker-end="url(#arr2)" />
+                    <text x="345" y="412" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                        fill="#6C6356">turn % 5</text>
+
+                    <line x1="440" y1="392" x2="440" y2="430" stroke="#8A7B68" marker-end="url(#arr2)" />
+                    <text x="470" y="412" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                        fill="#6C6356">diagnosis</text>
+
+                    <line x1="490" y1="380" x2="640" y2="430" stroke="#8A7B68" marker-end="url(#arr2)" />
+                    <text x="580" y="408" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                        fill="#6C6356">therapy</text>
+
+                    <!-- terminal nodes -->
+                    <rect x="40" y="430" width="160" height="46" rx="3" fill="#FAF8F4" stroke="#B07060" />
+                    <text x="120" y="450" text-anchor="middle" font-family="Newsreader" font-size="12"
+                        fill="#1A1815">Crisis Node</text>
+                    <text x="120" y="466" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5"
+                        fill="#6C6356">local helplines</text>
+
+                    <rect x="240" y="430" width="160" height="46" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="320" y="450" text-anchor="middle" font-family="Newsreader" font-size="12"
+                        fill="#1A1815">PHQ-9 Check-in</text>
+                    <text x="320" y="466" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5"
+                        fill="#6C6356">conversational</text>
+
+                    <rect x="360" y="430" width="160" height="46" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="440" y="450" text-anchor="middle" font-family="Newsreader" font-size="12"
+                        fill="#1A1815">Diagnosis Node</text>
+                    <text x="440" y="466" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5"
+                        fill="#6C6356">RoBERTa · SVC</text>
+
+                    <rect x="560" y="430" width="160" height="46" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="640" y="450" text-anchor="middle" font-family="Newsreader" font-size="12"
+                        fill="#1A1815">Therapy Node</text>
+                    <text x="640" y="466" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5"
+                        fill="#6C6356">GPT-4o-mini · RAG</text>
+
+                    <!-- terminate -->
+                    <line x1="120" y1="476" x2="440" y2="510" stroke="#8A7B68" stroke-width="0.6"
+                        marker-end="url(#arr2)" />
+                    <line x1="320" y1="476" x2="440" y2="510" stroke="#8A7B68" stroke-width="0.6"
+                        marker-end="url(#arr2)" />
+                    <line x1="440" y1="476" x2="440" y2="500" stroke="#8A7B68" stroke-width="0.6"
+                        marker-end="url(#arr2)" />
+                    <line x1="640" y1="476" x2="440" y2="510" stroke="#8A7B68" stroke-width="0.6"
+                        marker-end="url(#arr2)" />
+                    <ellipse cx="440" cy="520" rx="100" ry="16" fill="#EFEAE2" stroke="#C9BFAF" />
+                    <text x="440" y="525" text-anchor="middle" font-family="Newsreader" font-size="12" fill="#1A1815"
+                        font-style="italic">end turn · persist</text>
+                </svg>
+            </div>
+
+            <h4>The global state — ClinicalState</h4>
+            <ul class="clean">
+                <li><code class="inline">messages</code> — append-only via LangGraph <code
+                        class="inline">add_messages</code> reducer</li>
+                <li><code class="inline">current_message</code> — redacted text after Security node</li>
+                <li><code class="inline">embedding_buffer · char_buffer_total</code> — accumulate turn-by-turn during
+                    screening</li>
+                <li><code class="inline">prob_history</code> — Phase-10 rolling probability trail</li>
+                <li><code class="inline">crisis_detected · diagnosis_ready</code> — short-circuit flags</li>
+            </ul>
+        </section>
+
+        <div class="ornament">· · ·</div>
+
+        <!-- =================================================== -->
+        <!-- ============== PHASE 1 ============== -->
+        <!-- =================================================== -->
+        <section id="p1" class="phase">
+            <div class="phase-head">
+                <div class="phase-num">01</div>
+                <div class="phase-titles">
+                    <div class="kicker">May 20, 2026 · commits 4dea501 → 3d6a47f</div>
+                    <h2 class="phase-h">The <span class="em">monolith</span> falls apart.</h2>
+                </div>
+            </div>
+
+            <dl class="w4">
+                <dt>Why</dt>
+                <dd>The backend was serving its own static HTML through FastAPI <code class="inline">StaticFiles</code>.
+                    Style tweaks reloaded PyTorch and ONNX pools; ML hardware burned cycles serving JS bundles; the
+                    wildcard mount kept stealing <code class="inline">/health</code> liveness probes.</dd>
+                <dt>What</dt>
+                <dd>Decouple. The frontend became a Vercel-edge SPA. The backend became a headless FastAPI API on
+                    Hugging Face Spaces. CORS moved from <code class="inline">["*"]</code> to a strict whitelist read
+                    from <code class="inline">ALLOWED_ORIGINS</code>.</dd>
+                <dt>When</dt>
+                <dd>May 20, 2026 — the first significant pivot, less than a day in.</dd>
+                <dt>Where</dt>
+                <dd><code class="inline">backend/main.py</code> · <code class="inline">Dockerfile</code> · environment
+                    variable boundary</dd>
+            </dl>
+
+            <p>The original mount looked like this — innocent until it scaled:</p>
+            <pre
+                data-lang="python"><span class="tok-com"># before — coupling at the file system</span>
+app.mount(<span class="tok-str">"/"</span>, StaticFiles(directory=<span class="tok-str">"frontend"</span>, html=<span class="tok-key">True</span>), name=<span class="tok-str">"static"</span>)</pre>
+
+            <p>It was replaced with explicit, traceable origin governance:</p>
+            <pre data-lang="python"><span class="tok-com"># after — strict whitelist, no wildcard</span>
+_ALLOWED_ORIGINS = [
+    o.strip() <span class="tok-key">for</span> o <span class="tok-key">in</span> os.getenv(
+        <span class="tok-str">"ALLOWED_ORIGINS"</span>,
+        <span class="tok-str">"https://meridian-frontend-green.vercel.app,http://localhost:3000"</span>,
+    ).split(<span class="tok-str">","</span>) <span class="tok-key">if</span> o.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_ALLOWED_ORIGINS,
+    allow_credentials=<span class="tok-key">True</span>,
+)</pre>
+
+            <div class="callout">
+                <div class="label">Outcome</div>
+                <p>Docker build times dropped ~40% once frontend assets stopped being copied into the ML container.
+                    Liveness probes stopped getting intercepted by the SPA fallback route.</p>
+            </div>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- ============== PHASE 2 ============== -->
+        <!-- =================================================== -->
+        <section id="p2" class="phase">
+            <div class="phase-head">
+                <div class="phase-num">02</div>
+                <div class="phase-titles">
+                    <div class="kicker">May 20–22 · commits bb47502 → f27ed57</div>
+                    <h2 class="phase-h">In-memory state was a <span class="em">lie</span>.</h2>
+                </div>
+            </div>
+
+            <dl class="w4">
+                <dt>Why</dt>
+                <dd>Sessions lived in a Python dict (<code class="inline">session_store = {}</code>). Hugging Face
+                    Spaces recycles idle containers and scales horizontally — clinical histories were silently
+                    evaporating mid-session.</dd>
+                <dt>What</dt>
+                <dd>A full Supabase persistence layer: <code class="inline">profiles</code>, <code
+                        class="inline">sessions</code>, <code class="inline">messages</code>, <code
+                        class="inline">audit_log</code>, and later <code class="inline">memory_embeddings</code>. RLS
+                    enabled everywhere; <code class="inline">audit_log</code> made write-only from the client.</dd>
+                <dt>When</dt>
+                <dd>Two-day push spanning May 20 to May 22.</dd>
+                <dt>Where</dt>
+                <dd><code class="inline">scripts/supabase_schema.sql</code> · <code
+                        class="inline">backend/main.py::_load_or_create_session</code></dd>
+            </dl>
+
+            <h4>The UUID → TEXT migration</h4>
+            <p>The first schema typed <code class="inline">sessions.id</code> as <code class="inline">UUID</code>. The
+                frontend, meanwhile, was minting flexible client-side hashes — and every insert failed validation.
+                Rather than rewrite the client, every dependent FK was migrated to <code class="inline">TEXT</code>.</p>
+
+            <pre data-lang="sql"><span class="tok-key">CREATE TABLE IF NOT EXISTS</span> public.sessions (
+  id                <span class="tok-key">TEXT</span> <span class="tok-key">PRIMARY KEY</span>,  <span class="tok-com">-- was UUID; flexible client hashes</span>
+  user_id           <span class="tok-key">UUID</span> <span class="tok-key">NOT NULL REFERENCES</span> auth.users(id) <span class="tok-key">ON DELETE CASCADE</span>,
+  mode              <span class="tok-key">TEXT</span> <span class="tok-key">NOT NULL CHECK</span> (mode <span class="tok-key">IN</span> (<span class="tok-str">'diagnosis'</span>,<span class="tok-str">'therapy'</span>)),
+  embedding_buffer  <span class="tok-key">JSONB</span> <span class="tok-key">NOT NULL DEFAULT</span> <span class="tok-str">'[]'</span>,
+  char_buffer_total <span class="tok-key">INT</span>   <span class="tok-key">NOT NULL DEFAULT</span> <span class="tok-num">0</span>,
+  prob_history      <span class="tok-key">JSONB</span> <span class="tok-key">NOT NULL DEFAULT</span> <span class="tok-str">'[]'</span>, <span class="tok-com">-- added Phase 10</span>
+  diagnosis_ready   <span class="tok-key">BOOLEAN</span> <span class="tok-key">NOT NULL DEFAULT</span> <span class="tok-key">false</span>,
+  crisis_detected   <span class="tok-key">BOOLEAN</span> <span class="tok-key">NOT NULL DEFAULT</span> <span class="tok-key">false</span>,
+  risk_scores       <span class="tok-key">JSONB</span> <span class="tok-key">NOT NULL DEFAULT</span> <span class="tok-str">'{}'</span>
+);</pre>
+
+            <h4>Row-level security as the default</h4>
+            <p>Policies were written defensively — <code class="inline">DROP POLICY IF EXISTS</code> followed by <code
+                    class="inline">CREATE POLICY</code> — so reruns never explode:</p>
+            <pre data-lang="sql"><span class="tok-key">ALTER TABLE</span> public.messages <span class="tok-key">ENABLE ROW LEVEL SECURITY</span>;
+<span class="tok-key">CREATE POLICY</span> <span class="tok-str">"messages: own sessions"</span> <span class="tok-key">ON</span> public.messages
+  <span class="tok-key">FOR ALL USING</span> (
+    session_id <span class="tok-key">IN</span> (
+      <span class="tok-key">SELECT</span> id <span class="tok-key">FROM</span> public.sessions <span class="tok-key">WHERE</span> user_id = auth.uid()
+    )
+  );</pre>
+
+            <div class="callout">
+                <div class="label">Lost risk_scores</div>
+                <p>A side-effect bug: between turns the backend was dropping the running risk dictionary. The fix was a
+                    single line — hydrate from Supabase on the way in: <code
+                        class="inline">"risk_scores": sess.get("risk_scores") or {}</code>.</p>
+            </div>
+        </section>
+
+        <!-- ============== DB SCHEMA DIAGRAM ============== -->
+        <section id="schema">
+            <div class="sec-num">§ 03 / SCHEMA</div>
+            <h2>The <span class="em">single source</span> of truth.</h2>
+            <p>Six tables. Each one carries one responsibility, indexed by user, gated by RLS.</p>
+
+            <div class="diagram">
+                <div class="cap"><span class="fig">Fig. 04</span><span>Supabase entity map · auth.users at the
+                        root</span></div>
+                <svg viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg">
+                    <!-- users root -->
+                    <rect x="380" y="20" width="120" height="44" rx="3" fill="#EFEAE2" stroke="#8A6F3E" />
+                    <text x="440" y="40" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#8A6F3E"
+                        letter-spacing="1.5">auth.users</text>
+                    <text x="440" y="56" text-anchor="middle" font-family="JetBrains Mono" font-size="8.5"
+                        fill="#6C6356">root identity</text>
+
+                    <!-- profiles -->
+                    <rect x="40" y="120" width="200" height="160" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="140" y="138" text-anchor="middle" font-family="JetBrains Mono" font-size="10"
+                        fill="#1A1815" letter-spacing="1.5">profiles</text>
+                    <line x1="40" y1="148" x2="240" y2="148" stroke="#D9D0C3" />
+                    <g font-family="JetBrains Mono" font-size="9" fill="#3D362D">
+                        <text x="56" y="168">id uuid PK</text>
+                        <text x="56" y="184">display_name</text>
+                        <text x="56" y="200">age CHECK 13-120</text>
+                        <text x="56" y="216">preferred_modality</text>
+                        <text x="56" y="232">consent_given</text>
+                        <text x="56" y="248">consent_at</text>
+                        <text x="56" y="264">created_at · updated_at</text>
+                    </g>
+
+                    <!-- sessions -->
+                    <rect x="290" y="120" width="220" height="200" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="400" y="138" text-anchor="middle" font-family="JetBrains Mono" font-size="10"
+                        fill="#1A1815" letter-spacing="1.5">sessions</text>
+                    <line x1="290" y1="148" x2="510" y2="148" stroke="#D9D0C3" />
+                    <g font-family="JetBrains Mono" font-size="9" fill="#3D362D">
+                        <text x="306" y="168">id text PK</text>
+                        <text x="306" y="184">user_id uuid FK</text>
+                        <text x="306" y="200">mode diagnosis · therapy</text>
+                        <text x="306" y="216">modality cbt · act · dbt · …</text>
+                        <text x="306" y="232">embedding_buffer jsonb</text>
+                        <text x="306" y="248">char_buffer_total int</text>
+                        <text x="306" y="264">prob_history jsonb</text>
+                        <text x="306" y="280">diagnosis_ready bool</text>
+                        <text x="306" y="296">crisis_detected bool</text>
+                        <text x="306" y="312">risk_scores jsonb</text>
+                    </g>
+
+                    <!-- memory_embeddings -->
+                    <rect x="560" y="120" width="290" height="160" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="705" y="138" text-anchor="middle" font-family="JetBrains Mono" font-size="10"
+                        fill="#1A1815" letter-spacing="1.5">memory_embeddings</text>
+                    <line x1="560" y1="148" x2="850" y2="148" stroke="#D9D0C3" />
+                    <g font-family="JetBrains Mono" font-size="9" fill="#3D362D">
+                        <text x="576" y="168">id bigserial PK</text>
+                        <text x="576" y="184">session_id text FK</text>
+                        <text x="576" y="200">user_id uuid FK</text>
+                        <text x="576" y="216">content text</text>
+                        <text x="576" y="232">embedding vector(384)</text>
+                        <text x="576" y="248">created_at</text>
+                        <text x="576" y="268" fill="#8A6F3E">ivfflat · cosine · lists=50</text>
+                    </g>
+
+                    <!-- messages -->
+                    <rect x="40" y="370" width="200" height="120" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="140" y="388" text-anchor="middle" font-family="JetBrains Mono" font-size="10"
+                        fill="#1A1815" letter-spacing="1.5">messages</text>
+                    <line x1="40" y1="398" x2="240" y2="398" stroke="#D9D0C3" />
+                    <g font-family="JetBrains Mono" font-size="9" fill="#3D362D">
+                        <text x="56" y="418">id bigserial PK</text>
+                        <text x="56" y="434">session_id text FK</text>
+                        <text x="56" y="450">role user · assistant</text>
+                        <text x="56" y="466">content text</text>
+                        <text x="56" y="482">created_at</text>
+                    </g>
+
+                    <!-- phq9_responses -->
+                    <rect x="290" y="370" width="220" height="140" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="400" y="388" text-anchor="middle" font-family="JetBrains Mono" font-size="10"
+                        fill="#1A1815" letter-spacing="1.5">phq9_responses</text>
+                    <line x1="290" y1="398" x2="510" y2="398" stroke="#D9D0C3" />
+                    <g font-family="JetBrains Mono" font-size="9" fill="#3D362D">
+                        <text x="306" y="418">id bigserial PK</text>
+                        <text x="306" y="434">user_id uuid FK</text>
+                        <text x="306" y="450">session_id text FK</text>
+                        <text x="306" y="466">question_index CHECK 0-8</text>
+                        <text x="306" y="482">score CHECK 0-3</text>
+                        <text x="306" y="498">created_at</text>
+                    </g>
+
+                    <!-- phq9_assessments -->
+                    <rect x="560" y="370" width="290" height="140" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="705" y="388" text-anchor="middle" font-family="JetBrains Mono" font-size="10"
+                        fill="#1A1815" letter-spacing="1.5">phq9_assessments</text>
+                    <line x1="560" y1="398" x2="850" y2="398" stroke="#D9D0C3" />
+                    <g font-family="JetBrains Mono" font-size="9" fill="#3D362D">
+                        <text x="576" y="418">id bigserial PK</text>
+                        <text x="576" y="434">user_id uuid FK</text>
+                        <text x="576" y="450">session_id text FK</text>
+                        <text x="576" y="466">total_score CHECK 0-27</text>
+                        <text x="576" y="482">severity minimal → severe</text>
+                        <text x="576" y="498">responses array of 9</text>
+                    </g>
+
+                    <!-- relations -->
+                    <g stroke="#8A7B68" stroke-width="0.8" fill="none">
+                        <path d="M440,64 Q300,90 140,120" />
+                        <path d="M440,64 Q420,90 400,120" />
+                        <path d="M440,64 Q580,90 705,120" />
+                        <path d="M400,320 Q380,345 250,370" />
+                        <path d="M400,320 Q400,345 400,370" />
+                        <path d="M400,320 Q580,345 705,370" />
+                    </g>
+                    <g font-family="JetBrains Mono" font-size="8.5" fill="#6C6356" font-style="italic">
+                        <text x="270" y="100">1:1</text>
+                        <text x="395" y="110">1:N</text>
+                        <text x="570" y="100">1:N</text>
+                        <text x="290" y="355">1:N</text>
+                        <text x="410" y="355">1:N</text>
+                        <text x="560" y="355">1:N</text>
+                    </g>
+                </svg>
+            </div>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- ============== PHASE 3 ============== -->
+        <!-- =================================================== -->
+        <section id="p3" class="phase">
+            <div class="phase-head">
+                <div class="phase-num">03</div>
+                <div class="phase-titles">
+                    <div class="kicker">May 23, 2026 · commits 4d47481, 461e87b</div>
+                    <h2 class="phase-h">Onboarding stopped <span class="em">silently</span> dropping data.</h2>
+                </div>
+            </div>
+
+            <dl class="w4">
+                <dt>Why</dt>
+                <dd>Users completed onboarding — display name, modality, age — pressed consent, and then watched their
+                    profile page show empty fields. <code class="inline">/profile/consent</code> was ignoring the
+                    request body and only setting <code class="inline">consent_given=true</code>.</dd>
+                <dt>What</dt>
+                <dd>A typed Pydantic <code class="inline">ConsentPayload</code> with field-level validation, plus a
+                    single upsert keyed on <code class="inline">on_conflict="id"</code> that writes consent <em>and</em>
+                    metadata in one transaction.</dd>
+                <dt>When</dt>
+                <dd>May 23, 2026.</dd>
+                <dt>Where</dt>
+                <dd><code class="inline">backend/main.py::accept_consent</code> · <code
+                        class="inline">src/pages/Onboarding.jsx</code></dd>
+            </dl>
+
+            <pre
+                data-lang="python"><span class="tok-key">class</span> <span class="tok-fn">ConsentPayload</span>(BaseModel):
+    display_name:       Optional[str]   = Field(<span class="tok-key">None</span>, max_length=<span class="tok-num">80</span>)
+    preferred_modality: Optional[Literal[<span class="tok-str">"cbt"</span>,<span class="tok-str">"act"</span>,<span class="tok-str">"dbt"</span>,<span class="tok-str">"mindfulness"</span>,<span class="tok-str">"sfbt"</span>]] = <span class="tok-str">"cbt"</span>
+    consent_given:      bool = <span class="tok-key">False</span>
+
+@app.post(<span class="tok-str">"/profile/consent"</span>)
+<span class="tok-key">def</span> <span class="tok-fn">accept_consent</span>(body: ConsentPayload, user=Depends(get_current_user), sb: Client=Depends(get_supabase)):
+    <span class="tok-key">if not</span> body.consent_given:
+        <span class="tok-key">raise</span> HTTPException(status_code=<span class="tok-num">400</span>, detail=<span class="tok-str">"consent_given must be true"</span>)
+    upsert = {<span class="tok-str">"id"</span>: user.id, <span class="tok-str">"consent_given"</span>: <span class="tok-key">True</span>, <span class="tok-str">"consent_at"</span>: now}
+    <span class="tok-key">if</span> body.display_name:       upsert[<span class="tok-str">"display_name"</span>] = body.display_name
+    <span class="tok-key">if</span> body.preferred_modality: upsert[<span class="tok-str">"preferred_modality"</span>] = body.preferred_modality
+    sb.table(<span class="tok-str">"profiles"</span>).upsert(upsert, on_conflict=<span class="tok-str">"id"</span>).execute()</pre>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- ============== PHASE 4 ============== -->
+        <!-- =================================================== -->
+        <section id="p4" class="phase">
+            <div class="phase-head">
+                <div class="phase-num">04</div>
+                <div class="phase-titles">
+                    <div class="kicker">May 24, 2026 · commit c51f551</div>
+                    <h2 class="phase-h">The keyword filter missed <span class="em">"yes"</span>.</h2>
+                </div>
+            </div>
+
+            <dl class="w4">
+                <dt>Why</dt>
+                <dd>Standard keyword-based safety filters scan for <code class="inline">"suicide"</code>, <code
+                        class="inline">"self-harm"</code>. They fail catastrophically when a patient answers PHQ-9 Q9 —
+                    "thoughts that you would be better off dead" — with a single character: <code
+                        class="inline">"1"</code>, or <code class="inline">"yes"</code>.</dd>
+                <dt>What</dt>
+                <dd>A contextual interceptor that reads the <em>previous assistant turn</em> for the Q9 marker, then
+                    parses the user's reply for affirmatives and PHQ-9 score values 1–3.</dd>
+                <dt>When</dt>
+                <dd>May 24, 2026.</dd>
+                <dt>Where</dt>
+                <dd><code class="inline">backend/main.py::_is_phq9_q9_crisis</code></dd>
+            </dl>
+
+            <pre data-lang="python">_PHQ9_Q9_MARKER = <span class="tok-str">"thoughts that you would be better off dead"</span>
+_AFFIRMATIVE_RE = re.compile(
+    <span class="tok-str">r"\b(yes|yeah|yep|sometimes|often|always|daily|every day|"</span>
+    <span class="tok-str">r"more than half|nearly every day|[1-3])\b"</span>,
+    re.IGNORECASE,
+)
+
+<span class="tok-key">def</span> <span class="tok-fn">_is_phq9_q9_crisis</span>(messages, current_user_text):
+    last_assistant = <span class="tok-key">next</span>((m.content <span class="tok-key">for</span> m <span class="tok-key">in</span> <span class="tok-key">reversed</span>(messages) <span class="tok-key">if</span> m.role == <span class="tok-str">"assistant"</span>), <span class="tok-key">None</span>)
+    <span class="tok-key">if not</span> last_assistant <span class="tok-key">or</span> _PHQ9_Q9_MARKER <span class="tok-key">not in</span> last_assistant.lower():
+        <span class="tok-key">return False</span>
+    text = current_user_text.strip().lower()
+    <span class="tok-key">if</span> re.search(<span class="tok-str">r"\b(0|none|never|not at all|no)\b"</span>, text) <span class="tok-key">and not</span> _AFFIRMATIVE_RE.search(text):
+        <span class="tok-key">return False</span>
+    <span class="tok-key">return</span> <span class="tok-key">bool</span>(_AFFIRMATIVE_RE.search(text))</pre>
+
+            <div class="callout crisis">
+                <div class="label">Routing on positive</div>
+                <p>If the interceptor returns true, <code class="inline">crisis_detected</code> is flipped before the
+                    LangGraph executes — the Supervisor Router sends the turn directly to the Crisis Node, which renders
+                    region-aware emergency helplines instead of running the LLM.</p>
+            </div>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- ============== PHASE 5 ============== -->
+        <!-- =================================================== -->
+        <section id="p5" class="phase">
+            <div class="phase-head">
+                <div class="phase-num">05</div>
+                <div class="phase-titles">
+                    <div class="kicker">May 24, 2026 · commit ab535f6</div>
+                    <h2 class="phase-h">Seven HTML files became <span class="em">one</span> SPA.</h2>
+                </div>
+            </div>
+
+            <dl class="w4">
+                <dt>Why</dt>
+                <dd>The first frontend was a constellation of standalone HTML pages — <code
+                        class="inline">landing.html</code>, <code class="inline">chat.html</code>, <code
+                        class="inline">auth.html</code>, <code class="inline">onboarding.html</code>, <code
+                        class="inline">profile.html</code>, <code class="inline">history.html</code>, <code
+                        class="inline">verified.html</code>. Every nav step was a full reload. Style changes meant
+                    editing seven files. A custom <code class="inline">test.py</code> was even written to rename <code
+                        class="inline">index.html</code> ↔ <code class="inline">chat.html</code> at build time because
+                    routing kept colliding.</dd>
+                <dt>What</dt>
+                <dd>Vite + React + React Router. One <code class="inline">AuthProvider</code> for session, one <code
+                        class="inline">ProtectedRoute</code> for gating, CSS modules for theme. The shader background,
+                    grain overlay, and cursor glow could finally be defined once.</dd>
+                <dt>When</dt>
+                <dd>May 24, 2026 — a single landmark commit.</dd>
+                <dt>Where</dt>
+                <dd><code class="inline">src/context/AuthContext.jsx</code> · <code
+                        class="inline">src/components/ProtectedRoute.jsx</code></dd>
+            </dl>
+
+            <pre data-lang="jsx"><span class="tok-key">export function</span> <span class="tok-fn">AuthProvider</span>({ children }) {
+  <span class="tok-key">const</span> [session, setSession] = useState(<span class="tok-key">null</span>);
+  <span class="tok-key">const</span> [loading, setLoading] = useState(<span class="tok-key">true</span>);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s); setLoading(<span class="tok-key">false</span>);
+    });
+    <span class="tok-key">const</span> { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s); setLoading(<span class="tok-key">false</span>);
+    });
+    <span class="tok-key">return</span> () => subscription.unsubscribe();
+  }, []);
+
+  <span class="tok-key">return</span> &lt;AuthContext.Provider value={{ session, loading }}&gt;{!loading &amp;&amp; children}&lt;/AuthContext.Provider&gt;;
+}</pre>
+
+            <h4>Aesthetic infrastructure</h4>
+            <ul class="clean">
+                <li><strong>GLSL fluid shader</strong> — three.js fragment shader running 5-octave fbm over 2D simplex
+                    noise, with a mouse-pull "gravity" coefficient of 0.04 for organic warmth.</li>
+                <li><strong>Grain overlay</strong> — a fixed pseudo-element loading an inline-SVG <code
+                        class="inline">feTurbulence</code> at 3% opacity for paper texture.</li>
+                <li><strong>Cursor glow</strong> — gold-tinted radial gradient tracked with a rAF loop, blending atop
+                    hover targets.</li>
+            </ul>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- ============== PHASE 6 ============== -->
+        <!-- =================================================== -->
+        <section id="p6" class="phase">
+            <div class="phase-head">
+                <div class="phase-num">06</div>
+                <div class="phase-titles">
+                    <div class="kicker">May 24, 2026 · commits 08068f1, 367739c</div>
+                    <h2 class="phase-h">From <span class="em">eight-second</span> waits to live tokens.</h2>
+                </div>
+            </div>
+
+            <dl class="w4">
+                <dt>Why</dt>
+                <dd>Blocking POST chat round-trips spent 5–8 seconds waiting for the LLM to finish before the user saw a
+                    single character. That latency reads as broken to anyone, but reads as <em>alarming</em> to a user
+                    in distress.</dd>
+                <dt>What</dt>
+                <dd>A FastAPI <code class="inline">StreamingResponse</code> SSE endpoint with anti-buffering headers,
+                    paired with a client-side <code class="inline">ReadableStreamDefaultReader</code> that parses a
+                    six-event state machine: <code
+                        class="inline">stream_start · token · replace · message · crisis · done</code>.</dd>
+                <dt>When</dt>
+                <dd>May 24, 2026.</dd>
+                <dt>Where</dt>
+                <dd><code class="inline">backend/main.py::chat_stream</code> · <code
+                        class="inline">src/pages/Chat.jsx</code></dd>
+            </dl>
+
+            <h4>Defeating reverse-proxy buffering</h4>
+            <pre data-lang="python"><span class="tok-key">return</span> StreamingResponse(
+    event_stream(),
+    media_type=<span class="tok-str">"text/event-stream"</span>,
+    headers={
+        <span class="tok-str">"Cache-Control"</span>:     <span class="tok-str">"no-cache, no-transform"</span>,
+        <span class="tok-str">"X-Accel-Buffering"</span>: <span class="tok-str">"no"</span>,    <span class="tok-com"># Nginx / Cloudflare bypass</span>
+        <span class="tok-str">"Connection"</span>:        <span class="tok-str">"keep-alive"</span>,
+    },
+)</pre>
+
+            <h4>The six events the client handles</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Client action</th>
+                        <th>Used for</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>stream_start</td>
+                        <td>Dismiss typing loader, init bubble</td>
+                        <td>Start of stream</td>
+                    </tr>
+                    <tr>
+                        <td>token</td>
+                        <td>Append to accumulating string</td>
+                        <td>Per-character delivery</td>
+                    </tr>
+                    <tr>
+                        <td>replace</td>
+                        <td>Overwrite buffer with sanitized text</td>
+                        <td>Safety guardrail mid-stream</td>
+                    </tr>
+                    <tr>
+                        <td>message</td>
+                        <td>Replace with structured payload</td>
+                        <td>Reports, PHQ-9 cards</td>
+                    </tr>
+                    <tr>
+                        <td>crisis</td>
+                        <td>Unmount bubble, mount CrisisBlock</td>
+                        <td>Implicit Q9 trigger</td>
+                    </tr>
+                    <tr>
+                        <td>done</td>
+                        <td>Remove cursor, parse markdown</td>
+                        <td>Stream complete</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="callout">
+                <div class="label">Idempotent finalize</div>
+                <p>An inner <code class="inline">_finalize()</code> closure is called both on graceful <code
+                        class="inline">done</code> and inside <code class="inline">except</code>. A boolean guard makes
+                    it idempotent — disconnects mid-stream still persist the partial assistant reply and session state.
+                </p>
+            </div>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- ============== PHASE 7 ============== -->
+        <!-- =================================================== -->
+        <section id="p7" class="phase">
+            <div class="phase-head">
+                <div class="phase-num">07</div>
+                <div class="phase-titles">
+                    <div class="kicker">May 24, 2026 · commit c1e0ddc</div>
+                    <h2 class="phase-h">Memory <span class="em">survived</span> the restart.</h2>
+                </div>
+            </div>
+
+            <dl class="w4">
+                <dt>Why</dt>
+                <dd>ChromaDB lived in-process and in-memory. Every container restart wiped it. Worse, retrieval was
+                    locked to the current <code class="inline">session_id</code> — if a user opened a new conversation,
+                    Meridian forgot they'd ever mentioned their parents.</dd>
+                <dt>What</dt>
+                <dd>Migration to <strong>pgvector</strong> on Supabase. 384-dimensional L2-normalized embeddings from
+                    <code class="inline">all-MiniLM-L6-v2</code>, indexed with <code class="inline">ivfflat</code> on
+                    cosine ops, retrieved via a stored RPC scoped by <code class="inline">user_id</code> — not session.
+                </dd>
+                <dt>When</dt>
+                <dd>May 24, 2026.</dd>
+                <dt>Where</dt>
+                <dd><code class="inline">backend/agents/memory.py</code> · <code
+                        class="inline">scripts/supabase_schema.sql</code></dd>
+            </dl>
+
+            <pre
+                data-lang="sql"><span class="tok-key">CREATE INDEX IF NOT EXISTS</span> memory_embeddings_vector_idx
+  <span class="tok-key">ON</span> public.memory_embeddings
+  <span class="tok-key">USING</span> ivfflat (embedding vector_cosine_ops)
+  <span class="tok-key">WITH</span> (lists = <span class="tok-num">50</span>);
+
+<span class="tok-key">CREATE OR REPLACE FUNCTION</span> public.match_memory_embeddings(
+  query_embedding vector(<span class="tok-num">384</span>),
+  target_user_id  uuid,
+  match_count     int <span class="tok-key">DEFAULT</span> <span class="tok-num">2</span>
+) <span class="tok-key">RETURNS TABLE</span> (id bigint, session_id text, content text, similarity float)
+<span class="tok-key">AS</span> $$
+<span class="tok-key">BEGIN</span>
+  <span class="tok-key">RETURN QUERY</span>
+  <span class="tok-key">SELECT</span> m.id, m.session_id, m.content,
+         <span class="tok-num">1</span> - (m.embedding &lt;=&gt; query_embedding) <span class="tok-key">AS</span> similarity
+  <span class="tok-key">FROM</span>  public.memory_embeddings m
+  <span class="tok-key">WHERE</span> m.user_id = target_user_id <span class="tok-key">AND</span> m.embedding <span class="tok-key">IS NOT NULL</span>
+  <span class="tok-key">ORDER BY</span> m.embedding &lt;=&gt; query_embedding <span class="tok-key">LIMIT</span> match_count;
+<span class="tok-key">END</span>; $$ <span class="tok-key">LANGUAGE</span> plpgsql <span class="tok-key">STABLE</span>;</pre>
+
+            <h4>Lazy singleton — pay the load cost once</h4>
+            <pre
+                data-lang="python"><span class="tok-com"># 80 MB model, 3 s warm-up; load on first call, never again</span>
+@lru_cache(maxsize=<span class="tok-num">1</span>)
+<span class="tok-key">def</span> <span class="tok-fn">_get_embedder</span>() -&gt; SentenceTransformer:
+    logger.info(<span class="tok-str">f"Loading embedding model: {EMBED_MODEL_NAME}"</span>)
+    <span class="tok-key">return</span> SentenceTransformer(EMBED_MODEL_NAME)
+
+<span class="tok-key">def</span> <span class="tok-fn">_embed</span>(text: str) -&gt; List[float]:
+    <span class="tok-com"># L2 normalise so cosine == dot product downstream</span>
+    <span class="tok-key">return</span> _get_embedder().encode(text, normalize_embeddings=<span class="tok-key">True</span>).tolist()</pre>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- ============== PHASE 8 ============== -->
+        <!-- =================================================== -->
+        <section id="p8" class="phase">
+            <div class="phase-head">
+                <div class="phase-num">08</div>
+                <div class="phase-titles">
+                    <div class="kicker">May 24, 2026 · commit 2b17a51</div>
+                    <h2 class="phase-h">PHQ-9 became a <span class="em">conversation</span>, not a form.</h2>
+                </div>
+            </div>
+
+            <dl class="w4">
+                <dt>Why</dt>
+                <dd>The PHQ-9 is the gold-standard depression screener — but presenting nine clinical questions as a
+                    cold form contradicts everything the rest of Meridian is trying to do. People disengage.</dd>
+                <dt>What</dt>
+                <dd>The Therapy node naturally folds one PHQ-9 question into every fifth turn. A multi-tier parser reads
+                    the reply, scores 0–3, and persists to <code class="inline">phq9_responses</code>. When all nine are
+                    in, the row is sealed in <code class="inline">phq9_assessments</code> with severity mapped to
+                    Kroenke tiers.</dd>
+                <dt>When</dt>
+                <dd>May 24, 2026.</dd>
+                <dt>Where</dt>
+                <dd><code class="inline">backend/agents/evaluation.py</code> · <code
+                        class="inline">src/pages/Profile.jsx</code></dd>
+            </dl>
+
+            <pre data-lang="python"><span class="tok-com"># 1. verbatim scale phrases</span>
+<span class="tok-key">if</span> <span class="tok-str">"not at all"</span> <span class="tok-key">in</span> t:        <span class="tok-key">return</span> <span class="tok-num">0</span>
+<span class="tok-key">if</span> <span class="tok-str">"several days"</span> <span class="tok-key">in</span> t:     <span class="tok-key">return</span> <span class="tok-num">1</span>
+<span class="tok-key">if</span> <span class="tok-str">"more than half"</span> <span class="tok-key">in</span> t:   <span class="tok-key">return</span> <span class="tok-num">2</span>
+<span class="tok-key">if</span> <span class="tok-str">"nearly every day"</span> <span class="tok-key">in</span> t:  <span class="tok-key">return</span> <span class="tok-num">3</span>
+
+<span class="tok-com"># 2. bounded numeric — "I sleep 7 hours" must NOT register as a 3</span>
+_NUMERIC_RE = re.compile(<span class="tok-str">r"\b([0-3])(?:\s*/\s*3)?\b"</span>)</pre>
+
+            <h4>The bespoke trajectory chart</h4>
+            <p>Rather than pulling in a chart library, the Profile page renders PHQ-9 history as a single inline SVG.
+                The y-axis is the 0–27 clinical scale, the background is five Kroenke severity bands, the polyline is
+                the patient's path through them.</p>
+
+            <div class="diagram">
+                <div class="cap"><span class="fig">Fig. 05</span><span>PHQ-9 trajectory · five Kroenke severity
+                        bands</span></div>
+                <svg viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg">
+                    <!-- bands -->
+                    <g>
+                        <rect x="40" y="50" width="800" height="30" fill="rgba(176,104,104,0.18)" />
+                        <text x="50" y="69" font-family="JetBrains Mono" font-size="9" fill="#8A6F3E"
+                            letter-spacing="1">SEVERE · 20–27</text>
+                        <rect x="40" y="80" width="800" height="34" fill="rgba(200,128,96,0.16)" />
+                        <text x="50" y="101" font-family="JetBrains Mono" font-size="9" fill="#8A6F3E"
+                            letter-spacing="1">MOD. SEVERE · 15–19</text>
+                        <rect x="40" y="114" width="800" height="42" fill="rgba(214,160,100,0.15)" />
+                        <text x="50" y="139" font-family="JetBrains Mono" font-size="9" fill="#8A6F3E"
+                            letter-spacing="1">MODERATE · 10–14</text>
+                        <rect x="40" y="156" width="800" height="40" fill="rgba(201,178,122,0.13)" />
+                        <text x="50" y="180" font-family="JetBrains Mono" font-size="9" fill="#8A6F3E"
+                            letter-spacing="1">MILD · 5–9</text>
+                        <rect x="40" y="196" width="800" height="44" fill="rgba(122,174,130,0.16)" />
+                        <text x="50" y="221" font-family="JetBrains Mono" font-size="9" fill="#8A6F3E"
+                            letter-spacing="1">MINIMAL · 0–4</text>
+                    </g>
+                    <!-- axis -->
+                    <line x1="40" y1="240" x2="840" y2="240" stroke="#6C6356" stroke-width="0.5" />
+                    <!-- example polyline & points -->
+                    <polyline points="120,90 260,110 400,140 540,170 680,200 800,215" fill="none" stroke="#B89968"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <g fill="#FAF8F4" stroke="#B89968" stroke-width="2">
+                        <circle cx="120" cy="90" r="5" />
+                        <circle cx="260" cy="110" r="5" />
+                        <circle cx="400" cy="140" r="5" />
+                        <circle cx="540" cy="170" r="5" />
+                        <circle cx="680" cy="200" r="5" />
+                        <circle cx="800" cy="215" r="5" />
+                    </g>
+                    <!-- annotations -->
+                    <g font-family="Newsreader" font-size="10" fill="#3D362D" font-style="italic">
+                        <text x="120" y="80" text-anchor="middle">21</text>
+                        <text x="260" y="100" text-anchor="middle">18</text>
+                        <text x="400" y="130" text-anchor="middle">14</text>
+                        <text x="540" y="160" text-anchor="middle">11</text>
+                        <text x="680" y="190" text-anchor="middle">7</text>
+                        <text x="800" y="205" text-anchor="middle">4</text>
+                    </g>
+                    <g font-family="JetBrains Mono" font-size="9" fill="#6C6356">
+                        <text x="120" y="262" text-anchor="middle">wk 1</text>
+                        <text x="260" y="262" text-anchor="middle">wk 3</text>
+                        <text x="400" y="262" text-anchor="middle">wk 5</text>
+                        <text x="540" y="262" text-anchor="middle">wk 7</text>
+                        <text x="680" y="262" text-anchor="middle">wk 9</text>
+                        <text x="800" y="262" text-anchor="middle">wk 11</text>
+                    </g>
+                    <text x="120" y="290" text-anchor="middle" font-family="Newsreader" font-size="11" fill="#8A6F3E"
+                        font-style="italic">↓ 17 from first · across 10 weeks</text>
+                </svg>
+            </div>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- ============== PHASE 9 ============== -->
+        <!-- =================================================== -->
+        <section id="p9" class="phase">
+            <div class="phase-head">
+                <div class="phase-num">09</div>
+                <div class="phase-titles">
+                    <div class="kicker">May 24, 2026 · therapy node hardening</div>
+                    <h2 class="phase-h">Cache the <span class="em">prefix</span>, vary the suffix.</h2>
+                </div>
+            </div>
+
+            <dl class="w4">
+                <dt>Why</dt>
+                <dd>OpenAI's prompt-caching auto-discounts identical prefixes ≥ 1024 tokens by 50%. The original therapy
+                    prompt builder spliced dynamic RAG context <em>before</em> the static modality prompt, which mutated
+                    the prefix on every turn — breaking the cache every time.</dd>
+                <dt>What</dt>
+                <dd>Reordered the message list so the static modality prompt sits at index 0 (perfectly cacheable), and
+                    dynamic RAG context is isolated as its own system message at index 1.</dd>
+                <dt>When</dt>
+                <dd>May 24, 2026.</dd>
+                <dt>Where</dt>
+                <dd><code class="inline">backend/agents/therapy.py::_build_request</code></dd>
+            </dl>
+
+            <pre data-lang="python"><span class="tok-key">def</span> <span class="tok-fn">_build_request</span>(state: ClinicalState):
+    modality = state.get(<span class="tok-str">"modality"</span>) <span class="tok-key">or</span> <span class="tok-str">"cbt"</span>
+
+    <span class="tok-com"># 1. static modality prompt — cacheable across all users and turns</span>
+    llm_messages = [{<span class="tok-str">"role"</span>: <span class="tok-str">"system"</span>, <span class="tok-str">"content"</span>: get_prompt(modality)}]
+
+    <span class="tok-com"># 2. dynamic RAG — isolated at index 1, doesn't poison the prefix</span>
+    past = retrieve_similar(state[<span class="tok-str">"session_id"</span>], state[<span class="tok-str">"current_message"</span>], n_results=<span class="tok-num">2</span>)
+    <span class="tok-key">if</span> past:
+        llm_messages.append({
+            <span class="tok-str">"role"</span>: <span class="tok-str">"system"</span>,
+            <span class="tok-str">"content"</span>: <span class="tok-str">"[Relevant context from this user's previous sessions]:\n\n"</span>
+                       + <span class="tok-str">"\n\n---\n\n"</span>.join(past),
+        })</pre>
+
+            <div class="callout">
+                <div class="label">Measured impact</div>
+                <p>~50% reduction in both input-token cost and time-to-first-token on cache-hit turns. The therapy node
+                    became materially cheaper at scale without any change to model behavior.</p>
+            </div>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- ============== PHASE 10 ============== -->
+        <!-- =================================================== -->
+        <section id="p10" class="phase">
+            <div class="phase-head">
+                <div class="phase-num">10</div>
+                <div class="phase-titles">
+                    <div class="kicker">May 25, 2026 · commit 7632b90 · HEAD</div>
+                    <h2 class="phase-h">The screening gate <span class="em">listens</span> for confidence.</h2>
+                </div>
+            </div>
+
+            <dl class="w4">
+                <dt>Why</dt>
+                <dd>The diagnosis gate was a static threshold: <code class="inline">chars ≥ 1000 AND turns ≥ 3</code>.
+                    Users showing severe distress in their first sentence were forced to keep typing. Ambiguous users
+                    got rushed to a verdict the moment the static limit tripped.</dd>
+                <dt>What</dt>
+                <dd>An SPRT-style adaptive decision policy. The ONNX classifier runs every turn; four rules can fire to
+                    close the screening. Below them, a confidence-aware <code class="inline">_adaptive_target</code>
+                    shrinks the displayed progress bar as the signal clarifies — the bar visually accelerates when the
+                    model becomes certain.</dd>
+                <dt>When</dt>
+                <dd>May 25, 2026 — current HEAD.</dd>
+                <dt>Where</dt>
+                <dd><code class="inline">backend/agents/diagnosis.py</code> · <code
+                        class="inline">backend/main.py::_persist_session</code></dd>
+            </dl>
+
+            <h4>The four rules — in order of evaluation</h4>
+            <ol class="rules">
+                <li><span class="name">Early-High Fire — <code class="inline">p ≥ 0.80</code></span><span
+                        class="desc">Strong depression signal; close immediately. Honour user urgency.</span></li>
+                <li><span class="name">Early-Low Fire — <code
+                            class="inline">p ≤ 0.20 ∧ turns ≥ 3 ∧ chars ≥ 400</code></span><span class="desc">Absence of
+                        signal needs more evidence than presence. Stricter floors.</span></li>
+                <li><span class="name">Convergence — spread ≤ 0.08 over 3 turns, outside 0.4–0.6 dead-zone</span><span
+                        class="desc">Stable signal away from the middle counts as decided.</span></li>
+                <li><span class="name">Ceiling — <code class="inline">turns ≥ 8 ∨ chars ≥ 1500</code></span><span
+                        class="desc">Patience exhausted; emit <code class="inline">ceiling_high</code> or <code
+                            class="inline">ceiling_low</code> by latest <code class="inline">p</code>.</span></li>
+            </ol>
+
+            <div class="diagram">
+                <div class="cap"><span class="fig">Fig. 06</span><span>SPRT-style decision policy · evaluated every
+                        turn</span></div>
+                <svg viewBox="0 0 880 360" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <marker id="arr3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6"
+                            orient="auto-start-reverse">
+                            <path d="M0,0 L10,5 L0,10 z" fill="#8A7B68" />
+                        </marker>
+                    </defs>
+
+                    <ellipse cx="440" cy="30" rx="100" ry="18" fill="#EFEAE2" stroke="#C9BFAF" />
+                    <text x="440" y="35" text-anchor="middle" font-family="Newsreader" font-size="12" fill="#1A1815"
+                        font-style="italic">run classifier this turn</text>
+
+                    <line x1="440" y1="48" x2="440" y2="68" stroke="#8A7B68" marker-end="url(#arr3)" />
+                    <!-- floor -->
+                    <path d="M340,90 L540,90 L440,150 Z M340,90 L440,68 L540,90 Z" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="440" y="115" text-anchor="middle" font-family="Newsreader" font-size="12"
+                        fill="#1A1815">turns ≥ 2 &amp; chars ≥ 200 ?</text>
+
+                    <!-- no -> accumulate -->
+                    <line x1="540" y1="90" x2="720" y2="90" stroke="#8A7B68" marker-end="url(#arr3)" />
+                    <text x="615" y="82" text-anchor="middle" font-family="JetBrains Mono" font-size="9"
+                        fill="#6C6356">NO</text>
+                    <rect x="720" y="74" width="140" height="34" rx="3" fill="#FAF8F4" stroke="#C9BFAF" />
+                    <text x="790" y="96" text-anchor="middle" font-family="Newsreader" font-size="12" fill="#3D362D"
+                        font-style="italic">accumulate</text>
+
+                    <line x1="440" y1="150" x2="440" y2="172" stroke="#8A7B68" marker-end="url(#arr3)" />
+                    <text x="460" y="166" font-family="JetBrains Mono" font-size="9" fill="#6C6356">YES</text>
+
+                    <!-- rule 1 -->
+                    <rect x="320" y="172" width="240" height="36" rx="3" fill="#FAF8F4" stroke="#6A9970" />
+                    <text x="440" y="194" text-anchor="middle" font-family="Newsreader" font-size="12" fill="#1A1815">R1
+                        · p ≥ 0.80 → fire HIGH</text>
+                    <line x1="560" y1="190" x2="720" y2="190" stroke="#6A9970" stroke-dasharray="2 2"
+                        marker-end="url(#arr3)" />
+
+                    <!-- rule 2 -->
+                    <rect x="320" y="216" width="240" height="36" rx="3" fill="#FAF8F4" stroke="#6A9970" />
+                    <text x="440" y="238" text-anchor="middle" font-family="Newsreader" font-size="12" fill="#1A1815">R2
+                        · p ≤ 0.20 + floors → fire LOW</text>
+                    <line x1="560" y1="234" x2="720" y2="234" stroke="#6A9970" stroke-dasharray="2 2"
+                        marker-end="url(#arr3)" />
+
+                    <!-- rule 3 -->
+                    <rect x="320" y="260" width="240" height="36" rx="3" fill="#FAF8F4" stroke="#6A9970" />
+                    <text x="440" y="282" text-anchor="middle" font-family="Newsreader" font-size="12" fill="#1A1815">R3
+                        · 3-turn convergence → fire CONV</text>
+                    <line x1="560" y1="278" x2="720" y2="278" stroke="#6A9970" stroke-dasharray="2 2"
+                        marker-end="url(#arr3)" />
+
+                    <!-- rule 4 -->
+                    <rect x="320" y="304" width="240" height="36" rx="3" fill="#FAF8F4" stroke="#B89968" />
+                    <text x="440" y="326" text-anchor="middle" font-family="Newsreader" font-size="12" fill="#1A1815">R4
+                        · 8 turns / 1500 chars → fire CEILING</text>
+                    <line x1="560" y1="322" x2="720" y2="322" stroke="#B89968" stroke-dasharray="2 2"
+                        marker-end="url(#arr3)" />
+
+                    <!-- terminal -->
+                    <ellipse cx="790" cy="252" rx="70" ry="20" fill="#EFEAE2" stroke="#6A9970" />
+                    <text x="790" y="248" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#6A9970"
+                        letter-spacing="1.5">DIAGNOSIS</text>
+                    <text x="790" y="262" text-anchor="middle" font-family="Newsreader" font-size="11" fill="#1A1815"
+                        font-style="italic">_ready ← true</text>
+                </svg>
+            </div>
+
+            <h4>The adaptive target — confidence drives the progress bar</h4>
+            <pre
+                data-lang="python"><span class="tok-key">def</span> <span class="tok-fn">_adaptive_target</span>(latest_prob: float, current_chars: int) -&gt; int:
+    confidence = <span class="tok-key">abs</span>(latest_prob - <span class="tok-num">0.5</span>) * <span class="tok-num">2</span>   <span class="tok-com"># 0 = ambiguous, 1 = certain</span>
+    <span class="tok-key">if</span> confidence &gt;= <span class="tok-num">0.70</span>:   candidate = <span class="tok-key">max</span>(current_chars, <span class="tok-num">250</span>)   <span class="tok-com"># shrink toward done</span>
+    <span class="tok-key">elif</span> confidence &gt;= <span class="tok-num">0.50</span>: candidate = <span class="tok-key">max</span>(current_chars, <span class="tok-num">700</span>)
+    <span class="tok-key">elif</span> confidence &gt;= <span class="tok-num">0.30</span>: candidate = <span class="tok-num">1000</span>
+    <span class="tok-key">else</span>:                    candidate = <span class="tok-num">1500</span>                      <span class="tok-com"># expand ceiling</span>
+    <span class="tok-key">return</span> <span class="tok-key">max</span>(candidate, current_chars + <span class="tok-num">1</span>)</pre>
+
+            <h4>The persistence reset seam</h4>
+            <p>LangGraph reducers accumulate by design — they don't reset. To start a clean screening cycle after a
+                fire, the reset happens <em>at the persistence boundary</em>, by intercepting the <code
+                    class="inline">diagnosis_ready</code> false → true edge and overwriting the buffers before they hit
+                Supabase:</p>
+            <pre data-lang="python">just_fired = <span class="tok-key">bool</span>(result.get(<span class="tok-str">"diagnosis_ready"</span>, <span class="tok-key">False</span>)) <span class="tok-key">and not</span> <span class="tok-key">bool</span>((prev_sess <span class="tok-key">or</span> {}).get(<span class="tok-str">"diagnosis_ready"</span>, <span class="tok-key">False</span>))
+<span class="tok-key">if</span> just_fired:
+    embedding_buffer  = []
+    char_buffer_total = <span class="tok-num">0</span>
+    prob_history      = []
+    <span class="tok-com"># next turn starts a brand-new, clean cycle</span></pre>
+
+            <div class="callout">
+                <div class="label">Empathetic copy</div>
+                <p>Clinical jargon in the UI was rewritten in the same pass: <em>"Linguistic Mapping Integrity"</em>
+                    became <strong>Signal confidence</strong>; <em>"raw metrics"</em> became <strong>chars
+                        analyzed</strong>. The visible string in the progress bubble is now <code
+                        class="inline">Signal confidence · 247/250 chars analyzed</code>.</p>
+            </div>
+        </section>
+
+        <div class="ornament">· · ·</div>
+
+        <!-- =================================================== -->
+        <!-- ============== BUGS ============== -->
+        <!-- =================================================== -->
+        <section id="bugs">
+            <div class="sec-num">§ 04 / DIAGNOSES</div>
+            <h2>Four bugs <span class="em">worth remembering</span>.</h2>
+            <p>Not every fix earns a place in the chronicle. These four did — because each one revealed a category of
+                mistake that's easy to repeat.</p>
+
+            <div class="bug">
+                <div class="ix">i</div>
+                <div>
+                    <h4>The silent onboarding discard</h4>
+                    <p class="row"><b>Symptom</b> Users completed onboarding, gave a name, picked a modality — and the
+                        Profile page showed nothing.</p>
+                    <p class="row"><b>Cause</b> <code class="inline">/profile/consent</code> ignored the request body
+                        and parsed an empty dict.</p>
+                    <p class="row"><b>Fix</b> Strongly-typed <code class="inline">ConsentPayload</code>; one upsert with
+                        <code class="inline">on_conflict="id"</code>; metadata and consent flag move together.</p>
+                </div>
+            </div>
+
+            <div class="bug">
+                <div class="ix">ii</div>
+                <div>
+                    <h4>The stale-token 401 loop</h4>
+                    <p class="row"><b>Symptom</b> Tabs left open past the Supabase token expiry crashed on the next
+                        message; manual reload required.</p>
+                    <p class="row"><b>Cause</b> The old static-HTML grabbed the JWT once at login and reused it forever.
+                    </p>
+                    <p class="row"><b>Fix</b> <code class="inline">getAuthHeaders()</code> calls <code
+                            class="inline">supabase.auth.getSession()</code> per request and lets the SDK refresh; if
+                        the session is dead, the user is signed out cleanly instead of deadlocking.</p>
+                </div>
+            </div>
+
+            <div class="bug">
+                <div class="ix">iii</div>
+                <div>
+                    <h4>The invisible message loss</h4>
+                    <p class="row"><b>Symptom</b> Occasional missing chat turns at peak DB load. No errors in production
+                        logs.</p>
+                    <p class="row"><b>Cause</b> <code class="inline">_store_messages</code> swallowed all exceptions
+                        with a bare warning, hiding the traceback.</p>
+                    <p class="row"><b>Fix</b> <code class="inline">exc_info=True</code> on every persistence error, with
+                        the session ID embedded in the log line so failures become traceable.</p>
+                </div>
+            </div>
+
+            <div class="bug">
+                <div class="ix">iv</div>
+                <div>
+                    <h4>The cold-start thrashing</h4>
+                    <p class="row"><b>Symptom</b> Every <code class="inline">/chat</code> call paid an extra 3–5
+                        seconds.</p>
+                    <p class="row"><b>Cause</b> The 80 MB SentenceTransformer and Supabase client were instantiated per
+                        request.</p>
+                    <p class="row"><b>Fix</b> <code class="inline">@lru_cache(maxsize=1)</code> on the loaders. Heavy
+                        boot once at first call, then milliseconds per turn after.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- =================================================== -->
+        <!-- ============== SUMMARY ============== -->
+        <!-- =================================================== -->
+        <section id="summary">
+            <div class="sec-num">§ 05 / IMPACT</div>
+            <h2>What it <span class="em">amounts to</span>.</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th>Technical move</th>
+                        <th>What it bought us</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>01 · Decouple</td>
+                        <td>Headless FastAPI on HF · React on Vercel · CORS whitelist</td>
+                        <td>Edge delivery, leaner containers, traceable origins</td>
+                    </tr>
+                    <tr>
+                        <td>02 · Persist</td>
+                        <td>Supabase + RLS · UUID→TEXT migration</td>
+                        <td>No more lost transcripts on container recycle</td>
+                    </tr>
+                    <tr>
+                        <td>03 · Consent</td>
+                        <td>Pydantic ConsentPayload · single upsert</td>
+                        <td>Onboarding context survives the consent click</td>
+                    </tr>
+                    <tr>
+                        <td>04 · Q9 Guard</td>
+                        <td>Prior-turn marker + affirmative regex</td>
+                        <td>Catches implicit suicide-risk answers like "yes" or "1"</td>
+                    </tr>
+                    <tr>
+                        <td>05 · SPA</td>
+                        <td>Vite · React Router · AuthContext · ProtectedRoute</td>
+                        <td>One codebase, persistent session, no flicker reloads</td>
+                    </tr>
+                    <tr>
+                        <td>06 · Streaming</td>
+                        <td>SSE with anti-buffer headers · ReadableStream client</td>
+                        <td>5–8 s waits replaced by per-token delivery</td>
+                    </tr>
+                    <tr>
+                        <td>07 · pgvector</td>
+                        <td>384-d L2 normalized · ivfflat · per-user RPC</td>
+                        <td>Cross-session memory that survives restarts</td>
+                    </tr>
+                    <tr>
+                        <td>08 · PHQ-9</td>
+                        <td>Conversational scoring · trajectory chart</td>
+                        <td>Clinical screening without the cold form</td>
+                    </tr>
+                    <tr>
+                        <td>09 · Cache</td>
+                        <td>Static prompt at index 0, dynamic context at index 1</td>
+                        <td>50% input cost and latency savings on cache hits</td>
+                    </tr>
+                    <tr>
+                        <td>10 · SPRT</td>
+                        <td>4-rule adaptive policy · confidence-aware progress</td>
+                        <td>Severe cases close in 2 turns; ambiguous cases get the full 8</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Three properties that hold across all ten phases</h3>
+            <ul class="clean">
+                <li><strong>Zero-leakage privacy.</strong> Names, emails, payment data are stripped locally by Presidio
+                    before any cloud endpoint sees the turn.</li>
+                <li><strong>Adaptive speed.</strong> Severe symptoms get intervention in as few as 2 turns / 200
+                    characters. Ambiguous cases get up to 8 turns of careful collection.</li>
+                <li><strong>Cross-session continuity.</strong> pgvector retrieval lets last week's disclosure inform
+                    this week's response without manual recall.</li>
+            </ul>
+        </section>
+
+        <footer>
+            <div>Meridian Engineering Chronicle</div>
+            <div class="mark">— from 3ac7760 to 7632b90 —</div>
+            <div>Compiled May 25, 2026</div>
+        </footer>
+
+    </div>
+</body>
+
+</html>
