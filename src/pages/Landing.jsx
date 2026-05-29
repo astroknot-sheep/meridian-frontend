@@ -1,213 +1,314 @@
-import { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import ShaderBackground from '../components/ShaderBackground.jsx';
-import CursorGlow from '../components/CursorGlow.jsx';
-import AmbientOrbs from '../components/AmbientOrbs.jsx';
-import '../styles/background.css';
-import '../styles/landing.css';
+.landing - root { overflow - x: hidden; cursor: default ; }
 
-export default function Landing() {
-  const navRef = useRef(null);
-  const heroTextRef = useRef(null);
-  const chatPreviewRef = useRef(null);
+.serif { font - family: 'Cormorant Garamond', serif; font - weight: 400; }
 
-  // ── Very subtle parallax on hero (no tilts, no magnetics) ──
-  useEffect(() => {
-    const onMove = (e) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 8;
-      const y = (e.clientY / window.innerHeight - 0.5) * 8;
-      if (heroTextRef.current) {
-        heroTextRef.current.style.transform = `translate(${x * 0.4}px, ${y * 0.4}px)`;
-      }
-      if (chatPreviewRef.current) {
-        chatPreviewRef.current.style.transform = `translate(${x * 0.15}px, ${y * 0.15}px)`;
-      }
-    };
-    document.addEventListener('mousemove', onMove);
-    return () => document.removeEventListener('mousemove', onMove);
-  }, []);
+/* ── Navigation ──────────────────────────────────────────────────── */
+.landing - nav - wrap {
+  position: fixed; top: 1.5rem; left: 0; width: 100 %;
+  display: flex; justify - content: center; z - index: 100;
+  padding: 0 2rem; pointer - events: none;
+}
+.landing - nav {
+  pointer - events: auto;
+  display: flex; align - items: center; justify - content: space - between;
+  width: 100 %; max - width: 1300px;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  background: transparent; border: 1px solid transparent;
+  border - radius: 100px;
+  transition: background 0.6s var(--ease - out), border - color 0.6s var(--ease - out),
+    box - shadow 0.6s var(--ease - out), backdrop - filter 0.6s var(--ease - out);
+}
+.landing - nav.nav--scrolled {
+  background: rgba(245, 242, 238, 0.7);
+  backdrop - filter: blur(28px) saturate(1.4);
+  -webkit - backdrop - filter: blur(28px) saturate(1.4);
+  border - color: rgba(255, 255, 255, 0.55);
+  box - shadow: 0 14px 50px - 16px rgba(26, 23, 20, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+.landing - nav__logo { font - size: 1.6rem; letter - spacing: -0.01em; color: var(--fg); transition: color 0.3s; }
+.landing - nav__links { display: flex; gap: 3.5rem; align - items: center; }
+.landing - nav__links a.link { color: var(--muted); transition: color 0.3s var(--ease - out); position: relative; }
+.landing - nav__links a.link::after {
+  content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1.5px;
+  background: linear - gradient(90deg, var(--gold), var(--accent));
+  transition: width 0.4s var(--ease - out);
+}
+.landing - nav__links a.link:hover { color: var(--fg); }
+.landing - nav__links a.link: hover::after { width: 100 %; }
 
-  // ── Simple scroll reveal (fade + translate up) ──
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('revealed');
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
-    );
-    document.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+/* ── Buttons ─────────────────────────────────────────────────────── */
+.btn - solid, .btn - light {
+  position: relative; overflow: hidden; border - radius: 100px; text - decoration: none;
+  display: inline - flex; justify - content: center; align - items: center;
+  transition: transform 0.5s var(--ease - bounce), box - shadow 0.5s var(--ease - out), background 0.5s var(--ease - out);
+  font - family: 'Syne', sans - serif; font - size: 0.7rem; text - transform: uppercase;
+  letter - spacing: 0.22em; font - weight: 600; will - change: transform; border: none;
+}
+.btn - solid {
+  background: var(--fg); color: var(--bg); padding: 1rem 2.4rem;
+  box - shadow: 0 10px 30px - 8px rgba(26, 23, 20, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.btn - solid:: after, .btn - light::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear - gradient(110deg, transparent 35 %, rgba(255, 255, 255, 0.16) 50 %, transparent 65 %);
+  transform: translateX(-120 %); transition: transform 0.7s var(--ease - out);
+}
+.btn - solid:hover { background: #000; box - shadow: 0 26px 52px - 12px rgba(26, 23, 20, 0.34); }
+.btn - solid: hover:: after, .btn - light: hover::after { transform: translateX(120 %); }
+.btn - light {
+  background: var(--bg); color: var(--dark); padding: 1rem 2.6rem;
+  box - shadow: 0 10px 34px rgba(0, 0, 0, 0.18);
+}
+.btn - light::after { background: linear - gradient(110deg, transparent 35 %, rgba(196, 168, 130, 0.30) 50 %, transparent 65 %); }
+.btn - light:hover { background: #FFF; box - shadow: 0 0 70px rgba(196, 168, 130, 0.30), 0 24px 46px - 10px rgba(0, 0, 0, 0.30); }
 
-  // ── Static nav (no scroll class toggling) ──
+.pulse - ring {
+  position: absolute; inset: -6px; border - radius: 100px;
+  border: 2px solid rgba(196, 168, 130, 0.5);
+  animation: pulse - ring 2.8s var(--ease - out) infinite; pointer - events: none; opacity: 0;
+}
+.btn - solid.pulse - ring { border - color: rgba(255, 255, 255, 0.3); }
+@keyframes pulse - ring {
+  0 % { opacity: 0; transform: scale(0.92); }
+  35 % { opacity: 0.7; }
+  100 % { opacity: 0; transform: scale(1.18); }
+}
 
-  return (
-    <div className="landing-root">
-      <ShaderBackground />
-      <CursorGlow />
-      <AmbientOrbs variant="landing" />
+/* ── Hero ────────────────────────────────────────────────────────── */
+.hero {
+  min - height: 100vh; display: flex; flex - direction: column; justify - content: center;
+  padding: 10rem 2rem 5rem; max - width: 1300px; margin: 0 auto; position: relative;
+}
+.hero - content { display: flex; flex - direction: column; gap: 3.5rem; }
+@media(min - width: 1024px) {
+  .hero - content { flex - direction: row; align - items: center; justify - content: space - between; }
+}
+.hero - text { flex: 1; max - width: 650px; }
+.hero h1 {
+  font - family: 'Cormorant Garamond', serif;
+  font - size: clamp(3.5rem, 7vw, 6.5rem); line - height: 0.9; letter - spacing: -0.04em;
+  margin - bottom: 2.5rem; color: var(--fg); font - weight: 300;
+}
+.hero h1 i {
+  font - style: italic; font - weight: 400; color: var(--accent);
+  text - shadow: 0 0 40px rgba(196, 168, 130, 0.25);
+}
+.hero - line - wrap { overflow: hidden; display: block; padding - bottom: 0.15em; }
+.hero - line {
+  display: block; transform: translateY(105 %);
+  animation: hero - line - reveal 1.2s var(--ease - out) forwards;
+  animation - delay: calc(0.2s + var(--i, 0) * 0.12s);
+}
+@keyframes hero - line - reveal { to { transform: translateY(0); } }
+.hero - sub {
+  font - size: clamp(1rem, 1.4vw, 1.15rem); color: var(--muted);
+  margin - bottom: 3.5rem; line - height: 1.8; opacity: 0;
+  animation: fade - up 1s var(--ease - out) 0.8s forwards;
+}
+.hero - actions { opacity: 0; animation: fade - up 1s var(--ease - out) 1.1s forwards; }
+@keyframes fade - up { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 
-      <header className="landing-nav-wrap">
-        <nav ref={navRef} className="landing-nav" aria-label="Main">
-          <Link to="/" className="landing-nav__logo serif">Meridian</Link>
-          <div className="landing-nav__links">
-            <a href="#benefits" className="link sans-label">What You Get</a>
-            <a href="#how-it-works" className="link sans-label">How it Works</a>
-            <a href="#trust" className="link sans-label">Why Meridian</a>
-            <Link to="/chat" className="btn-solid sans-label">
-              Start Talking
-            </Link>
-          </div>
-        </nav>
-      </header>
+.chat - preview {
+  flex: 0 0 450px;
+  background: var(--glass - bg);
+  backdrop - filter: blur(20px) saturate(1.3); -webkit - backdrop - filter: blur(20px) saturate(1.3);
+  border: 1px solid var(--glass - border); border - radius: 24px; padding: 1.5rem;
+  box - shadow: 0 24px 60px - 18px rgba(26, 23, 20, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  opacity: 0; animation: fade - up 1s var(--ease - out) 1.4s forwards;
+  transition: transform 0.1s ease - out, box - shadow 0.5s ease; position: relative;
+}
+.chat - preview::before {
+  content: ''; position: absolute; inset: 0; border - radius: 24px; padding: 1px;
+  background: linear - gradient(140deg, rgba(255, 255, 255, 0.9), transparent 40 %, rgba(196, 168, 130, 0.25));
+  -webkit - mask: linear - gradient(#000 0 0) content - box, linear - gradient(#000 0 0);
+  -webkit - mask - composite: xor; mask - composite: exclude; pointer - events: none;
+}
+.chat - preview:hover { box - shadow: 0 36px 72px - 20px rgba(26, 23, 20, 0.20); }
+.chat - bubble {
+  padding: 1rem 1.25rem; border - radius: 16px; margin - bottom: 1rem;
+  font - family: 'Syne', sans - serif; font - size: 0.95rem; line - height: 1.5; font - weight: 500;
+  transition: transform 0.35s var(--ease - spring);
+}
+.bubble - user {
+  background: rgba(255, 255, 255, 0.75); color: var(--fg);
+  border - bottom - right - radius: 4px; margin - left: 2rem; border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.bubble - ai {
+  background: var(--dark); color: var(--bg); border - bottom - left - radius: 4px;
+  margin - right: 2rem; box - shadow: 0 10px 28px rgba(0, 0, 0, 0.16);
+}
+.chat - preview: hover.bubble - user { transform: translateX(-4px); }
+.chat - preview: hover.bubble - ai { transform: translateX(4px); }
 
-      <main>
-        {/* HERO ─────────────────────────────────────────── */}
-        <section className="hero">
-          <div className="hero-content">
-            <div className="hero-text" ref={heroTextRef}>
-              <h1>
-                <span className="hero-line-wrap"><span className="hero-line">A space to be heard,</span></span>
-                <span className="hero-line-wrap"><span className="hero-line"><i>exactly as you are.</i></span></span>
-                <span className="hero-line-wrap"><span className="hero-line">No pressure. No judgment.</span></span>
-              </h1>
-              <p className="hero-sub">
-                Talk through whatever’s weighing on you and get real, evidence-based coping
-                skills — drawn from CBT, DBT, mindfulness, and more. Your name, location, and
-                personal details are stripped away before a single word is ever read or stored.
-                What you share stays yours.
-              </p>
-              <div className="hero-actions">
-                <Link to="/chat" className="btn-solid sans-label">
-                  Begin anonymously
-                </Link>
-              </div>
-            </div>
+/* ── Sections ────────────────────────────────────────────────────── */
+.section - wrap { padding: 10rem 2rem; max - width: 1300px; margin: 0 auto; }
+.section - dark { background: var(--dark); color: var(--fg - dark); position: relative; }
+.section - dark::before {
+  content: ''; position: absolute; top: -1px; left: 0; right: 0; height: 1px;
+  background: linear - gradient(90deg, transparent, rgba(196, 168, 130, 0.6), transparent);
+}
+.section - header { margin - bottom: 5rem; max - width: 850px; }
+.section - eyebrow { color: var(--gold); margin - bottom: 1.5rem; display: block; }
+.section - title { font - size: clamp(2.5rem, 5vw, 4.2rem); line - height: 1.0; letter - spacing: -0.025em; margin - bottom: 2rem; }
+.section - dark.section - title { color: var(--fg - dark); }
 
-            {/* Static chat preview – no tilt, just gentle parallax */}
-            <div className="chat-preview" ref={chatPreviewRef} aria-hidden="true">
-              <div className="chat-bubble bubble-user">
-                I’ve been carrying so much lately. I don’t even know where to start.
-              </div>
-              <div className="chat-bubble bubble-ai">
-                That sounds really heavy — and it makes complete sense that it’s hard to know
-                where to begin. We can take this at your pace. Would it help to talk it through
-                together, or would you rather just let it out first?
-              </div>
-            </div>
-          </div>
-        </section>
+/* Signature "meridian" divider — a slow travelling glint of light. */
+.gradient - rule {
+  height: 1px; border: none; opacity: 0.7;
+  background: linear - gradient(90deg, transparent, var(--gold), transparent);
+  background - size: 200 % 100 %; animation: rule - shimmer 5.5s linear infinite;
+}
+@keyframes rule - shimmer { 0 % { background- position: 200 % 0; } 100 % { background- position: -200 % 0; } }
 
-        {/* BENEFITS ─────────────────────────────────────── */}
-        <section id="benefits">
-          <div className="section-wrap">
-            <header className="section-header" data-reveal>
-              <span className="section-eyebrow sans-label">Support On Your Terms</span>
-              <h2 className="section-title serif">Help shouldn’t feel like paperwork.</h2>
-            </header>
-            <div className="grid-cards">
-              {[
-                { icon: '—', title: 'No Forms — Just Talk', body: "Meridian understands how you’re doing through honest conversation, not cold clinical questionnaires. You talk the way you’d talk to someone who genuinely gets it — and it listens like one." },
-                { icon: '—', title: 'Real Coping Skills, On Demand', body: 'Switch between CBT, DBT, ACT, mindfulness, and solution-focused approaches whenever you need to. These are the same evidence-based methods used in practice — broken down into one small, doable step at a time.' },
-                { icon: '—', title: 'Support That Remembers You', body: 'Pick up any conversation exactly where you left off. Meridian carries what matters across sessions, so you never have to re-explain your story — or hear the same advice twice.' },
-                { icon: '—', title: 'Private By Design', body: 'Your name, location, email, and anything else that could identify you is removed before a single word is processed — and never stored. Speak freely; the parts that identify you never leave your side.' },
-                { icon: '—', title: 'Safe When It Counts Most', body: "If you’re ever in real distress, Meridian doesn’t improvise — it immediately connects you with vetted crisis lines and human support. Care always comes first." },
-              ].map((c, i) => (
-                <article key={c.title} className="card" data-reveal style={{ '--i': i }}>
-                  <div className="card-icon">{c.icon}</div>
-                  <h3>{c.title}</h3>
-                  <p>{c.body}</p>
-                </article>
-              ))}
-            </div>
-            <div className="stats-row" data-reveal>
-              <div className="stat-item"><div className="stat-num">100%</div><div className="stat-label">Anonymous &amp; Private</div></div>
-              <div className="stat-item"><div className="stat-num">0</div><div className="stat-label">Personal Details Stored</div></div>
-              <div className="stat-item"><div className="stat-num">24/7</div><div className="stat-label">Always Here For You</div></div>
-            </div>
-          </div>
-        </section>
+/* ── Benefit cards ───────────────────────────────────────────────── */
+.grid - cards { display: grid; grid - template - columns: repeat(auto - fit, minmax(350px, 1fr)); gap: 2rem; }
+.card {
+  padding: 3rem; background: var(--glass - bg);
+  backdrop - filter: blur(18px) saturate(1.2); -webkit - backdrop - filter: blur(18px) saturate(1.2);
+  border: 1px solid var(--glass - border); border - radius: 20px;
+  transition: box - shadow 0.5s var(--ease - out), border - color 0.5s ease, transform 0.1s ease - out;
+  box - shadow: 0 4px 24px - 12px rgba(26, 23, 20, 0.05);
+  position: relative; overflow: hidden; display: flex; flex - direction: column;
+  will - change: transform; cursor: default ;
+}
+.card::before {
+  content: ''; position: absolute; inset: 0; border - radius: 20px;
+  background: linear - gradient(135deg, rgba(255, 255, 255, 0.55) 0 %, transparent 48 %, rgba(196, 168, 130, 0.10) 100 %);
+  opacity: 0; transition: opacity 0.5s ease; pointer - events: none; z - index: 1;
+}
+.card::after {
+  content: ''; position: absolute; inset: 0; z - index: 2; pointer - events: none;
+  background: linear - gradient(115deg, transparent 38 %, rgba(255, 255, 255, 0.5) 50 %, transparent 62 %);
+  transform: translateX(-130 %); transition: transform 0.9s var(--ease - out);
+}
+.card: hover::before { opacity: 1; }
+.card: hover::after { transform: translateX(130 %); }
+.card:hover {
+  border - color: rgba(255, 255, 255, 0.85);
+  box - shadow: 0 42px 84px - 20px rgba(26, 23, 20, 0.18), 0 0 0 1px rgba(196, 168, 130, 0.12);
+}
+.card - icon {
+  width: 52px; height: 52px; display: flex; align - items: center; justify - content: center;
+  border - radius: 14px; background: linear - gradient(135deg, rgba(196, 168, 130, 0.16), rgba(196, 168, 130, 0.04));
+  font - size: 1.3rem; color: var(--gold); margin - bottom: 2rem;
+  font - family: 'Cormorant Garamond', serif; font - weight: 400; position: relative; z - index: 3;
+  transition: transform 0.4s var(--ease - spring), box - shadow 0.4s ease;
+}
+.card: hover.card - icon { transform: scale(1.08) rotate(-3deg); box - shadow: 0 0 34px rgba(196, 168, 130, 0.30); }
+.card h3 { font - family: 'Syne', sans - serif; font - size: 1.15rem; font - weight: 600; margin - bottom: 1.2rem; letter - spacing: -0.01em; position: relative; z - index: 3; }
+.card p { font - size: 0.95rem; color: var(--muted); line - height: 1.75; position: relative; z - index: 3; }
 
-        {/* HOW IT WORKS ─────────────────────────────────── */}
-        <section className="section-dark" id="how-it-works">
-          <div className="section-wrap">
-            <header className="section-header" data-reveal>
-              <span className="section-eyebrow sans-label">The Process</span>
-              <h2 className="section-title serif">A safe space, designed from the ground up.</h2>
-            </header>
-            <div className="protocol-grid">
-              {[
-                { num: '01', title: "You say what’s on your mind.", body: 'Type as much or as little as you want — about your day, your stress, your hopes. There are no right or wrong answers here. Only a space to be heard.' },
-                { num: '02', title: 'Your identity is removed — instantly.', body: 'Before your words travel anywhere, anything that could identify you is stripped out and discarded. Your feelings are kept and understood; who you are stays private.' },
-                { num: '03', title: "You’re met with real skills, not scripts.", body: 'Instead of generic replies, you’re guided with techniques from established therapy frameworks — and gently checked in on over time, so your progress is never lost.' },
-              ].map((p, i) => (
-                <article key={p.num} className="protocol-item" data-reveal style={{ '--i': i }}>
-                  <div className="protocol-num">{p.num}</div>
-                  <h3 className="protocol-title serif">{p.title}</h3>
-                  <p className="protocol-desc">{p.body}</p>
-                </article>
-              ))}
-            </div>
-            <div className="privacy-callout" data-reveal>
-              <p>Your identity is never stored. Not once. Not ever.</p>
-            </div>
-          </div>
-        </section>
+/* ── Protocol (how it works) ─────────────────────────────────────── */
+.protocol - grid { display: grid; grid - template - columns: repeat(3, 1fr); gap: 3rem; }
+.protocol - item { padding - top: 2rem; border - top: 2px solid var(--gold); transition: border - color 0.4s ease; }
+.protocol - item:hover { border - top - color: #FFF; }
+.protocol - num {
+  font - family: 'Cormorant Garamond', serif; font - size: clamp(3rem, 4vw, 4.5rem);
+  color: rgba(196, 168, 130, 0.25); line - height: 1; margin - bottom: 1.5rem; font - weight: 300;
+  transition: color 0.5s ease, text - shadow 0.5s ease;
+}
+.protocol - item: hover.protocol - num { color: rgba(196, 168, 130, 0.55); text - shadow: 0 0 30px rgba(196, 168, 130, 0.25); }
+.protocol - title { font - size: 1.6rem; letter - spacing: -0.02em; margin - bottom: 1rem; line - height: 1.2; color: var(--fg - dark); }
+.protocol - desc { font - size: 0.95rem; color: var(--muted - dark); line - height: 1.75; }
 
-        {/* TRUST ─────────────────────────────────────────── */}
-        <section id="trust">
-          <div className="section-wrap">
-            <header className="section-header" data-reveal>
-              <span className="section-eyebrow sans-label">Why It’s Different</span>
-              <h2 className="section-title serif">Gentle on the outside.<br />Clinical-grade on the inside.</h2>
-            </header>
-            <div className="trust-grid">
-              {[
-                { title: 'Grounded In Evidence, Not Guesswork', body: "Meridian’s read on how you’re doing is built on language understanding trained specifically for mental health — not a generic chatbot taking a guess. Every coping tool it offers comes straight from established clinical frameworks." },
-                { title: 'Continuity That Actually Holds', body: 'Most AI companions forget you the moment you close the tab. Meridian carries context forward, so your support builds on itself instead of starting from zero — and never loops the same advice back at you.' },
-                { title: 'A Space That Stays Safe', body: 'A dedicated safeguarding layer keeps every conversation focused, respectful, and protected from misuse — and Meridian will never diagnose or prescribe. It stays a place for you, and only you, every single time.' },
-              ].map((t, i) => (
-                <article key={t.title} className="trust-item" data-reveal style={{ '--i': i }}>
-                  <h3 className="serif">{t.title}</h3>
-                  <p>{t.body}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
+.privacy - callout {
+  margin - top: 5rem; padding: 2rem 3rem; background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(196, 168, 130, 0.2); border - radius: 16px; text - align: center;
+  transition: border - color 0.5s ease, box - shadow 0.5s ease;
+}
+.privacy - callout:hover { border - color: rgba(196, 168, 130, 0.5); box - shadow: 0 0 60px rgba(196, 168, 130, 0.08); }
+.privacy - callout p { font - family: 'Syne', sans - serif; font - weight: 500; font - size: 1.1rem; color: var(--gold); letter - spacing: 0.02em; }
 
-        {/* CTA ──────────────────────────────────────────── */}
-        <section className="cta-section">
-          <hr className="gradient-rule" style={{ width: 120, marginBottom: '4rem' }} />
-          <h2 className="serif" data-reveal>You don’t have to hold it all alone.</h2>
-          <p data-reveal style={{ '--i': 1 }}>
-            No waitlists. No paperwork. Just a private, evidence-based space to talk —
-            open the moment you need it.
-          </p>
-          <Link to="/chat" className="btn-light sans-label" data-reveal style={{ '--i': 2 }}>
-            Begin when you’re ready
-          </Link>
-        </section>
-      </main>
+/* ── Trust ───────────────────────────────────────────────────────── */
+.trust - grid {
+  display: grid; grid - template - columns: repeat(auto - fit, minmax(320px, 1fr));
+  gap: 3rem; border - top: 1px solid var(--rule); padding - top: 5rem;
+}
+.trust - item { transition: transform 0.4s var(--ease - spring); }
+.trust - item:hover { transform: translateY(-6px); }
+.trust - item h3 { font - size: 1.8rem; font - weight: 400; margin - bottom: 1rem; line - height: 1.1; color: var(--fg); }
+.trust - item p { font - size: 0.95rem; color: var(--muted); line - height: 1.75; }
 
-      <footer className="landing-footer">
-        <div className="footer-inner">
-          <Link to="/" className="footer-logo serif">Meridian</Link>
-          <p className="foot-reassurance">
-            No data sold. No conversations used to train AI. Privacy is built into every
-            layer — not bolted on afterward.
-          </p>
-          <span className="foot-badge">Privacy-First · Evidence-Based · Safety-Engineered</span>
-        </div>
-        <div className="footer-bottom">
-          <span className="footer-copy">© 2026 Meridian. Automated support — not a replacement for emergency or clinical care.</span>
-        </div>
-      </footer>
-    </div>
-  );
+/* ── Stats ───────────────────────────────────────────────────────── */
+.stats - row {
+  display: flex; justify - content: center; gap: 5rem; flex - wrap: wrap;
+  margin - top: 4rem; padding - top: 3rem; border - top: 1px solid var(--rule);
+}
+.stat - item { text - align: center; }
+.stat - num {
+  font - family: 'Cormorant Garamond', serif; font - size: clamp(3rem, 5vw, 4.5rem);
+  font - weight: 300; color: var(--gold); line - height: 1; letter - spacing: -0.03em;
+  text - shadow: 0 0 36px rgba(196, 168, 130, 0.20);
+}
+.stat - label { font - family: 'Syne', sans - serif; font - size: 0.6rem; text - transform: uppercase; letter - spacing: 0.3em; color: var(--muted); margin - top: 0.6rem; }
+
+/* ── CTA ─────────────────────────────────────────────────────────── */
+.cta - section {
+  background: var(--dark); padding: 12rem 2rem; text - align: center;
+  display: flex; flex - direction: column; align - items: center; position: relative; overflow: hidden;
+}
+.cta - section::before {
+  content: ''; position: absolute; top: 50 %; left: 50 %; transform: translate(-50 %, -50 %);
+  width: 700px; height: 700px;
+  background: radial - gradient(circle, rgba(196, 168, 130, 0.10) 0 %, transparent 65 %);
+  animation: cta - pulse 6s ease -in -out infinite;
+}
+@keyframes cta - pulse {
+  0 %, 100 % { transform: translate(-50 %, -50 %) scale(1); opacity: 0.7; }
+  50 % { transform: translate(-50 %, -50 %) scale(1.25); opacity: 1; }
+}
+.cta - section h2 { font - family: 'Cormorant Garamond', serif; font - size: clamp(3rem, 7vw, 5.5rem); color: var(--fg - dark); margin - bottom: 2rem; line - height: 0.92; letter - spacing: -0.04em; position: relative; }
+.cta - section p { color: var(--muted - dark); margin - bottom: 4rem; font - size: 1.1rem; max - width: 500px; line - height: 1.8; position: relative; }
+
+/* ── Footer ──────────────────────────────────────────────────────── */
+.landing - footer { background: var(--dark); padding: 4rem 2rem 3rem; border - top: 1px solid var(--rule - dark); }
+.footer - inner { max - width: 1300px; margin: 0 auto; display: flex; flex - direction: column; align - items: center; text - align: center; gap: 2rem; }
+.footer - logo { font - size: 1.8rem; color: var(--fg - dark); letter - spacing: -0.01em; }
+.foot - reassurance { font - size: 0.85rem; color: var(--muted - dark); max - width: 600px; line - height: 1.6; }
+.foot - badge {
+  display: inline - block; padding: 0.6rem 1.2rem; border: 1px solid rgba(255, 255, 255, 0.1);
+  border - radius: 100px; font - family: 'Syne', sans - serif; font - size: 0.7rem;
+  text - transform: uppercase; letter - spacing: 0.1em; color: var(--gold); background: rgba(255, 255, 255, 0.02);
+  transition: border - color 0.4s ease, box - shadow 0.4s ease;
+}
+.foot - badge:hover { border - color: rgba(196, 168, 130, 0.4); box - shadow: 0 0 30px rgba(196, 168, 130, 0.12); }
+.footer - bottom {
+  max - width: 1300px; margin: 4rem auto 0; padding - top: 2rem; border - top: 1px solid var(--rule - dark);
+  display: flex; justify - content: space - between; align - items: center;
+}
+.footer - copy { font - size: 0.7rem; color: var(--muted - dark); letter - spacing: 0.02em; }
+
+/* ── Scroll reveal — gentle blur-in ──────────────────────────────── */
+[data - reveal] {
+  opacity: 0; transform: translateY(40px); filter: blur(6px);
+  transition: opacity 0.9s var(--ease - out), transform 0.9s var(--ease - out), filter 0.9s var(--ease - out);
+  transition - delay: calc(var(--i, 0) * 0.1s);
+}
+[data - reveal].revealed { opacity: 1; transform: translateY(0); filter: blur(0); }
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media(max - width: 1024px) {
+  .protocol - grid { grid - template - columns: 1fr; gap: 4rem; }
+  .landing - nav__links a.link { display: none; }
+  .chat - preview { flex: 1; width: 100 %; max - width: 500px; }
+  .stats - row { gap: 2.5rem; }
+}
+@media(max - width: 768px) { .grid - cards { grid - template - columns: 1fr; } }
+@media(max - width: 600px) {
+  .section - wrap { padding: 6rem 1.25rem; }
+  .card { padding: 2.5rem 1.5rem; }
+  .hero { padding: 9rem 1.25rem 4rem; }
+  .cta - section { padding: 8rem 1.25rem; }
+  .cta - section::before { width: 350px; height: 350px; }
+  .footer - inner, .footer - bottom { flex - direction: column; gap: 1rem; }
+  .chat - preview { padding: 1rem; }
+  .stats - row { gap: 2rem; }
+}
+
+/* ── Accessibility: calm everything for reduced-motion users ─────── */
+@media(prefers - reduced - motion: reduce) {
+  .gradient - rule, .cta - section:: before, .pulse - ring { animation: none; }
+  .hero - line, .hero - sub, .hero - actions, .chat - preview { animation - duration: 0.01ms; opacity: 1; transform: none; }
+  [data - reveal] { transition - duration: 0.01ms; filter: none; }
+  .card:: after, .btn - solid:: after, .btn - light::after { display: none; }
 }
