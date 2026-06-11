@@ -3,7 +3,19 @@ import { Link } from 'react-router-dom';
 import ShaderBackground from '../components/ShaderBackground.jsx';
 import '../styles/landing.css';
 
-/* ── Copy (unchanged) ──────────────────────────────────────────── */
+/* ─────────────────── content (unchanged from original) ─────────────────── */
+
+const TICKERS = [
+  'Private by design',
+  'Evidence-based care',
+  'CBT · DBT · ACT · Mindfulness',
+  'Remembers every session',
+  'Crisis-safe, always',
+  'No forms — just talk',
+  'Your identity is never stored',
+  'Here for you, 24/7',
+];
+
 const CONVO = [
   {
     you: "I've been carrying so much lately. I don't even know where to start.",
@@ -17,17 +29,6 @@ const CONVO = [
     you: "My mind won't switch off at night.",
     ai: "Racing thoughts at 2am are exhausting. Let's try one slow round of box breathing — in for four, hold four, out four. I'm right here with you.",
   },
-];
-
-const TICKERS = [
-  'Private by design',
-  'Evidence-based care',
-  'CBT · DBT · ACT · Mindfulness',
-  'Remembers every session',
-  'Crisis-safe, always',
-  'No forms — just talk',
-  'Your identity is never stored',
-  'Here for you, 24/7',
 ];
 
 const BENEFITS = [
@@ -50,243 +51,211 @@ const TRUST = [
   { title: 'A Space That Stays Safe', body: 'A dedicated safeguarding layer keeps every conversation focused, respectful, and protected from misuse — and Meridian will never diagnose or prescribe. It stays a place for you, and only you, every single time.' },
 ];
 
-export default function Landing() {
-  const navWrapRef = useRef(null);
-  const barRef = useRef(null);
-  const roomRefs = useRef([]);
-  const [room, setRoom] = useState(0);
+/* ───────────────────────────────── page ─────────────────────────────────── */
 
-  /* Scroll progress hairline + nav surface */
+export default function Landing() {
+  const navRef = useRef(null);
+  const railRef = useRef(null);
+
+  // One rAF-throttled scroll listener drives both the nav state
+  // and the meridian rail's drawn progress (CSS var --p).
   useEffect(() => {
     let raf = 0;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        const max = document.documentElement.scrollHeight - window.innerHeight;
-        if (barRef.current) {
-          barRef.current.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
-        }
-        navWrapRef.current?.classList.toggle('is-scrolled', window.scrollY > 24);
-      });
+    const update = () => {
+      raf = 0;
+      const doc = document.documentElement;
+      const max = Math.max(doc.scrollHeight - window.innerHeight, 1);
+      const p = Math.min(window.scrollY / max, 1);
+      if (railRef.current) railRef.current.style.setProperty('--p', p.toFixed(4));
+      if (navRef.current) navRef.current.classList.toggle('nav--scrolled', window.scrollY > 40);
     };
-    onScroll();
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    update();
     return () => {
       window.removeEventListener('scroll', onScroll);
-      if (raf) cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onScroll);
+      cancelAnimationFrame(raf);
     };
   }, []);
 
-  /* Quiet scroll reveals */
+  // Scroll reveals + stat counters.
   useEffect(() => {
-    const obs = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            obs.unobserve(e.target);
-          }
+          if (!e.isIntersecting) return;
+          e.target.classList.add('revealed');
+          e.target.querySelectorAll('.counter').forEach((c) => animateCounter(c));
+          observer.unobserve(e.target);
         });
       },
-      { threshold: 0.12, rootMargin: '0px 0px -7% 0px' }
+      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
     );
-    document.querySelectorAll('[data-rv]').forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
-
-  /* Sticky numeral tracks which benefit sits mid-viewport */
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setRoom(Number(e.target.dataset.idx));
-        });
-      },
-      { rootMargin: '-46% 0px -46% 0px' }
-    );
-    roomRefs.current.forEach((el) => el && obs.observe(el));
-    return () => obs.disconnect();
+    document.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
   }, []);
 
   return (
     <div className="landing-root">
       <ShaderBackground />
-      <span ref={barRef} className="ld-progress" aria-hidden="true" />
 
-      <header ref={navWrapRef} className="ld-nav-wrap">
-        <nav className="ld-nav" aria-label="Main">
-          <Link to="/" className="ld-logo serif">Meridian</Link>
-          <div className="ld-nav-links">
-            <a href="#benefits" className="ld-nav-link">What You Get</a>
-            <a href="#how-it-works" className="ld-nav-link">How it Works</a>
-            <a href="#trust" className="ld-nav-link">Why Meridian</a>
-            <Link to="/chat" className="ld-btn ld-btn-dark ld-btn-sm">Start Talking</Link>
+      {/* The meridian — a line your own progress draws down the page. */}
+      <div className="meridian-rail" ref={railRef} aria-hidden="true">
+        <span className="rail-fill" />
+        <span className="rail-dot" />
+      </div>
+
+      <header className="lnav-wrap">
+        <nav ref={navRef} className="lnav" aria-label="Main">
+          <Link to="/" className="lnav__logo serif">Meridian</Link>
+          <div className="lnav__links">
+            <a href="#benefits" className="lnav__link sans-label">What You Get</a>
+            <a href="#how-it-works" className="lnav__link sans-label">How it Works</a>
+            <a href="#trust" className="lnav__link sans-label">Why Meridian</a>
+            <Link to="/chat" className="lnav__cta sans-label">Start Talking</Link>
           </div>
         </nav>
       </header>
 
       <main>
-        {/* HERO — staircase headline over the fluid shader */}
-        <section className="ld-hero">
-          <h1>
-            <span className="ld-h1-line"><span style={{ '--i': 0 }}>A space to be heard,</span></span>
-            <span className="ld-h1-line"><span style={{ '--i': 1 }}>exactly as you are.</span></span>
-            <span className="ld-h1-line"><span style={{ '--i': 2 }}>No pressure. No judgment.</span></span>
-          </h1>
-          <div className="ld-hero-rule" aria-hidden="true" />
-          <div className="ld-hero-low">
-            <p className="ld-hero-sub">
-              Talk through whatever's weighing on you and get real, evidence-based coping
-              skills — drawn from CBT, DBT, mindfulness, and more. Your name, location, and
-              personal details are stripped away before a single word is ever read or stored.
-              What you share stays yours.
-            </p>
-            <div className="ld-hero-actions">
-              <Link to="/chat" className="ld-btn ld-btn-dark">Begin anonymously</Link>
-              <a href="#how-it-works" className="ld-link-quiet">How it works ↓</a>
+        {/* HERO ───────────────────────────────────────────── */}
+        <section className="hero">
+          <div className="wrap hero-frame">
+            <div className="hero-copy">
+              <h1 className="hero-title serif">
+                <span className="hl-mask"><span className="hl" style={{ '--i': 0 }}>A space to be heard,</span></span>
+                <span className="hl-mask"><span className="hl" style={{ '--i': 1 }}><i>exactly as you are.</i></span></span>
+                <span className="hl-mask"><span className="hl" style={{ '--i': 2 }}>No pressure. No judgment.</span></span>
+              </h1>
+              <div className="hero-low">
+                <p className="hero-sub">
+                  Talk through whatever's weighing on you and get real, evidence-based coping
+                  skills — drawn from CBT, DBT, mindfulness, and more. Your name, location, and
+                  personal details are stripped away before a single word is ever read or stored.
+                  What you share stays yours.
+                </p>
+                <div className="hero-actions">
+                  <Link to="/chat" className="btn-ink sans-label">Begin anonymously</Link>
+                  <a href="#how-it-works" className="hero-scroll sans-label">How it works ↓</a>
+                </div>
+              </div>
             </div>
+            <SessionPreview />
           </div>
         </section>
 
-        {/* TICKER — hairline manifest strip */}
-        <section className="ld-ticker" aria-hidden="true">
-          <div className="ld-ticker-track">
+        {/* MARQUEE ─────────────────────────────────────────── */}
+        <section className="ticker" aria-hidden="true">
+          <div className="ticker-track">
             {[...TICKERS, ...TICKERS].map((t, i) => (
-              <span className="ld-tick-item" key={i}>{t}</span>
+              <span className="ticker-item serif" key={i}>{t}</span>
             ))}
           </div>
         </section>
 
-        {/* TRANSCRIPT — the conversation as the centerpiece */}
-        <Transcript />
-
-        {/* BENEFITS — sticky numeral rail, scrolled entries */}
-        <section className="ld-band" id="benefits">
-          <div className="ld-inner">
-            <header className="ld-sec-head" data-rv>
-              <span className="ld-eyebrow">Support On Your Terms</span>
-              <h2 className="ld-title serif">Help shouldn't feel like paperwork.</h2>
+        {/* BENEFITS ────────────────────────────────────────── */}
+        <section id="benefits" className="chapter">
+          <div className="wrap">
+            <header className="chapter-head" data-reveal>
+              <span className="eyebrow sans-label">Support On Your Terms</span>
+              <h2 className="chapter-title serif">Help shouldn't feel like paperwork.</h2>
             </header>
 
-            <div className="ld-rooms">
-              <aside className="ld-rooms-rail" aria-hidden="true">
-                <div className="ld-rail-sticky">
-                  <span className="ld-rail-num serif" key={room}>
-                    {String(room + 1).padStart(2, '0')}
-                  </span>
-                  <span className="ld-rail-total">/ 05</span>
-                  <span className="ld-rail-glyph serif">{BENEFITS[room].icon}</span>
-                </div>
-              </aside>
-              <div className="ld-rooms-list">
-                {BENEFITS.map((b, i) => (
-                  <article
-                    key={b.title}
-                    className="ld-room"
-                    data-rv
-                    data-idx={i}
-                    ref={(el) => { roomRefs.current[i] = el; }}
-                  >
-                    <div className="ld-room-meta">
-                      <span>{String(i + 1).padStart(2, '0')}</span>
-                      <span className="serif">{b.icon}</span>
-                    </div>
-                    <h3 className="serif">{b.title}</h3>
-                    <p>{b.body}</p>
-                  </article>
-                ))}
-              </div>
-            </div>
-
-            <div className="ld-stats" data-rv>
-              <div className="ld-stat">
-                <span className="ld-stat-num serif">100<em>%</em></span>
-                <span className="ld-stat-label">Anonymous &amp; Private</span>
-              </div>
-              <div className="ld-stat">
-                <span className="ld-stat-num serif">0</span>
-                <span className="ld-stat-label">Personal Details Stored</span>
-              </div>
-              <div className="ld-stat">
-                <span className="ld-stat-num serif">24<em>/7</em></span>
-                <span className="ld-stat-label">Always Here For You</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* PROCESS — dark descent, staggered ledger rows */}
-        <section className="ld-band ld-dark" id="how-it-works">
-          <div className="ld-inner">
-            <header className="ld-sec-head" data-rv>
-              <span className="ld-eyebrow">The Process</span>
-              <h2 className="ld-title serif">A safe space, designed from the ground up.</h2>
-            </header>
-            <ol className="ld-steps">
-              {STEPS.map((s) => (
-                <li className="ld-step" data-rv key={s.num}>
-                  <span className="ld-step-num serif" aria-hidden="true">{s.num}</span>
-                  <div>
-                    <h3 className="serif">{s.title}</h3>
-                    <p>{s.body}</p>
-                  </div>
-                </li>
+            <div className="index-list">
+              {BENEFITS.map((c, i) => (
+                <article className="index-row" data-reveal style={{ '--i': i }} key={c.title}>
+                  <span className="index-glyph serif" aria-hidden="true">{c.icon}</span>
+                  <h3 className="index-title serif">{c.title}</h3>
+                  <p className="index-body">{c.body}</p>
+                </article>
               ))}
-            </ol>
-            <p className="ld-vow serif" data-rv>
-              Your identity is never stored. <i>Not once. Not ever.</i>
-            </p>
+            </div>
+
+            <div className="stats-band" data-reveal>
+              <div className="stat">
+                <div className="stat-num serif"><span className="counter" data-target="100">0</span>%</div>
+                <div className="stat-label sans-label">Anonymous &amp; Private</div>
+              </div>
+              <div className="stat">
+                <div className="stat-num serif"><span className="counter" data-target="0">0</span></div>
+                <div className="stat-label sans-label">Personal Details Stored</div>
+              </div>
+              <div className="stat">
+                <div className="stat-num serif"><span className="counter" data-target="24">0</span>/7</div>
+                <div className="stat-label sans-label">Always Here For You</div>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* TRUST — ledger rows, claim left / argument right */}
-        <section className="ld-band" id="trust">
-          <div className="ld-inner">
-            <header className="ld-sec-head" data-rv>
-              <span className="ld-eyebrow">Why It's Different</span>
-              <h2 className="ld-title serif">
-                Gentle on the outside.<br />Clinical-grade on the inside.
-              </h2>
+        {/* HOW IT WORKS ────────────────────────────────────── */}
+        <section className="chapter chapter--dark" id="how-it-works">
+          <div className="wrap process-grid">
+            <header className="process-rail" data-reveal>
+              <span className="eyebrow sans-label">The Process</span>
+              <h2 className="chapter-title serif">A safe space, designed from the ground up.</h2>
             </header>
-            <div className="ld-trust">
-              {TRUST.map((t) => (
-                <article className="ld-trust-row" data-rv key={t.title}>
-                  <h3 className="serif">{t.title}</h3>
-                  <p>{t.body}</p>
+            <div className="process-steps">
+              {STEPS.map((p, i) => (
+                <article className="step" data-reveal style={{ '--i': i }} key={p.num}>
+                  <span className="step-num serif" aria-hidden="true">{p.num}</span>
+                  <div className="step-text">
+                    <h3 className="step-title serif">{p.title}</h3>
+                    <p className="step-desc">{p.body}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+          <div className="vow" data-reveal>
+            <p className="serif">Your identity is never stored. Not once. Not ever.</p>
+          </div>
+        </section>
+
+        {/* TRUST ───────────────────────────────────────────── */}
+        <section id="trust" className="chapter">
+          <div className="wrap">
+            <header className="chapter-head" data-reveal>
+              <span className="eyebrow sans-label">Why It's Different</span>
+              <h2 className="chapter-title serif">Gentle on the outside.<br />Clinical-grade on the inside.</h2>
+            </header>
+            <div className="trust-rows">
+              {TRUST.map((t, i) => (
+                <article className="trust-row" data-reveal style={{ '--i': i }} key={t.title}>
+                  <h3 className="trust-title serif">{t.title}</h3>
+                  <p className="trust-body">{t.body}</p>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        {/* CTA */}
-        <section className="ld-band ld-dark ld-cta">
-          <div className="ld-inner">
-            <h2 className="serif" data-rv>You don't have to hold it all alone.</h2>
-            <p data-rv>
-              No waitlists. No paperwork. Just a private, evidence-based space to talk —
-              open the moment you need it.
-            </p>
-            <Link to="/chat" className="ld-btn ld-btn-light" data-rv>
-              Begin when you're ready
-            </Link>
-          </div>
+        {/* CTA ─────────────────────────────────────────────── */}
+        <section className="cta">
+          <span className="cta-line" aria-hidden="true" />
+          <h2 className="cta-title serif" data-reveal>You don't have to hold it all alone.</h2>
+          <p className="cta-sub" data-reveal style={{ '--i': 1 }}>
+            No waitlists. No paperwork. Just a private, evidence-based space to talk —
+            open the moment you need it.
+          </p>
+          <Link to="/chat" className="btn-paper sans-label" data-reveal style={{ '--i': 2 }}>
+            Begin when you're ready
+          </Link>
         </section>
       </main>
 
-      <footer className="ld-footer">
-        <div className="ld-foot-top">
-          <div>
-            <Link to="/" className="ld-foot-logo serif">Meridian</Link>
-            <p className="ld-foot-copy">
-              No data sold. No conversations used to train AI. Privacy is built into every
-              layer — not bolted on afterward.
-            </p>
-          </div>
-          <span className="ld-foot-badge">Privacy-First · Evidence-Based · Safety-Engineered</span>
+      <footer className="lfooter">
+        <div className="lfooter-inner">
+          <Link to="/" className="lfooter-logo serif">Meridian</Link>
+          <p className="lfooter-note">
+            No data sold. No conversations used to train AI. Privacy is built into every
+            layer — not bolted on afterward.
+          </p>
+          <span className="lfooter-badge sans-label">Privacy-First · Evidence-Based · Safety-Engineered</span>
         </div>
-        <div className="ld-foot-bottom">
+        <div className="lfooter-bottom">
           <span>© 2026 Meridian. Automated support — not a replacement for emergency or clinical care.</span>
         </div>
       </footer>
@@ -294,65 +263,57 @@ export default function Landing() {
   );
 }
 
-/* ── Typed transcript — replies set themselves in serif on a dark stage ── */
-function Transcript() {
+/* Hero transcript — the same three real exchanges, streamed live,
+   set directly on the page like a quiet letter instead of a chat card. */
+function SessionPreview() {
   const [i, setI] = useState(0);
   const [typed, setTyped] = useState('');
   const [done, setDone] = useState(false);
 
   useEffect(() => {
     const line = CONVO[i].ai;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let starter; let typer; let holder;
-
-    if (reduce) {
-      setTyped(line);
-      setDone(true);
-      holder = setTimeout(() => setI((p) => (p + 1) % CONVO.length), 6000);
-    } else {
-      setTyped('');
-      setDone(false);
-      starter = setTimeout(() => {
-        let c = 0;
-        typer = setInterval(() => {
-          c += 1;
-          setTyped(line.slice(0, c));
-          if (c >= line.length) {
-            clearInterval(typer);
-            setDone(true);
-            holder = setTimeout(() => setI((p) => (p + 1) % CONVO.length), 3600);
-          }
-        }, 24);
-      }, 850);
-    }
-    return () => {
-      clearTimeout(starter);
-      clearInterval(typer);
-      clearTimeout(holder);
-    };
+    setTyped('');
+    setDone(false);
+    let typer;
+    let holder;
+    const starter = setTimeout(() => {
+      let c = 0;
+      typer = setInterval(() => {
+        c += 1;
+        setTyped(line.slice(0, c));
+        if (c >= line.length) {
+          clearInterval(typer);
+          setDone(true);
+          holder = setTimeout(() => setI((p) => (p + 1) % CONVO.length), 3400);
+        }
+      }, 26);
+    }, 700);
+    return () => { clearTimeout(starter); clearInterval(typer); clearTimeout(holder); };
   }, [i]);
 
   return (
-    <section className="ld-transcript ld-dark" aria-label="Example conversation">
-      <div className="ld-inner ld-tr-inner">
-        <div className="ld-tr-head">
-          <span className="ld-eyebrow ld-eyebrow--dim">You</span>
-          <span className="ld-tr-count">
-            {String(i + 1).padStart(2, '0')} / {String(CONVO.length).padStart(2, '0')}
-          </span>
-        </div>
-        <p className="ld-tr-user" key={`u${i}`}>{CONVO[i].you}</p>
-
-        <span className="ld-eyebrow">Meridian</span>
-        <p className="ld-tr-ai serif">
+    <aside className="session" aria-hidden="true">
+      <div className="session-inner" key={i}>
+        <p className="session-you">{CONVO[i].you}</p>
+        <p className="session-ai serif">
           {typed}
-          {!done && <span className="ld-caret" aria-hidden="true" />}
+          {!done && <span className="caret" />}
         </p>
-
-        <div className="ld-tr-dots" aria-hidden="true">
-          {CONVO.map((_, d) => <i key={d} className={d === i ? 'on' : ''} />)}
-        </div>
       </div>
-    </section>
+    </aside>
   );
+}
+
+function animateCounter(el) {
+  const target = parseInt(el.getAttribute('data-target'), 10);
+  const duration = 1800;
+  const start = performance.now();
+  const update = (now) => {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    el.textContent = Math.round(target * eased);
+    if (progress < 1) requestAnimationFrame(update);
+    else el.textContent = target;
+  };
+  requestAnimationFrame(update);
 }
