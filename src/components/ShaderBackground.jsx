@@ -1,13 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-/*
- * Meridian field — a slowly drifting, engraved contour map.
- * Thin gold iso-lines ("meridians") trace a warm noise field that
- * calms and settles as the visitor scrolls deeper into the page.
- * No mouse tracking. Time + scroll only.
- */
-
 const vertexShader = /* glsl */ `
   varying vec2 vUv;
   void main() {
@@ -20,9 +13,8 @@ const fragmentShader = /* glsl */ `
   precision highp float;
   varying vec2 vUv;
   uniform float uTime;
-  uniform float uScroll;
   uniform vec2 uResolution;
-
+  uniform vec2 uMouse;
   vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
   vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
   vec3 permute(vec3 x) { return mod289(((x * 34.0) + 1.0) * x); }
@@ -48,60 +40,46 @@ const fragmentShader = /* glsl */ `
   }
   float fbm(vec2 p) {
     float f = 0.0, amp = 0.5, freq = 1.0;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
       f += amp * snoise(p * freq);
-      freq *= 2.05;
-      amp *= 0.5;
+      freq *= 2.1;
+      amp *= 0.48;
     }
     return f;
   }
-
   void main() {
     vec2 uv = vUv;
-    float aspect = uResolution.x / max(uResolution.y, 1.0);
-    vec2 p = vec2(uv.x * aspect, uv.y);
-
-    float t = uTime * 0.045;
-    float calm = 1.0 - uScroll * 0.5; // the field settles as you go deeper
-
+    float t = uTime * 0.12;
     vec2 q = vec2(
-      fbm(p * 1.5 + vec2(t * 0.9, -t * 0.6)),
-      fbm(p * 1.5 + vec2(-t * 0.4, t * 0.7) + 3.71)
+      fbm(uv * 2.4 + vec2(t * 0.2, t * -0.12)),
+      fbm(uv * 2.4 + vec2(t * 0.25, t * 0.15))
     );
-    float field = fbm(p * 2.1 + q * (0.85 * calm + 0.25) + vec2(0.0, uScroll * 0.9));
-
-    // engraved iso-lines of the field
-    float bands = field * 13.0;
-    float d = abs(fract(bands) - 0.5);
-    float contour = 1.0 - smoothstep(0.02, 0.075, d);
-    contour *= smoothstep(0.02, 0.30, abs(field)); // fade where the field is flat
-
-    vec3 paper = vec3(0.961, 0.949, 0.933); // #F5F2EE
-    vec3 cream = vec3(0.933, 0.906, 0.867);
-    vec3 gold  = vec3(0.769, 0.659, 0.510); // #C4A882
-    vec3 umber = vec3(0.478, 0.416, 0.345); // #7A6A58
-
-    float wash = smoothstep(-0.7, 0.9, field);
-    vec3 col = mix(paper, cream, wash);
-    col = mix(col, gold, max(field, 0.0) * 0.07);
-
-    vec3 ink = mix(gold, umber, 0.30);
-    col = mix(col, ink, contour * 0.17);
-
-    // a faint horizon of light that sinks with scroll
-    float hy = 0.66 - uScroll * 0.30 + 0.04 * sin(t * 1.3);
-    float horizon = exp(-pow((uv.y - hy) * 4.5, 2.0));
-    col = mix(col, gold, horizon * 0.06);
-
-    // settle edges back to paper
-    float vig = smoothstep(1.35, 0.30, distance(uv, vec2(0.5, 0.55)));
-    col = mix(paper, col, vig);
-
-    // fine grain so flats never band
-    float g = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
-    col += (g - 0.5) * 0.014;
-
-    gl_FragColor = vec4(col, 1.0);
+    vec2 r = vec2(
+      fbm(uv * 2.8 + q * 1.2 + vec2(t * 0.5, t * 0.2)),
+      fbm(uv * 2.8 + q * 1.2 - vec2(t * 0.28, t * 0.38))
+    );
+    float flow = fbm(uv * 1.8 + r);
+    float mouseDist = length(uv - uMouse);
+    float mouseGlow = smoothstep(0.45, 0.0, mouseDist) * 0.2;
+    float gridX = abs(sin((uv.x + q.x * 0.3) * 14.0));
+    float gridY = abs(sin((uv.y + q.y * 0.3) * 14.0));
+    float grid = smoothstep(0.85, 1.0, gridX) + smoothstep(0.85, 1.0, gridY);
+    grid = grid * 0.1 * (1.0 - abs(flow) * 0.5);
+    vec3 bgColor   = vec3(0.961, 0.949, 0.933);
+    vec3 warmCream = vec3(0.935, 0.905, 0.865);
+    vec3 warmGold  = vec3(0.77, 0.66, 0.51);
+    vec3 softAmber = vec3(0.72, 0.53, 0.42);
+    float grad = uv.y * 0.6 + flow * 0.4;
+    vec3 base = mix(bgColor, warmCream, grad);
+    float mixIntensity = 0.42 + mouseGlow;
+    base = mix(base, warmGold, flow * mixIntensity * 0.5 + 0.03);
+    base = mix(base, softAmber, max(flow * 0.15, 0.0));
+    base = mix(base, warmGold, mouseGlow * 0.6);
+    base += grid * warmGold * 0.35;
+    float vignette = 1.0 - length(vUv - 0.5) * 1.05;
+    vignette = smoothstep(0.0, 1.0, vignette);
+    base = mix(bgColor, base, vignette);
+    gl_FragColor = vec4(base, 1.0);
   }
 `;
 
@@ -112,67 +90,60 @@ export default function ShaderBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const renderer = new THREE.WebGLRenderer({
-      canvas, antialias: false, alpha: false, powerPreference: 'low-power',
-    });
-    const dprCap = window.innerWidth < 760 ? 1.25 : 1.75;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, dprCap));
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     const scene = new THREE.Scene();
     const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     const geometry = new THREE.PlaneGeometry(2, 2);
+
     const uniforms = {
       uTime: { value: 0 },
-      uScroll: { value: 0 },
       uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+      uMouse: { value: new THREE.Vector2(0.5, 0.5) },
     };
+
     const material = new THREE.ShaderMaterial({
-      vertexShader, fragmentShader, uniforms, depthWrite: false,
+      vertexShader,
+      fragmentShader,
+      uniforms,
+      transparent: false,
+      depthWrite: false,
     });
-    scene.add(new THREE.Mesh(geometry, material));
 
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    let target = { x: 0.5, y: 0.5 };
     let raf = 0;
-    let scrollTarget = 0;
-    let onVis = null;
 
-    const onScroll = () => {
-      const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-      scrollTarget = Math.min(window.scrollY / max, 1);
+    const onMouse = (e) => {
+      target.x = e.clientX / window.innerWidth;
+      target.y = 1.0 - e.clientY / window.innerHeight;
     };
     const onResize = () => {
       renderer.setSize(window.innerWidth, window.innerHeight);
       uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
-      onScroll();
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
+
+    window.addEventListener('mousemove', onMouse);
     window.addEventListener('resize', onResize);
-    onScroll();
 
-    const renderFrame = (ts) => {
-      uniforms.uTime.value = ts * 0.001;
-      uniforms.uScroll.value += (scrollTarget - uniforms.uScroll.value) * 0.05;
+    const animate = (timestamp) => {
+      uniforms.uTime.value = timestamp * 0.001;
+      const m = uniforms.uMouse.value;
+      m.x += (target.x - m.x) * 0.04;
+      m.y += (target.y - m.y) * 0.04;
       renderer.render(scene, camera);
+      raf = requestAnimationFrame(animate);
     };
-
-    if (reduced) {
-      renderFrame(0); // one calm, static frame
-    } else {
-      const loop = (ts) => { renderFrame(ts); raf = requestAnimationFrame(loop); };
-      raf = requestAnimationFrame(loop);
-      onVis = () => {
-        cancelAnimationFrame(raf);
-        if (!document.hidden) raf = requestAnimationFrame(loop);
-      };
-      document.addEventListener('visibilitychange', onVis);
-    }
+    raf = requestAnimationFrame(animate);
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('mousemove', onMouse);
       window.removeEventListener('resize', onResize);
-      if (onVis) document.removeEventListener('visibilitychange', onVis);
       geometry.dispose();
       material.dispose();
       renderer.dispose();
@@ -186,9 +157,9 @@ export default function ShaderBackground() {
       style={{
         position: 'fixed',
         inset: 0,
-        width: '100%',
-        height: '100%',
-        zIndex: -2,
+        width: '100vw',
+        height: '100vh',
+        zIndex: -1,
         pointerEvents: 'none',
       }}
     />
